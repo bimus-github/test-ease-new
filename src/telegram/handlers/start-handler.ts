@@ -8,20 +8,22 @@ import { sendTelegramMessage } from "@/telegram/bot";
 export async function handleStartCommand(chatId: number) {
   await sendTelegramMessage(
     chatId,
-    `🎓 *Welcome to Test Ease!*\n\n` +
-      `I'm your test-taking assistant! 📝\n\n` +
-      `*How it works:*\n` +
-      `1️⃣ Your teacher will give you a test code\n` +
-      `2️⃣ Send me that code (like: ABC123)\n` +
-      `3️⃣ I'll give you a link to take the test\n` +
-      `4️⃣ Complete the test and get your results!\n\n` +
-      `*Ready to start?*\n` +
-      `Just send me your test code when you have one!\n\n` +
-      `*Available commands:*\n` +
-      `• /menu - Show main menu with buttons\n` +
-      `• /myid - Show your Telegram ID\n` +
-      `• /help - Show this help message\n\n` +
-      `*Need help?* Contact your teacher! 👨‍🏫`,
+    `🎓 *Test Ease’ga xush kelibsiz!*\n\n` +
+      `Men sizning test topshirishda yordamchingizman! 📝\n\n` +
+      `*Qanday ishlaydi:*\n` +
+      `1️⃣ O‘qituvchingiz sizga test kodi beradi\n` +
+      `2️⃣ Shu kodni menga yuboring (masalan: ABC123)\n` +
+      `3️⃣ Sizga test havolasini yuboraman\n` +
+      `4️⃣ Testni yakunlab, natijalaringizni oling!\n\n` +
+      `*Boshlashga tayyormisiz?*\n` +
+      `Kod bo‘lsa, menga yuboring!\n\n` +
+      `*Mavjud buyruqlar:*\n` +
+      `• \`/start\` - Botni ishga tushirish tugmasi\n` +
+      `• \`/help\` - Yordam xabari\n` +
+      `• \`/create_test\` - Test yaratish\n` +
+      `• \`/my_tests\` - Testlarimni ko‘rish\n` +
+      `• \`/my_results\` - Natijalarni ko'rish` +
+      `\n\n*Yordam kerakmi?* O‘qituvchingiz bilan bog‘laning! 👨‍🏫`,
     { parse_mode: "Markdown" }
   );
 }

@@ -1,4 +1,4 @@
-import { SendMessageParams, TelegramApiResponse } from "@/lib/types/telegram";
+import { SendMessageParams, TelegramApiResponse } from "@/types/telegram";
 
 const TELEGRAM_API_URL = "https://api.telegram.org/bot";
 

@@ -1,6 +1,6 @@
 import { getUserProfile, saveOrUpdateUser } from "@/dbs/bot-servers";
 import { TelegramUser } from "@/lib/types/telegram";
-import { TGUser } from "@/types";
+import { TGUser } from "@/types/tg-user";
 import { MiddlewareContext, MiddlewareResult } from "./types";
 
 export async function userSyncMiddleware(

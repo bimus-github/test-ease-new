@@ -24,3 +24,62 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Add to your globals.css or component-specific CSS */
+.math-field {
+  @apply w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition-colors;
+  @apply focus:border-black dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-white;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply read-only:bg-neutral-50 dark:read-only:bg-neutral-800;
+}
+
+/* Custom styling for the math field content */
+.math-field .ML__base {
+  @apply text-neutral-900 dark:text-neutral-100;
+}
+
+/* Virtual keyboard styling */
+.math-field .ML__virtual-keyboard {
+  @apply border border-neutral-200 dark:border-neutral-700;
+  @apply bg-white dark:bg-neutral-900;
+}
+
+.math-field .ML__virtual-keyboard button {
+  @apply text-neutral-900 dark:text-neutral-100;
+  @apply hover:bg-neutral-100 dark:hover:bg-neutral-800;
+}
+
+/* Add to your globals.css */
+.math-live-renderer-container {
+  @apply inline-block;
+}
+
+.math-live-renderer {
+  @apply border-none bg-transparent p-0;
+  @apply text-neutral-900 dark:text-neutral-100;
+  @apply pointer-events-none; /* Disable all interactions */
+}
+
+/* Display mode styling */
+.math-live-renderer-container[data-display-mode="true"] {
+  @apply block w-full text-center my-4;
+}
+
+.math-live-renderer-container[data-display-mode="true"] .math-live-renderer {
+  @apply text-lg;
+}
+
+/* Inline mode styling */
+.math-live-renderer-container[data-display-mode="false"] {
+  @apply inline;
+}
+
+/* Error styling */
+.math-live-error {
+  @apply inline-block;
+}
+
+/* Ensure proper spacing */
+.math-live-renderer-container + .math-live-renderer-container {
+  @apply ml-1;
+}

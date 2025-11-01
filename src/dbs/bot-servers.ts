@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { TGUser } from "@/types";
+import { TGUser } from "@/types/tg-user";
 
 export interface TelegramUserData {
   id: number;
