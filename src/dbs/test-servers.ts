@@ -4,6 +4,27 @@ import { QuestionForm } from "@/types/question";
 import { dateTimeLocalToISO } from "@/lib/utils";
 
 /**
+ * Update expired tests (sets status to inactive if end_date has passed)
+ * This should be called before fetching tests to ensure status is up-to-date
+ * @returns Number of updated tests
+ */
+export async function updateExpiredTests(): Promise<number> {
+  try {
+    const { data, error } = await supabase.rpc("update_expired_tests");
+
+    if (error) {
+      console.error("Error updating expired tests:", error);
+      return 0;
+    }
+
+    return data || 0;
+  } catch (error) {
+    console.error("Database error updating expired tests:", error);
+    return 0;
+  }
+}
+
+/**
  * Create a new test
  * @param testData - Test form data
  * @returns Test object or null if failed
@@ -35,6 +56,9 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
  */
 export async function getTestById(id: string): Promise<Test | null> {
   try {
+    // Update expired tests before fetching
+    await updateExpiredTests();
+
     const { data, error } = await supabase
       .from("tests")
       .select("*")
@@ -60,6 +84,9 @@ export async function getTestById(id: string): Promise<Test | null> {
  */
 export async function getTestByCode(code: string): Promise<Test | null> {
   try {
+    // Update expired tests before fetching
+    await updateExpiredTests();
+
     const { data, error } = await supabase
       .from("tests")
       .select("*")
@@ -142,6 +169,9 @@ export async function getTestsByTeacher(
   limit: number = 50
 ): Promise<Test[]> {
   try {
+    // Update expired tests before fetching
+    await updateExpiredTests();
+
     const { data, error } = await supabase
       .from("tests")
       .select("*")
@@ -170,6 +200,9 @@ export async function getActiveTestsByTeacher(
   teacherId: string
 ): Promise<Test[]> {
   try {
+    // Update expired tests before fetching
+    await updateExpiredTests();
+
     const { data, error } = await supabase
       .from("tests")
       .select("*")
@@ -198,6 +231,9 @@ export async function getTestWithQuestions(
   testId: string
 ): Promise<TestWithQuestions | null> {
   try {
+    // Update expired tests before fetching
+    await updateExpiredTests();
+
     // First get the test
     const { data: testData, error: testError } = await supabase
       .from("tests")

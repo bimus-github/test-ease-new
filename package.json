@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "setup-webhook": "node scripts/setup-webhook.js",
-    "setup-commands": "node scripts/setup-commands.js"
+    "setup-commands": "node scripts/setup-commands.js",
+    "optimize-svg": "node optimize-svg.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.2",
@@ -34,6 +35,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.0",
+    "svgo": "^4.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
