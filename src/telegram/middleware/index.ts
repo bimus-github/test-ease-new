@@ -1,6 +1,7 @@
 import { MiddlewareContext, MiddlewareFunction } from "./types";
 import { userSyncMiddleware } from "./user-sync";
 import { typingActionMiddleware } from "./typing-action";
+import { TelegramUser } from "@/types/telegram";
 
 export class MiddlewarePipeline {
   private middlewares: MiddlewareFunction[] = [];
@@ -27,7 +28,7 @@ export class MiddlewarePipeline {
 
       // Update context with middleware result
       if (result.user) {
-        context.user = result.user;
+        context.user = result.user as unknown as TelegramUser;
       }
     }
 

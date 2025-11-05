@@ -1,8 +1,8 @@
 import {
-  TelegramUpdate,
   TelegramMessage,
+  TelegramUpdate,
   TelegramUser,
-} from "@/lib/types/telegram";
+} from "@/types/telegram";
 import { TGUser } from "@/types/tg-user";
 
 export interface MiddlewareContext {

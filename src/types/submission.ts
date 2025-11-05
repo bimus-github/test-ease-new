@@ -16,6 +16,8 @@ export interface Submission {
   submitted_at?: string;
   rasch_score?: number; // Rasch scoring only
   rasch_ability?: number; // Rasch scoring only
+  rasch_z_score?: number; // Rasch scoring only
+  rasch_grade?: string; // Rasch scoring only
   created_at: string;
   updated_at: string;
   answers: Answer[];

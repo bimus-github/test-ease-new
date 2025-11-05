@@ -1,5 +1,5 @@
 import { getUserProfile, saveOrUpdateUser } from "@/dbs/bot-servers";
-import { TelegramUser } from "@/lib/types/telegram";
+import { TelegramUser } from "@/types/telegram";
 import { TGUser } from "@/types/tg-user";
 import { MiddlewareContext, MiddlewareResult } from "./types";
 
@@ -27,6 +27,14 @@ export async function userSyncMiddleware(
         },
         "register"
       );
+
+      if (!savedUser) {
+        return {
+          success: false,
+          shouldContinue: false,
+          error: "Failed to create user",
+        };
+      }
 
       return {
         success: true,
@@ -58,6 +66,14 @@ export async function userSyncMiddleware(
         },
         "update"
       );
+
+      if (!updatedUser) {
+        return {
+          success: false,
+          shouldContinue: false,
+          error: "Failed to update user",
+        };
+      }
 
       return {
         success: true,

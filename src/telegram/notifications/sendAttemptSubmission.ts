@@ -1,24 +1,26 @@
 "use server";
-import { getAttemptFull } from "@/dbs/attempt-servers";
 import { sendTelegramMessage } from "../bot";
 import { answersListText, calculateRowScore } from "@/lib/helpers";
 import { ScoringType } from "@/types/test";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
+import { getAttemptFullSubmissionAction } from "@/app/[telegram_id]/view-test/[testId]/attempts/[submission_id]/actions";
 
 export async function sendAttemptSubmissionNotification(opts: {
   telegramId: string | number;
   attemptId: string;
 }) {
   const { telegramId, attemptId } = opts;
-  const attempt = await getAttemptFull(attemptId);
-  if (!attempt) return;
+  const result = await getAttemptFullSubmissionAction({
+    submissionId: attemptId,
+  });
+  if (!result.ok) return;
 
-  const anwsers = attempt.answers;
+  const attempt = result.submission;
   const test = attempt.test;
 
   const totalQuestions = attempt.answers.length;
-  const correctAnswersCount = calculateRowScore(anwsers);
-  const answersList = answersListText(anwsers);
+  const correctAnswersCount = calculateRowScore(attempt);
+  const answersList = answersListText(attempt);
 
   const textOfRaschScoring =
     test?.scoring_type === ScoringType.RASCH_SCORING
