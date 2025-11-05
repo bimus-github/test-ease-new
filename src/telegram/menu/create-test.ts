@@ -2,90 +2,28 @@ import { CREATE_SERTICATE } from "@/constants/routes";
 import { sendTelegramMessage } from "@/telegram/bot";
 import { SertificateType } from "@/types/sertificate";
 
+const keyboardItems = [
+  { text: "📘 Sertifikat UZ: Fizika", type: SertificateType.PHYSICS },
+  { text: "📘 Sertifikat UZ: Kimyo", type: SertificateType.CHEMISTRY },
+  { text: "📘 Sertifikat UZ: Biologiya", type: SertificateType.BIOLOGY },
+  { text: "📘 Sertifikat UZ: Rus tili", type: SertificateType.RUSSIAN },
+  {
+    text: "📘 Sertifikat UZ: Qoraqalpoq tili",
+    type: SertificateType.QORAQALPAK,
+  },
+  { text: "📘 Sertifikat UZ: Tarix", type: SertificateType.HISTORY },
+  { text: "📘 Sertifikat UZ: Geografiya", type: SertificateType.GEOGRAPHY },
+  { text: "📘 Sertifikat UZ: Matematika", type: SertificateType.MATH },
+];
+
 export async function showCreateTestMenu(chatId: number | string) {
   const keyboard = {
-    inline_keyboard: [
-      [
-        {
-          text: "📘 Sertifikat UZ: Matematika",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.MATH),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Fizika",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.PHYSICS),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Gergafiya",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.GEOGRAPHY),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Kimyo",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.CHEMISTRY),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Biologiya",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.BIOLOGY),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Rus tili",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.RUSSIAN),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Qoraqalpoq tili",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.QORAQALPAK),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Tarix",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.HISTORY),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Geografiya",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.GEOGRAPHY),
-          },
-        },
-      ],
-      [
-        {
-          text: "📘 Sertifikat UZ: Qoraqalpoq tili",
-          web_app: {
-            url: CREATE_SERTICATE(chatId, SertificateType.QORAQALPAK),
-          },
-        },
-      ],
-    ],
+    inline_keyboard: keyboardItems.map((item) => [
+      {
+        text: item.text,
+        web_app: { url: CREATE_SERTICATE(chatId, item.type) },
+      },
+    ]),
   };
 
   return sendTelegramMessage(

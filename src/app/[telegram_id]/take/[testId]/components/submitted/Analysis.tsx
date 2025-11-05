@@ -16,10 +16,10 @@ export function Analysis({
   const { questions, answers } = fullSubmission;
 
   return (
-    <section className="grid gap-3 rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+    <section className="grid gap-3 rounded-md border border-neutral-200 p-4 shadow-sm dark:border-neutral-800">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-base font-medium">Javoblar tahlili</h3>
-        <span className="text-xs text-neutral-500">
+        <span className="inline-flex items-center rounded-full border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
           Jami {calculateRowScore(fullSubmission)}/{questions.length}
         </span>
       </div>
@@ -31,28 +31,30 @@ export function Analysis({
             ? a?.answer_options?.join(", ") || "—"
             : a?.answer || "—";
           const correct = correctAnswerText(a as any, q as any);
-          if (index === 0) {
-            console.log("question:", q);
-            console.log("answer:", a);
-            console.log("isCorrect:", isCorrect);
-            console.log("userAnswer:", userAnswer);
-            console.log("correct answer:", correct);
-          }
 
           return (
             <div
               key={q.id}
-              className="rounded-md border border-neutral-200 p-3 text-sm dark:border-neutral-800"
+              className={`rounded-md border p-3 text-sm shadow-sm dark:border-neutral-800 ${
+                isCorrect ? "border-green-200 " : "border-red-200"
+              }`}
             >
               <div className="mb-1 flex items-center justify-between gap-2">
-                <div className="font-medium">{q.question_label}</div>
-                <div
-                  className={`text-xs ${
-                    isCorrect ? "text-green-600" : "text-red-600"
+                <div className="font-medium">
+                  {q.question_label}
+                  {q.rasch_difficulty
+                    ? ` (Rasch qiyinlik: ${q.rasch_difficulty.toFixed(2)})`
+                    : ""}
+                </div>
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                    isCorrect
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
                   }`}
                 >
                   {isCorrect ? "To‘g‘ri" : "Noto‘g‘ri"}
-                </div>
+                </span>
               </div>
               {q.question_type === "fill_blank" ? (
                 <LatexRenderer

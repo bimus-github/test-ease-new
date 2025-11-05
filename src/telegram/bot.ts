@@ -150,3 +150,80 @@ export async function sendChatAction(
     throw error;
   }
 }
+
+/**
+ * Send a document/file to a Telegram chat
+ */
+export async function sendTelegramDocument(
+  chatId: number | string,
+  fileContent: Buffer | Uint8Array | string,
+  filename: string,
+  caption?: string
+): Promise<TelegramApiResponse> {
+  const token = getBotToken();
+  const url = `${TELEGRAM_API_URL}${token}/sendDocument`;
+
+  try {
+    // Show upload action
+    await sendChatAction(chatId, "upload_document");
+
+    // If file is a string (URL or file_id), send directly
+    if (typeof fileContent === "string") {
+      const body = {
+        chat_id: chatId,
+        document: fileContent,
+        caption,
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+      if (data.ok) {
+        return data;
+      } else {
+        throw new Error(data.description);
+      }
+    }
+
+    // If file is a Buffer/Uint8Array, send as multipart/form-data
+    const formData = new FormData();
+    // Convert Buffer to Uint8Array for Blob compatibility
+    const fileArray =
+      fileContent instanceof Buffer
+        ? new Uint8Array(
+            fileContent.buffer,
+            fileContent.byteOffset,
+            fileContent.byteLength
+          )
+        : fileContent;
+    const blob = new Blob([fileArray as BlobPart], {
+      type: "application/vnd.ms-excel",
+    });
+    formData.append("document", blob, filename);
+    formData.append("chat_id", String(chatId));
+    if (caption) {
+      formData.append("caption", caption);
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (data.ok) {
+      return data;
+    } else {
+      throw new Error(data.description);
+    }
+  } catch (error) {
+    console.error("Error sending Telegram document:", error);
+    throw error;
+  }
+}

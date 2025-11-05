@@ -4,6 +4,7 @@ import { getTestWithQuestions } from "@/dbs/test-servers";
 import { getFullSubmissions } from "@/dbs/submission-servers";
 import type { FullSubmission } from "@/types/submission";
 import { calculateRasch } from "@/lib/rasch";
+import { sendRaschResultsNotification } from "@/telegram/notifications/sendRaschResultsNotification";
 
 function logDbError(context: string, error: unknown) {
   console.error(`[RASCH] ${context}:`, error);
@@ -75,6 +76,24 @@ export async function calculateRaschForTest(testId: string): Promise<{
       })
       .eq("id", testId);
     if (testErr) logDbError("update test flags", testErr);
+
+    // Send notifications to all users with their Rasch results
+    if (updatedSubmissions > 0 && submissions.length > 0) {
+      // Reload submissions to get updated Rasch scores from database
+      const updatedSubmissionsList = await getFullSubmissions(testId);
+
+      // Send notifications in parallel (but don't await to avoid blocking)
+      updatedSubmissionsList.forEach((submission) => {
+        if (submission.rasch_score != null) {
+          sendRaschResultsNotification(submission).catch((error) => {
+            console.error(
+              `Failed to send Rasch notification for submission ${submission.id}:`,
+              error
+            );
+          });
+        }
+      });
+    }
 
     return { updatedQuestions, updatedSubmissions };
   } catch (err) {

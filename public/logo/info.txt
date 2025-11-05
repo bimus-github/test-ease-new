@@ -1,0 +1,14 @@
+
+Hope you enjoy your new logo, here are the people that
+made your beautiful logo happen :)
+font name: Aleo-Light
+font link: https://alessiolaiso.com/aleo-font
+font author: Alessio Laiso
+font author site: https://alessiolaiso.com/
+
+
+icon designer: Icons By Alfredo
+icon designer link: /creator/AlfredoCreates/
+        
+{"bg":"transparent","icon-gradient-0":"#E90DDA","icon-gradient-1":"#15CFF1","font":"#000000","slogan":"#141414"}
+      

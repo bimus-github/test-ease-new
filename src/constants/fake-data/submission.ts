@@ -46,14 +46,14 @@ export const generateSubmissions = (length: number): Submission[] => {
   );
 
   for (let i = 0; i < length; i++) {
-    const submissionId = `sub_${i + 1}`;
+    const submissionId = `topshiriq_${i + 1}`;
     const startedAt = new Date(
       now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000
     ); // Random time within last 7 days
     const submittedAt = new Date(
       startedAt.getTime() + (Math.random() * 60 + 30) * 60 * 1000
     ); // 30-90 minutes later
-    const userId = `user_${Math.floor(Math.random() * 50) + 1}`;
+    const userId = `talaba_${Math.floor(Math.random() * 50) + 1}`;
 
     // Generate student ability from normal distribution (mean=0, stdDev=1.5)
     const studentAbility = normalRandom(0, 1.5);

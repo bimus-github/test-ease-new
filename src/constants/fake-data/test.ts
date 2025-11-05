@@ -22,8 +22,8 @@ const generateQuestions = (length: number): Question[] => {
     questions.push({
       id: `q${i + 1}`,
       test_id: "1",
-      question_label: `q${i + 1}`,
-      question_text: `Question ${i + 1}`,
+      question_label: `Savol ${i + 1}`,
+      question_text: `Savol ${i + 1}`,
       question_type: "multiple_choice",
       question_order: i + 1,
       points: 1,
@@ -37,4 +37,4 @@ const generateQuestions = (length: number): Question[] => {
   return questions;
 };
 
-export const Questions: Question[] = generateQuestions(50);
+export const Questions: Question[] = generateQuestions(20);

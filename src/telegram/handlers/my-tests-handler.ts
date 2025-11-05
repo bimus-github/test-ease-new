@@ -21,16 +21,16 @@ export async function handleMyTestsCommand(chatId: number, userId: number) {
   const top = tests.slice(0, 10);
   const lines = top.map((t, i) => {
     const statusIcon = t.status === TestStatus.ACTIVE ? "🟢" : "⚪️";
-    return `${i + 1}. ${t.title} (${statusIcon} ${t.status})\n   Code: ${
+    return `${i + 1}. ${t.title} (${statusIcon} ${t.status})\n   Code: \`${
       t.code
-    }`;
+    }\``;
   });
 
   const moreNote = tests.length > 10 ? `\n…yana ${tests.length - 10} ta.` : "";
 
   await sendTelegramMessage(
     chatId,
-    `🧪 Testlaringiz (${tests.length})\n\n${lines.join(
+    `🧪 Testlaringiz (so‘ngi 10 ta)\n\n${lines.join(
       "\n\n"
     )}${moreNote}\n\nMaslahat: Talabalarga test kodini ulashing — ular testni topshirishlari mumkin bo‘ladi.`,
     { parse_mode: "Markdown" }

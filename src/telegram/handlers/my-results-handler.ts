@@ -1,24 +1,14 @@
 "use server";
 import { sendTelegramMessage } from "@/telegram/bot";
 import { MY_RESULTS_ROUTE } from "@/constants/routes";
-import { calculateRowScore } from "@/lib/helpers";
 import { ScoringType } from "@/types/test";
-import { supabase } from "@/lib/supabase";
+import { getFullSubmissionsByUserId } from "@/dbs/submission-servers";
+import { FullSubmission } from "@/types/submission";
+import { gradeFromT, percentageFromT } from "@/lib/helpers";
 
 export async function handleMyResultsCommand(chatId: number, userId: number) {
   try {
-    const { data: submissions, error } = await supabase
-      .from("full_submissions")
-      .select("*")
-      .eq("user_tg_id", String(userId))
-      .not("submitted_at", "is", null)
-      .neq("submitted_at", "")
-      .order("submitted_at", { ascending: false })
-      .limit(3);
-
-    if (error) {
-      throw error;
-    }
+    const submissions = await getFullSubmissionsByUserId(userId.toString());
 
     if (!submissions || submissions.length === 0) {
       await sendTelegramMessage(
@@ -30,39 +20,40 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
 
     let text = "🧪 So‘nggi 3 natijangiz\n\n";
 
-    submissions.forEach((submission: any, index: number) => {
-      const No = index + 1;
-      const testTitle = submission.test.title;
-      const testCode = submission.test.code;
-      const testTypeText =
-        submission.test.scoring_type === ScoringType.RASCH_SCORING
-          ? "Rasch baholash"
-          : "Oddiy baholash";
-      const startedAt = submission.started_at;
-      const submittedAt = submission.submitted_at;
-      const questionCount = submission.answers.length;
-      const rowScore = calculateRowScore({
-        id: submission.id,
-        started_at: submission.started_at,
-        submitted_at: submission.submitted_at,
-        rasch_score: submission.rasch_score,
-        rasch_ability: submission.rasch_ability,
-        created_at: submission.created_at,
-        updated_at: submission.updated_at,
-        answers: submission.answers,
-        test: submission.test,
-        user: submission.user,
-        questions: submission.questions || [],
-      } as any);
+    submissions
+      .slice(0, 3)
+      .forEach((submission: FullSubmission, index: number) => {
+        const No = index + 1;
+        const testTitle = submission.test.title;
+        const testCode = submission.test.code;
+        const testTypeText =
+          submission.test.scoring_type === ScoringType.RASCH_SCORING
+            ? "Rasch baholash"
+            : "Oddiy baholash";
+        const startedAt = submission.started_at;
+        const submittedAt = submission.submitted_at;
+        const questionCount = submission.answers.length;
+        const rowScore = submission.row_score;
+        const raschScore = submission.rasch_score ?? "—";
+        const raschAbility = submission.rasch_ability ?? "—";
+        const raschGrade = submission.rasch_score
+          ? gradeFromT(submission.rasch_score)
+          : "—";
+        const raschPercentage = submission.rasch_score
+          ? percentageFromT(submission.rasch_score)
+          : "—";
 
-      text += `${No}. ${testTitle} (${testCode})\n`;
-      text += `📋 Test turi: ${testTypeText}\n`;
-      text += `📅 Boshlangan: ${startedAt}\n`;
-      text += `📅 Yuborilgan: ${submittedAt}\n`;
-      text += `📊 Xom ball: ${rowScore}\n`;
-      text += `📊 Savollar soni: ${questionCount}\n`;
-      text += `\n\n`;
-    });
+        text += `${No}. ${testTitle} (${testCode})\n`;
+        text += `📋 Test turi: ${testTypeText}\n`;
+        text += `📅 Boshlangan: ${startedAt}\n`;
+        text += `📅 Yuborilgan: ${submittedAt}\n`;
+        text += `📊 Tog'ri javoblar: ${rowScore}\n`;
+        text += `📊 Rasch ball: ${raschScore}\n`;
+        text += `📊 Rasch qobiliyat: ${raschAbility}\n`;
+        text += `📊 Savollar soni: ${questionCount}\n`;
+        text += `📊 Rasch bahosi: ${raschGrade} (${raschPercentage})\n`;
+        text += `\n\n`;
+      });
 
     const url = MY_RESULTS_ROUTE(chatId);
 

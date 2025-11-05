@@ -12,24 +12,24 @@ export function Timing({
   scoringType: ScoringType;
 }) {
   return (
-    <section className="grid gap-2 rounded-lg border border-neutral-200 p-4 text-sm dark:border-neutral-800">
+    <section className="grid gap-3 rounded-md border border-neutral-200 p-4 text-sm shadow-sm dark:border-neutral-800">
       <h3 className="text-base font-medium">Vaqt ma’lumotlari</h3>
-      <div className="grid gap-1 sm:grid-cols-2">
-        <div>
-          <span className="text-neutral-500">Boshlangan:</span>
-          <span className="ml-2">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
+          <div className="text-xs text-neutral-500">Boshlangan</div>
+          <div className="mt-0.5 font-medium">
             {startedAt ? new Date(startedAt).toLocaleString() : "—"}
-          </span>
+          </div>
         </div>
-        <div>
-          <span className="text-neutral-500">Yuborilgan:</span>
-          <span className="ml-2">
+        <div className="rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
+          <div className="text-xs text-neutral-500">Yuborilgan</div>
+          <div className="mt-0.5 font-medium">
             {submittedAt ? new Date(submittedAt).toLocaleString() : "—"}
-          </span>
+          </div>
         </div>
       </div>
       {scoringType === ScoringType.RASCH_SCORING && (
-        <div className="mt-2 rounded border border-amber-200 bg-amber-50 p-2 text-amber-800">
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-amber-800">
           Rasch bali test yakunlangandan keyin hisoblab beriladi.
         </div>
       )}
