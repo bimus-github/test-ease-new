@@ -17,12 +17,12 @@ import {
 } from "redux-persist";
 import type { PersistConfig } from "redux-persist";
 import testReducer from "./slices/forms/test";
-import takeAttemptReducer from "./slices/takeAttempt";
+import takeReducer from "./slices/take";
 
 // Root reducer placeholder: add slices as you create them
 const rootReducer = combineReducers({
   test: testReducer,
-  takeAttempt: takeAttemptReducer,
+  take: takeReducer,
 });
 
 type RootReducer = ReturnType<typeof rootReducer>;
@@ -57,7 +57,7 @@ async function createPersistedReducer() {
     key: "root",
     storage: storage as any,
     version: 3,
-    whitelist: ["test", "takeAttempt"],
+    whitelist: ["test", "take"],
   };
   return persistReducer(persistConfig, rootReducer);
 }

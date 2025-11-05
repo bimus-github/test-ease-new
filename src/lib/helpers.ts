@@ -1,53 +1,83 @@
-import { AnswerWithQuestion } from "@/types/answer";
+import { Question } from "@/types/question";
+import { Answer, FullSubmission } from "@/types/submission";
 
-export const checkAnswer = (answer: AnswerWithQuestion) => {
-  const question = answer.question;
-  if (!question) return false;
+export const checkAnswer = (answer?: Answer, question?: Question): boolean => {
+  if (!answer || !question) return false;
   if (question.is_multiple_answers) {
     return (
-      answer.selected_options?.every((option) =>
+      answer.answer_options?.every((option) =>
         question.correct_options?.includes(option)
       ) || false
     );
   }
-  return answer.answer_text === question.correct_answer;
+  return answer.answer === question.correct_answer;
 };
 
-export const calculateRowScore = (answers: AnswerWithQuestion[]) => {
+export const calculateRowScore = (fullSubmission: FullSubmission): number => {
   let score = 0;
-  answers.forEach((answer) => {
-    if (checkAnswer(answer)) {
-      score += answer.question?.points || 0;
+  if (!fullSubmission.test) return 0;
+  if (!fullSubmission.questions) return 0;
+
+  const questionMap = new Map(fullSubmission.questions.map((q) => [q.id, q]));
+
+  fullSubmission.answers.forEach((answer) => {
+    const question = questionMap.get(answer.question_id);
+    if (question && checkAnswer(answer, question)) {
+      score += question.points || 0;
     }
   });
   return score;
 };
 
-export const correctAnswerText = (answers: AnswerWithQuestion) => {
-  const question = answers.question;
-  if (!question) {
-    return "";
-  }
+export const correctAnswerText = (
+  answer: Answer,
+  question: Question
+): string => {
+  if (!question) return "";
   if (question.is_multiple_answers) {
     return question.correct_options?.join(", ") || "";
   }
   return question.correct_answer || "";
 };
 
-export const answersListText = (answers: AnswerWithQuestion[]) => {
+export const answersListText = (fullSubmission: FullSubmission): string => {
+  if (!fullSubmission.test) return "";
+  if (!fullSubmission.questions) return "";
+
+  const questionMap = new Map(
+    fullSubmission.questions.map((q: Question) => [q.id, q])
+  );
   let text = `No. | Your Answer (Correct) | Correct Answer`;
 
-  answers.forEach((answer, index) => {
-    const isCorrect = checkAnswer(answer);
+  fullSubmission.answers.forEach((answer, index) => {
+    const question = questionMap.get(answer.question_id);
+    if (!question) return;
+
+    const isCorrect = checkAnswer(answer, question);
 
     text += `\n\n${index + 1}. | ${
-      answer.question?.is_multiple_answers
-        ? answer.selected_options?.join(", ")
-        : answer.answer_text
+      question.is_multiple_answers
+        ? answer.answer_options?.join(", ")
+        : answer.answer
     } ${isCorrect ? "✅" : "❌"}${
-      !isCorrect ? ` | ${correctAnswerText(answer)}` : ""
+      !isCorrect ? ` | ${correctAnswerText(answer, question)}` : ""
     }`;
   });
 
   return text;
+};
+
+export const gradeFromT = (t: number): string => {
+  if (t >= 70) return "A+";
+  if (t >= 65) return "A";
+  if (t >= 60) return "B+";
+  if (t >= 55) return "B";
+  if (t >= 50) return "C+";
+  if (t >= 45) return "C";
+  return "Ega emas";
+};
+
+export const percentageFromT = (t: number): string => {
+  if (t >= 65) return "100%";
+  return `${Math.round((t / 65) * 100)}%`;
 };

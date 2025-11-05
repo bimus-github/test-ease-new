@@ -1,8 +1,11 @@
 import { getTestByCode } from "@/dbs/test-servers";
 import { sendTelegramMessage } from "../bot";
 import { TAKE_TEST_ROUTE, TEST_RESULT_ROUTE } from "@/constants/routes";
-import { getAttemptByTestAndUser } from "@/dbs/attempt-servers";
-import { AttemptStatus } from "@/types/attempt";
+import { supabase } from "@/lib/supabase";
+import {
+  checkSubmissionStatus,
+  checkSubmissionStatusByUserAndTest,
+} from "@/dbs/submission-servers";
 
 /**
  * Handle test code input
@@ -25,19 +28,20 @@ export async function handleTestCode(
       return;
     }
 
-    const existsAttempt = await getAttemptByTestAndUser(
-      test.id,
-      userId.toString()
-    );
+    // Check if user already has a submitted submission for this test
+    const {
+      id: existingSubmissionId,
+      is_submitted: existingSubmissionIsSubmitted,
+    } = await checkSubmissionStatusByUserAndTest(userId.toString(), test.id);
 
-    if (existsAttempt && existsAttempt.status === AttemptStatus.SUBMITTED) {
+    if (existingSubmissionIsSubmitted) {
       const keyboard = {
         inline_keyboard: [
           [
             {
-              text: "📝 Natijani ko‘rish",
+              text: "📝 Natijangizni ko‘rish",
               web_app: {
-                url: TEST_RESULT_ROUTE(existsAttempt.id, userId.toString()),
+                url: TEST_RESULT_ROUTE(existingSubmissionId, userId.toString()),
               },
             },
           ],
@@ -45,7 +49,7 @@ export async function handleTestCode(
       };
       await sendTelegramMessage(
         chatId,
-        `📝 Siz testni tugatgansiz. Natijalarni ko‘rish`,
+        `📝 Siz testni tugatgansiz. Natijangizni ko‘rish`,
         { parse_mode: "Markdown", reply_markup: keyboard }
       );
       return;

@@ -1,5 +1,5 @@
-import TakeTestClient from "./TakeTestClient";
+import TakeClient from "./TakeClient";
 
 export default function Page() {
-  return <TakeTestClient />;
+  return <TakeClient />;
 }

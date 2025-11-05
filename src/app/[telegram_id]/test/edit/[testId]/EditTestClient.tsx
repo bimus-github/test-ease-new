@@ -10,7 +10,7 @@ import { Stepper } from "../../create/sertificate/math/components/Stepper";
 import { BasicInfoForm } from "../../create/sertificate/math/components/BasicInfoForm";
 import { QuestionsForm } from "../../create/sertificate/math/components/QuestionsForm";
 import { Preview } from "../../create/sertificate/math/components/Preview";
-import { MY_TESTS_ROUTE } from "@/constants/routes";
+import { MY_TESTS_ROUTE, VIEW_TEST_ROUTE } from "@/constants/routes";
 import { TestForm } from "@/types/test";
 import { QuestionForm } from "@/types/question";
 import toast from "react-hot-toast";
@@ -87,10 +87,6 @@ export default function EditTestClient() {
       toast.error("Ko‘rsatmalar kamida 3 ta belgidan iborat bo‘lishi kerak");
       return;
     }
-    if (test!.end_date && new Date(test!.end_date) < new Date()) {
-      toast.error("Tugash vaqti kelajakda bo‘lishi kerak");
-      return;
-    }
     dispatch(testFromActions.setStep("questions"));
   };
 
@@ -115,7 +111,7 @@ export default function EditTestClient() {
 
     // Redirect after a brief delay to allow toast to show
     setTimeout(() => {
-      router.push(MY_TESTS_ROUTE(telegramId));
+      router.push(VIEW_TEST_ROUTE(testId, telegramId));
     }, 1500);
   };
 

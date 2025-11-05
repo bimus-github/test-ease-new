@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { LatexRenderer } from "@/components/math-live/LatexRenderer";
 import Link from "next/link";
-import { MY_TESTS_ROUTE } from "@/constants/routes";
+import { MY_TESTS_ROUTE, TEST_ATTEMPTS_ROUTE } from "@/constants/routes";
 import { getTestWithQuestionsAction } from "./actions";
 
 export default function ViewTestClient() {
@@ -116,6 +116,12 @@ export default function ViewTestClient() {
               className="inline-flex items-center rounded border px-3 py-1 text-sm"
             >
               Testni tahrirlash
+            </Link>
+            <Link
+              href={TEST_ATTEMPTS_ROUTE(testId, telegramId)}
+              className="inline-flex items-center rounded border px-3 py-1 text-sm"
+            >
+              Urinishlarni ko'rish
             </Link>
             <CopyButton label="Kod nusxalash" value={test.code} />
             <Link

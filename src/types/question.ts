@@ -13,6 +13,7 @@ export interface Question {
   correct_options?: string[]; // Correct options for the question, default is empty array
   created_at: string; // Created at date
   updated_at: string; // Updated at date
+  rasch_difficulty?: number;
 }
 
 export interface QuestionForm
