@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { Submission, FullSubmission, Answer } from "@/types/submission";
 import { calculateRowScore } from "@/lib/helpers";
+import { sendSubmissionNotification } from "@/telegram/notifications/sendSubmissionNotification";
 
 function logDbError(context: string, error: unknown) {
   console.error(`[DB] ${context}:`, error);
@@ -75,6 +76,18 @@ export async function submitSubmission(
     if (error) {
       logDbError("submitSubmission", error);
       return null;
+    }
+
+    // Send notification to teacher about the submission
+    if (data) {
+      // Get full submission data for notification
+      const fullSubmission = await getFullSubmission(submissionId);
+      if (fullSubmission) {
+        sendSubmissionNotification(fullSubmission).catch((error) => {
+          console.error("Error sending submission notification:", error);
+          // Don't throw - notification failure shouldn't block submission
+        });
+      }
     }
 
     return data as Submission;

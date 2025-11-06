@@ -1,15 +1,15 @@
 import { formatLocalDate } from "@/lib/utils";
-import { TestWithQuestions } from "@/types/test";
+import { Test, TestWithQuestions } from "@/types/test";
 import { sendTelegramMessage } from "../bot";
 
 /**
  * Send test creation notification to teacher's Telegram chat
  * @param telegramId - Teacher's Telegram ID
- * @param testWithQuestions - Created test with questions data
+ * @param test - Created test (with or without questions)
  */
 export async function sendTestCreationNotification(
   telegramId: string,
-  testWithQuestions: TestWithQuestions
+  test: Test | TestWithQuestions
 ): Promise<void> {
   try {
     const {
@@ -20,8 +20,9 @@ export async function sendTestCreationNotification(
       scoring_type,
       description,
       instructions,
-      questions,
-    } = testWithQuestions;
+    } = test;
+
+    const questions = "questions" in test ? test.questions : undefined;
 
     // Format scoring type
     const scoringText =
@@ -31,7 +32,9 @@ export async function sendTestCreationNotification(
     let message = `✅ *Test muvaffaqiyatli yaratildi!*\n\n`;
     message += `📝 *Sarlavha:* ${title}\n`;
     message += `🔑 *Test kodi:* \`${code}\`\n`;
-    message += `📊 *Savollar:* ${questions.length}\n`;
+    if (questions) {
+      message += `📊 *Savollar:* ${questions.length}\n`;
+    }
     message += `📌 *Holat:* ${status === "active" ? "Faol" : "Nofaol"}\n`;
     message += `⏰ *Tugash vaqti:* ${formatLocalDate(end_date)}\n\n`;
 

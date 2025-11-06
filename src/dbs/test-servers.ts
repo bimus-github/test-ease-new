@@ -2,6 +2,8 @@ import { supabase } from "@/lib/supabase";
 import { Test, TestForm, TestWithQuestions } from "@/types/test";
 import { QuestionForm } from "@/types/question";
 import { dateTimeLocalToISO } from "@/lib/utils";
+import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
+import { sendTestUpdateNotification } from "@/telegram/notifications/sendTestUpdate";
 
 /**
  * Update expired tests (sets status to inactive if end_date has passed)
@@ -40,6 +42,14 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
     if (error) {
       console.error("Error creating test:", error);
       return null;
+    }
+
+    // Send notification to teacher via Telegram
+    if (data && data.teacher_id) {
+      sendTestCreationNotification(data.teacher_id, data).catch((error) => {
+        console.error("Error sending test creation notification:", error);
+        // Don't throw - notification failure shouldn't block test creation
+      });
     }
 
     return data;
@@ -126,6 +136,14 @@ export async function updateTest(
     if (error) {
       console.error("Error updating test:", error);
       return null;
+    }
+
+    // Send notification to teacher via Telegram
+    if (data && data.teacher_id) {
+      sendTestUpdateNotification(data.teacher_id, data).catch((error) => {
+        console.error("Error sending test update notification:", error);
+        // Don't throw - notification failure shouldn't block test update
+      });
     }
 
     return data;

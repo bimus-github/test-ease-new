@@ -16,13 +16,12 @@ export async function handleTestCode(
   testCode: string
 ) {
   try {
-    const normalized = testCode.trim().toUpperCase();
-    const test = await getTestByCode(normalized);
+    const test = await getTestByCode(testCode);
 
     if (!test) {
       await sendTelegramMessage(
         chatId,
-        `❌ Test kodi \`${normalized}\` topilmadi.\n\nKodini tekshirib qayta yuboring yoki o‘qituvchingiz bilan bog‘laning.`,
+        `❌ Test kodi \`${testCode}\` topilmadi.\n\nKodini tekshirib qayta yuboring yoki o‘qituvchingiz bilan bog‘laning.`,
         { parse_mode: "Markdown" }
       );
       return;
