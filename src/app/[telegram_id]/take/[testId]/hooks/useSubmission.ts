@@ -101,8 +101,7 @@ export function useCheckSubmission() {
   });
 }
 
-export function useGetFullSubmission() {
-  const submissionId = useAppSelector((s) => s.take.submissionId ?? "");
+export function useGetFullSubmission(submissionId: string) {
   return useQuery({
     queryKey: ["full-submission", submissionId],
     queryFn: async () => {

@@ -4,9 +4,11 @@ import { useGetFullSubmission } from "../hooks/useSubmission";
 import { Timing } from "./submitted/Timing";
 import { Meta } from "./submitted/Meta";
 import { Analysis } from "./submitted/Analysis";
+import { useAppSelector } from "@/store/hooks";
 
 export function Submitted() {
-  const { data: fullSubmission } = useGetFullSubmission();
+  const submissionId = useAppSelector((s) => s.take.submissionId ?? "");
+  const { data: fullSubmission } = useGetFullSubmission(submissionId);
 
   if (!fullSubmission)
     return (

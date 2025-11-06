@@ -17,7 +17,8 @@ export default function MyResultClient() {
     submission_id: string;
   }>();
 
-  const { data, isLoading, isError, refetch } = useGetFullSubmission();
+  const { data, isLoading, isError, refetch } =
+    useGetFullSubmission(submission_id);
 
   if (!submission_id) return null;
 
