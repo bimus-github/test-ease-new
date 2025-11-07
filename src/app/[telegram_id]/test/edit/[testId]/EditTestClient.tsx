@@ -10,11 +10,12 @@ import { Stepper } from "../../create/sertificate/math/components/Stepper";
 import { BasicInfoForm } from "../../create/sertificate/math/components/BasicInfoForm";
 import { QuestionsForm } from "../../create/sertificate/math/components/QuestionsForm";
 import { Preview } from "../../create/sertificate/math/components/Preview";
-import { MY_TESTS_ROUTE, VIEW_TEST_ROUTE } from "@/constants/routes";
+import { VIEW_TEST_ROUTE } from "@/constants/routes";
 import { TestForm } from "@/types/test";
 import { QuestionForm } from "@/types/question";
 import toast from "react-hot-toast";
 import { toDateTimeLocalValue } from "@/lib/utils";
+import { isTestCode } from "@/lib/helpers";
 
 export default function EditTestClient() {
   const { telegram_id: telegramId, testId } = useParams<{
@@ -71,6 +72,10 @@ export default function EditTestClient() {
   }, [data, dispatch]);
 
   const handleBasicInfoSubmit = () => {
+    if (!isTestCode(test!.code)) {
+      toast.error("Test kodi noto‘g‘ri");
+      return;
+    }
     if (test!.code.length < 3) {
       toast.error("Kod kamida 3 ta belgidan iborat bo‘lishi kerak");
       return;
@@ -81,10 +86,6 @@ export default function EditTestClient() {
     }
     if (test!.description && test!.description.length < 3) {
       toast.error("Tavsif kamida 3 ta belgidan iborat bo‘lishi kerak");
-      return;
-    }
-    if (test!.instructions && test!.instructions.length < 3) {
-      toast.error("Ko‘rsatmalar kamida 3 ta belgidan iborat bo‘lishi kerak");
       return;
     }
     dispatch(testFromActions.setStep("questions"));

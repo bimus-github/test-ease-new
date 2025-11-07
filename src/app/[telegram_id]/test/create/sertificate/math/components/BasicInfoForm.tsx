@@ -1,10 +1,10 @@
 "use client";
 
-import { ScoringType, TestForm, TestStatus } from "@/types/test";
-import { useParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { TestForm } from "@/types/test";
+import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { testFromActions } from "@/store/slices/forms/test";
+import { isTestCode } from "@/lib/helpers";
 
 interface Props {
   onSubmit: () => void;
@@ -58,6 +58,11 @@ export function BasicInfoForm({ onSubmit }: Props) {
           placeholder="masalan: MATH-2025"
           required
         />
+        {isTestCode(test!.code) ? (
+          <span className="text-sm text-green-500">✅ Test kodi to‘g‘ri</span>
+        ) : (
+          <span className="text-sm text-red-500">❌ Test kodi noto‘g‘ri</span>
+        )}
       </div>
 
       <div className="grid gap-2">

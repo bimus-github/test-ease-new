@@ -11,6 +11,7 @@ import { handleMyResultsCommand } from "@/telegram/handlers/my-results-handler";
 import { handleTestCode } from "@/telegram/handlers/test-code-handler";
 import { handleHelpCommand } from "@/telegram/handlers/help-command-handler";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
+import { isTestCode } from "@/lib/helpers";
 
 /**
  * Handle incoming webhook requests from Telegram
@@ -180,7 +181,9 @@ async function handleRegularMessage(
     await sendTelegramMessage(
       chatId,
       `📝 Xabaringiz qabul qilindi: "${text}"\n\n` +
-        `Menga test kodi yuboring (masalan: ABC123) yoki /help buyrug‘idan foydalaning.`
+        `Agar test kodini yuborgan bo'lsangiz, xatolik yuz berdi.\n` +
+        `Test tekshirib qayta yuboring yoki o'qituvchingiz bilan bog'laning.\n` +
+        `Kodda '_' yoki bo'sh joylar bo'lmasligi kerak.`
     );
   }
 }
@@ -198,16 +201,4 @@ export async function DELETE() {
 
 export async function PATCH() {
   return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
-}
-
-function isTestCode(text: string): boolean {
-  try {
-    // 3–10 alphanumeric characters, underscore, hyphen, or ampersand
-    const testCodePattern = /^[A-Za-z0-9_&-]{3,10}$/;
-    const isValid = testCodePattern.test(text.trim());
-    return isValid;
-  } catch (error) {
-    console.error("Error checking test code:", error);
-    return false;
-  }
 }

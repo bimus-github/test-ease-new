@@ -11,6 +11,7 @@ import { testFromActions } from "@/store/slices/forms/test";
 import { generateMathSertificateUzQuestions } from "@/constants/sertificate-uz/math";
 import { createTestQuestionsThunk } from "./thunks/createTestWithQuestionsThunk";
 import { useParams } from "next/navigation";
+import { isTestCode } from "@/lib/helpers";
 
 export default function Page() {
   const { telegram_id } = useParams<{ telegram_id: string }>();
@@ -20,6 +21,10 @@ export default function Page() {
   const dispatch = useAppDispatch();
 
   const handleBasicInfoSubmit = useCallback(() => {
+    if (!isTestCode(test!.code)) {
+      toast.error("Test kodi noto‘g‘ri");
+      return;
+    }
     if (test!.code.length < 3) {
       toast.error("Kod kamida 3 ta belgidan iborat bo‘lishi kerak");
       return;
@@ -30,10 +35,6 @@ export default function Page() {
     }
     if (test!.description && test!.description.length < 3) {
       toast.error("Tavsif kamida 3 ta belgidan iborat bo‘lishi kerak");
-      return;
-    }
-    if (test!.instructions && test!.instructions.length < 3) {
-      toast.error("Ko‘rsatmalar kamida 3 ta belgidan iborat bo‘lishi kerak");
       return;
     }
     if (test!.end_date && new Date(test!.end_date) < new Date()) {

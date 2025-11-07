@@ -14,6 +14,7 @@ import { useParams } from "next/navigation";
 import { SertificateType } from "@/types/sertificate";
 import { generateChemistrySertificateUzQuestions } from "@/constants/sertificate-uz/chemstry";
 import { generateRussianSertificateUzQuestions } from "@/constants/sertificate-uz/russian";
+import { isTestCode } from "@/lib/helpers";
 
 export default function Page() {
   const { telegram_id, sertificateType } = useParams<{
@@ -26,6 +27,10 @@ export default function Page() {
   const dispatch = useAppDispatch();
 
   const handleBasicInfoSubmit = useCallback(() => {
+    if (!isTestCode(test!.code)) {
+      toast.error("Test kodi noto‘g‘ri");
+      return;
+    }
     if (test!.code.length < 3) {
       toast.error("Kod kamida 3 ta belgidan iborat bo‘lishi kerak");
       return;

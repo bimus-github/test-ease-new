@@ -1,5 +1,19 @@
 import { Question } from "@/types/question";
 import { Answer, FullSubmission } from "@/types/submission";
+import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
+
+export const isTestCode = (text: string): boolean => {
+  try {
+    // 3–10 alphanumeric characters, underscore, hyphen, or ampersand
+    const testCodePattern = /^[A-Za-z0-9&-]{3,10}$/;
+    const isValid = testCodePattern.test(text.trim());
+    return isValid;
+  } catch (error) {
+    console.error("Error checking test code:", error);
+    sendProductionErrors("Error checking test code: " + error);
+    return false;
+  }
+};
 
 export const checkAnswer = (answer?: Answer, question?: Question): boolean => {
   if (!answer || !question) return false;
