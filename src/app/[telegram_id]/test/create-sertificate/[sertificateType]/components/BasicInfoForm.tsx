@@ -67,28 +67,30 @@ export function BasicInfoForm({ onSubmit }: Props) {
           placeholder="masalan: MATH-2025"
           required
         />
-        {isTestCode(test!.code) ? (
+        {checkTestCode.isPending ? (
+          <span className="text-sm text-green-500">
+            Test kodi tekshirilmoqda...
+          </span>
+        ) : (
           <>
-            {checkTestCode.isPending ? (
-              <span className="text-sm text-green-500">
-                ✅ Test kodi tekshirilmoqda...
-              </span>
-            ) : (
+            {checkTestCode.data ? (
               <>
-                {checkTestCode.data ? (
+                {isTestCode(test!.code) ? (
                   <span className="text-sm text-green-500">
-                    ✅ Test kodi to‘g‘ri
+                    Test kodi to‘g‘ri
                   </span>
                 ) : (
                   <span className="text-sm text-red-500">
-                    ❌ Bunday test kodi mavjud.
+                    Test kodi noto‘g‘ri
                   </span>
                 )}
               </>
+            ) : (
+              <span className="text-sm text-red-500">
+                Bunday test kodi mavjud.
+              </span>
             )}
           </>
-        ) : (
-          <span className="text-sm text-red-500">❌ Test kodi noto‘g‘ri</span>
         )}
       </div>
 

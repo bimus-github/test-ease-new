@@ -366,6 +366,11 @@ export async function createTestWithQuestions(
   }
 }
 
+/**
+ * Check if test code is unique
+ * @param code - Test code
+ * @returns true if code is unique, false otherwise
+ */
 export async function checkTestCode(code: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
