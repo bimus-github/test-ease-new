@@ -1,5 +1,6 @@
 import { sendChatAction } from "@/telegram/bot";
 import { MiddlewareContext, MiddlewareResult } from "./types";
+import { sendProductionErrors } from "../notifications/sendProductionErrors";
 
 export async function typingActionMiddleware(
   context: MiddlewareContext
@@ -15,6 +16,7 @@ export async function typingActionMiddleware(
       shouldContinue: true,
     };
   } catch (error) {
+    sendProductionErrors(error);
     console.error("Typing action middleware error:", error);
     // Don't fail the request if typing action fails (graceful degradation)
     return {

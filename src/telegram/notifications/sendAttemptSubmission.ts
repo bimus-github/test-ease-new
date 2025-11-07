@@ -4,53 +4,59 @@ import { answersListText, calculateRowScore } from "@/lib/helpers";
 import { ScoringType } from "@/types/test";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
 import { getAttemptFullSubmissionAction } from "@/app/[telegram_id]/view-test/[testId]/attempts/[submission_id]/actions";
+import { sendProductionErrors } from "./sendProductionErrors";
 
 export async function sendAttemptSubmissionNotification(opts: {
   telegramId: string | number;
   attemptId: string;
 }) {
-  const { telegramId, attemptId } = opts;
-  const result = await getAttemptFullSubmissionAction({
-    submissionId: attemptId,
-  });
-  if (!result.ok) return;
+  try {
+    const { telegramId, attemptId } = opts;
+    const result = await getAttemptFullSubmissionAction({
+      submissionId: attemptId,
+    });
+    if (!result.ok) return;
 
-  const attempt = result.submission;
-  const test = attempt.test;
+    const attempt = result.submission;
+    const test = attempt.test;
 
-  const totalQuestions = attempt.answers.length;
-  const correctAnswersCount = calculateRowScore(attempt);
-  const answersList = answersListText(attempt);
+    const totalQuestions = attempt.answers.length;
+    const correctAnswersCount = calculateRowScore(attempt);
+    const answersList = answersListText(attempt);
 
-  const textOfRaschScoring =
-    test?.scoring_type === ScoringType.RASCH_SCORING
-      ? `Rasch bali test yakunlangandan keyin hisoblab beriladi.`
-      : "";
+    const textOfRaschScoring =
+      test?.scoring_type === ScoringType.RASCH_SCORING
+        ? `Rasch bali test yakunlangandan keyin hisoblab beriladi.`
+        : "";
 
-  const text =
-    `✅ Urinish yuborildi\n\n` +
-    `📝 Test: ${attempt.test.title}\n` +
-    `📊 Javoblar: ${correctAnswersCount}/${totalQuestions}\n\n` +
-    `${textOfRaschScoring ? textOfRaschScoring + "\n\n" : ""}` +
-    `Javoblar ro‘yxati:\n\n` +
-    `${answersList}\n\n` +
-    `Natijangizni ko‘rish uchun quyidagi tugmani bosing.`;
+    const text =
+      `✅ Urinish yuborildi\n\n` +
+      `📝 Test: ${attempt.test.title}\n` +
+      `📊 Javoblar: ${correctAnswersCount}/${totalQuestions}\n\n` +
+      `${textOfRaschScoring ? textOfRaschScoring + "\n\n" : ""}` +
+      `Javoblar ro‘yxati:\n\n` +
+      `${answersList}\n\n` +
+      `Natijangizni ko‘rish uchun quyidagi tugmani bosing.`;
 
-  const keyboard = {
-    inline_keyboard: [
-      [
-        {
-          text: "📝 Mening natijam",
-          web_app: {
-            url: TEST_RESULT_ROUTE(attemptId, telegramId),
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "📝 Mening natijam",
+            web_app: {
+              url: TEST_RESULT_ROUTE(attemptId, telegramId),
+            },
           },
-        },
+        ],
       ],
-    ],
-  };
+    };
 
-  await sendTelegramMessage(telegramId, text, {
-    parse_mode: "Markdown",
-    reply_markup: keyboard,
-  });
+    await sendTelegramMessage(telegramId, text, {
+      parse_mode: "Markdown",
+      reply_markup: keyboard,
+    });
+  } catch (error) {
+    console.error("Error sending attempt submission notification:", error);
+    sendProductionErrors(error);
+  }
 }

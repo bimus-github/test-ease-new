@@ -1,11 +1,8 @@
 import { getTestByCode } from "@/dbs/test-servers";
 import { sendTelegramMessage } from "../bot";
 import { TAKE_TEST_ROUTE, TEST_RESULT_ROUTE } from "@/constants/routes";
-import { supabase } from "@/lib/supabase";
-import {
-  checkSubmissionStatus,
-  checkSubmissionStatusByUserAndTest,
-} from "@/dbs/submission-servers";
+import { checkSubmissionStatusByUserAndTest } from "@/dbs/submission-servers";
+import { sendProductionErrors } from "../notifications/sendProductionErrors";
 
 /**
  * Handle test code input
@@ -105,5 +102,7 @@ export async function handleTestCode(
       chatId,
       "❌ Test kodini qayta ishlashda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring."
     );
+    sendProductionErrors("Error handling test code: " + error);
+    console.error("Error handling test code:", error);
   }
 }

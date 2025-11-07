@@ -2,9 +2,11 @@ import { supabase } from "@/lib/supabase";
 import { Submission, FullSubmission, Answer } from "@/types/submission";
 import { calculateRowScore } from "@/lib/helpers";
 import { sendSubmissionNotification } from "@/telegram/notifications/sendSubmissionNotification";
+import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 
 function logDbError(context: string, error: unknown) {
   console.error(`[DB] ${context}:`, error);
+  sendProductionErrors("Error in database operation: " + error);
 }
 
 /**

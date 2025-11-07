@@ -2,6 +2,7 @@
 import { sendTelegramMessage } from "../bot";
 import { formatLocalDate } from "@/lib/utils";
 import type { FullSubmission } from "@/types/submission";
+import { sendProductionErrors } from "./sendProductionErrors";
 
 /**
  * Send submission notification to teacher when a student submits a test
@@ -53,6 +54,7 @@ export async function sendSubmissionNotification(
     });
   } catch (error) {
     console.error("Error sending submission notification:", error);
+    sendProductionErrors(error);
     // Don't throw - notification failure shouldn't block submission
   }
 }

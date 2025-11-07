@@ -3,6 +3,7 @@ import { sendTelegramMessage } from "../bot";
 import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
 import type { FullSubmission } from "@/types/submission";
+import { sendProductionErrors } from "./sendProductionErrors";
 
 export async function sendRaschResultsNotification(
   submission: FullSubmission
@@ -71,6 +72,7 @@ export async function sendRaschResultsNotification(
       `Error sending Rasch results notification for submission ${submission.id}:`,
       error
     );
+    sendProductionErrors(error);
     // Don't throw to avoid blocking other notifications
   }
 }

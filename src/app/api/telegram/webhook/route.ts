@@ -10,6 +10,7 @@ import { handleMyTestsCommand } from "@/telegram/handlers/my-tests-handler";
 import { handleMyResultsCommand } from "@/telegram/handlers/my-results-handler";
 import { handleTestCode } from "@/telegram/handlers/test-code-handler";
 import { handleHelpCommand } from "@/telegram/handlers/help-command-handler";
+import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 
 /**
  * Handle incoming webhook requests from Telegram
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       const middlewareResult = await middlewarePipeline.execute(context);
 
       if (!middlewareResult.success || !middlewareResult.shouldContinue) {
+        sendProductionErrors("Middleware failed: " + middlewareResult.error);
         console.error("Middleware failed:", middlewareResult.error);
         return NextResponse.json({ ok: true });
       }
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("❌ Telegram webhook error:", error);
-
+    sendProductionErrors("Telegram webhook error: " + error);
     return NextResponse.json(
       {
         error: "Internal server error",
@@ -82,7 +84,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("❌ Error in webhook health check:", error);
-
+    sendProductionErrors("Error in webhook health check: " + error);
     return NextResponse.json(
       {
         status: "Webhook endpoint is running but error occurred",
@@ -119,6 +121,7 @@ async function handleMessage(message: TelegramMessage) {
     }
   } catch (error) {
     console.error("Error handling message:", error);
+    sendProductionErrors("Error handling message: " + error);
     await sendTelegramMessage(
       chatId,
       "❌ Xabaringizni qayta ishlashda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring."

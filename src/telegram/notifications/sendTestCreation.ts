@@ -1,6 +1,7 @@
 import { formatLocalDate } from "@/lib/utils";
 import { Test, TestWithQuestions } from "@/types/test";
 import { sendTelegramMessage } from "../bot";
+import { sendProductionErrors } from "./sendProductionErrors";
 
 /**
  * Send test creation notification to teacher's Telegram chat
@@ -57,6 +58,7 @@ export async function sendTestCreationNotification(
       parse_mode: "Markdown",
     });
   } catch (error) {
+    sendProductionErrors(error);
     console.error("Error sending test creation notification:", error);
     // Don't throw error to avoid blocking test creation
   }

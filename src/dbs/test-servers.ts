@@ -4,6 +4,7 @@ import { QuestionForm } from "@/types/question";
 import { dateTimeLocalToISO } from "@/lib/utils";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
 import { sendTestUpdateNotification } from "@/telegram/notifications/sendTestUpdate";
+import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 
 /**
  * Update expired tests (sets status to inactive if end_date has passed)
@@ -15,12 +16,14 @@ export async function updateExpiredTests(): Promise<number> {
     const { data, error } = await supabase.rpc("update_expired_tests");
 
     if (error) {
+      sendProductionErrors("Error updating expired tests: " + error);
       console.error("Error updating expired tests:", error);
       return 0;
     }
 
     return data || 0;
   } catch (error) {
+    sendProductionErrors("Error updating expired tests: " + error);
     console.error("Database error updating expired tests:", error);
     return 0;
   }
@@ -40,6 +43,7 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
       .single();
 
     if (error) {
+      sendProductionErrors("Error creating test: " + error);
       console.error("Error creating test:", error);
       return null;
     }
@@ -47,6 +51,9 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
     // Send notification to teacher via Telegram
     if (data && data.teacher_id) {
       sendTestCreationNotification(data.teacher_id, data).catch((error) => {
+        sendProductionErrors(
+          "Error sending test creation notification: " + error
+        );
         console.error("Error sending test creation notification:", error);
         // Don't throw - notification failure shouldn't block test creation
       });
@@ -54,6 +61,7 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
 
     return data;
   } catch (error) {
+    sendProductionErrors("Error creating test: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -76,12 +84,14 @@ export async function getTestById(id: string): Promise<Test | null> {
       .single();
 
     if (error) {
+      sendProductionErrors("Error fetching test by ID: " + error);
       console.error("Error fetching test by ID:", error);
       return null;
     }
 
     return data;
   } catch (error) {
+    sendProductionErrors("Error fetching test by ID: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -104,12 +114,14 @@ export async function getTestByCode(code: string): Promise<Test | null> {
       .single();
 
     if (error) {
+      sendProductionErrors("Error fetching test by code: " + error);
       console.error("Error fetching test by code:", error);
       return null;
     }
 
     return data;
   } catch (error) {
+    sendProductionErrors("Error fetching test by code: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -134,6 +146,7 @@ export async function updateTest(
       .single();
 
     if (error) {
+      sendProductionErrors("Error updating test: " + error);
       console.error("Error updating test:", error);
       return null;
     }
@@ -141,6 +154,9 @@ export async function updateTest(
     // Send notification to teacher via Telegram
     if (data && data.teacher_id) {
       sendTestUpdateNotification(data.teacher_id, data).catch((error) => {
+        sendProductionErrors(
+          "Error sending test update notification: " + error
+        );
         console.error("Error sending test update notification:", error);
         // Don't throw - notification failure shouldn't block test update
       });
@@ -148,6 +164,7 @@ export async function updateTest(
 
     return data;
   } catch (error) {
+    sendProductionErrors("Error updating test: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -163,12 +180,14 @@ export async function deleteTest(id: string): Promise<boolean> {
     const { error } = await supabase.from("tests").delete().eq("id", id);
 
     if (error) {
+      sendProductionErrors("Error deleting test: " + error);
       console.error("Error deleting test:", error);
       return false;
     }
 
     return true;
   } catch (error) {
+    sendProductionErrors("Error deleting test: " + error);
     console.error("Database error:", error);
     return false;
   }
@@ -198,12 +217,14 @@ export async function getTestsByTeacher(
       .range(page * limit, (page + 1) * limit - 1);
 
     if (error) {
+      sendProductionErrors("Error fetching tests by teacher: " + error);
       console.error("Error fetching tests by teacher:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
+    sendProductionErrors("Error fetching tests by teacher: " + error);
     console.error("Database error:", error);
     return [];
   }
@@ -229,12 +250,14 @@ export async function getActiveTestsByTeacher(
       .order("created_at", { ascending: false });
 
     if (error) {
+      sendProductionErrors("Error fetching active tests by teacher: " + error);
       console.error("Error fetching active tests by teacher:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
+    sendProductionErrors("Error fetching active tests by teacher: " + error);
     console.error("Database error:", error);
     return [];
   }
@@ -260,6 +283,7 @@ export async function getTestWithQuestions(
       .single();
 
     if (testError) {
+      sendProductionErrors("Error fetching test: " + testError);
       console.error("Error fetching test:", testError);
       return null;
     }
@@ -272,6 +296,7 @@ export async function getTestWithQuestions(
       .order("question_order", { ascending: true });
 
     if (questionsError) {
+      sendProductionErrors("Error fetching questions: " + questionsError);
       console.error("Error fetching questions:", questionsError);
       return null;
     }
@@ -281,6 +306,7 @@ export async function getTestWithQuestions(
       questions: questionsData || [],
     };
   } catch (error) {
+    sendProductionErrors("Error fetching test with questions: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -305,6 +331,7 @@ export async function createTestWithQuestions(
       .single();
 
     if (testError) {
+      sendProductionErrors("Error creating test: " + testError);
       console.error("Error creating test:", testError);
       return null;
     }
@@ -321,6 +348,7 @@ export async function createTestWithQuestions(
       .select();
 
     if (questionsError) {
+      sendProductionErrors("Error creating questions: " + questionsError);
       console.error("Error creating questions:", questionsError);
       // Clean up the test if questions failed
       await supabase.from("tests").delete().eq("id", test.id);
@@ -332,6 +360,7 @@ export async function createTestWithQuestions(
       questions: questionsData || [],
     };
   } catch (error) {
+    sendProductionErrors("Error creating test with questions: " + error);
     console.error("Database error:", error);
     return null;
   }

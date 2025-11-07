@@ -1,4 +1,5 @@
 import { SendMessageParams, TelegramApiResponse } from "@/types/telegram";
+import { sendProductionErrors } from "./notifications/sendProductionErrors";
 
 const TELEGRAM_API_URL = "https://api.telegram.org/bot";
 
@@ -8,6 +9,9 @@ const TELEGRAM_API_URL = "https://api.telegram.org/bot";
 function getBotToken(): string {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
+    sendProductionErrors(
+      "TELEGRAM_BOT_TOKEN is not set in environment variables"
+    );
     throw new Error("TELEGRAM_BOT_TOKEN is not set in environment variables");
   }
   return token;
@@ -46,10 +50,12 @@ export async function sendTelegramMessage(
       return data;
     } else {
       console.error("Error sending Telegram message:", data);
+      sendProductionErrors(data);
       throw new Error(data.description);
     }
   } catch (error) {
     console.error("Error sending Telegram message:", error);
+    sendProductionErrors(error);
     throw error;
   }
 }
@@ -77,6 +83,7 @@ export async function setWebhook(
     return data;
   } catch (error) {
     console.error("Error setting webhook:", error);
+    sendProductionErrors(error);
     throw error;
   }
 }
@@ -97,6 +104,7 @@ export async function deleteWebhook(): Promise<TelegramApiResponse> {
     return data;
   } catch (error) {
     console.error("Error deleting webhook:", error);
+    sendProductionErrors(error);
     throw error;
   }
 }
@@ -114,6 +122,7 @@ export async function getWebhookInfo(): Promise<TelegramApiResponse> {
     return data;
   } catch (error) {
     console.error("Error getting webhook info:", error);
+    sendProductionErrors(error);
     throw error;
   }
 }
@@ -147,6 +156,7 @@ export async function sendChatAction(
     return data;
   } catch (error) {
     console.error("Error sending chat action:", error);
+    sendProductionErrors("Error sending chat action: " + error);
     throw error;
   }
 }
@@ -224,6 +234,7 @@ export async function sendTelegramDocument(
     }
   } catch (error) {
     console.error("Error sending Telegram document:", error);
+    sendProductionErrors("Error sending Telegram document: " + error);
     throw error;
   }
 }

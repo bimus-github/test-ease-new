@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { Question, QuestionForm } from "@/types/question";
+import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 
 /**
  * Create a new question
@@ -17,12 +18,14 @@ export async function createQuestion(
       .single();
 
     if (error) {
+      sendProductionErrors("Error creating question: " + error);
       console.error("Error creating question:", error);
       return null;
     }
 
     return data;
   } catch (error) {
+    sendProductionErrors("Error creating question: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -42,12 +45,14 @@ export async function getQuestionById(id: string): Promise<Question | null> {
       .single();
 
     if (error) {
+      sendProductionErrors("Error fetching question by ID: " + error);
       console.error("Error fetching question by ID:", error);
       return null;
     }
 
     return data;
   } catch (error) {
+    sendProductionErrors("Error fetching question by ID: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -72,12 +77,14 @@ export async function updateQuestion(
       .single();
 
     if (error) {
+      sendProductionErrors("Error updating question: " + error);
       console.error("Error updating question:", error);
       return null;
     }
 
     return data;
   } catch (error) {
+    sendProductionErrors("Error updating question: " + error);
     console.error("Database error:", error);
     return null;
   }
@@ -93,12 +100,14 @@ export async function deleteQuestion(id: string): Promise<boolean> {
     const { error } = await supabase.from("questions").delete().eq("id", id);
 
     if (error) {
+      sendProductionErrors("Error deleting question: " + error);
       console.error("Error deleting question:", error);
       return false;
     }
 
     return true;
   } catch (error) {
+    sendProductionErrors("Error deleting question: " + error);
     console.error("Database error:", error);
     return false;
   }
@@ -118,12 +127,14 @@ export async function getQuestionsByTest(testId: string): Promise<Question[]> {
       .order("question_order", { ascending: true });
 
     if (error) {
+      sendProductionErrors("Error fetching questions by test: " + error);
       console.error("Error fetching questions by test:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
+    sendProductionErrors("Error fetching questions by test: " + error);
     console.error("Database error:", error);
     return [];
   }
@@ -149,6 +160,7 @@ export async function reorderQuestions(
         .eq("test_id", testId); // Extra safety check
 
       if (error) {
+        sendProductionErrors("Error updating question order: " + error);
         console.error("Error updating question order:", error);
         return false;
       }
@@ -156,7 +168,8 @@ export async function reorderQuestions(
 
     return true;
   } catch (error) {
-    console.error("Database error:", error);
+    sendProductionErrors("Error updating question order: " + error);
+    console.error("Database error updating question order:", error);
     return false;
   }
 }

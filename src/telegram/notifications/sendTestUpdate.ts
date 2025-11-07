@@ -1,6 +1,7 @@
 import { formatLocalDate } from "@/lib/utils";
 import { Test, TestWithQuestions } from "@/types/test";
 import { sendTelegramMessage } from "../bot";
+import { sendProductionErrors } from "./sendProductionErrors";
 
 /**
  * Send test update notification to teacher's Telegram chat
@@ -52,6 +53,7 @@ export async function sendTestUpdateNotification(
       parse_mode: "Markdown",
     });
   } catch (error) {
+    sendProductionErrors(error);
     console.error("Error sending test update notification:", error);
   }
 }

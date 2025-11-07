@@ -1,4 +1,5 @@
 import { sendTelegramMessage } from "@/telegram/bot";
+import { sendProductionErrors } from "../notifications/sendProductionErrors";
 
 /**
  * Handle /start command
@@ -6,24 +7,29 @@ import { sendTelegramMessage } from "@/telegram/bot";
  * Note: User is already synced by middleware
  */
 export async function handleStartCommand(chatId: number) {
-  await sendTelegramMessage(
-    chatId,
-    `🎓 *Test Ease’ga xush kelibsiz!*\n\n` +
-      `Men sizning test topshirishda yordamchingizman! 📝\n\n` +
-      `*Qanday ishlaydi:*\n` +
-      `1️⃣ O‘qituvchingiz sizga test kodi beradi\n` +
-      `2️⃣ Shu kodni menga yuboring (masalan: ABC123)\n` +
-      `3️⃣ Sizga test havolasini yuboraman\n` +
-      `4️⃣ Testni yakunlab, natijalaringizni oling!\n\n` +
-      `*Boshlashga tayyormisiz?*\n` +
-      `Kod bo‘lsa, menga yuboring!\n\n` +
-      `*Mavjud buyruqlar:*\n` +
-      `• \`/start\` - Botni ishga tushirish tugmasi\n` +
-      `• \`/help\` - Yordam xabari\n` +
-      `• \`/create_test\` - Test yaratish\n` +
-      `• \`/my_tests\` - Testlarimni ko‘rish\n` +
-      `• \`/my_results\` - Natijalarni ko'rish` +
-      `\n\n*Yordam kerakmi?* O‘qituvchingiz bilan bog‘laning! 👨‍🏫`,
-    { parse_mode: "Markdown" }
-  );
+  try {
+    await sendTelegramMessage(
+      chatId,
+      `🎓 *Test Ease’ga xush kelibsiz!*\n\n` +
+        `Men sizning test topshirishda yordamchingizman! 📝\n\n` +
+        `*Qanday ishlaydi:*\n` +
+        `1️⃣ O‘qituvchingiz sizga test kodi beradi\n` +
+        `2️⃣ Shu kodni menga yuboring (masalan: ABC123)\n` +
+        `3️⃣ Sizga test havolasini yuboraman\n` +
+        `4️⃣ Testni yakunlab, natijalaringizni oling!\n\n` +
+        `*Boshlashga tayyormisiz?*\n` +
+        `Kod bo‘lsa, menga yuboring!\n\n` +
+        `*Mavjud buyruqlar:*\n` +
+        `• \`/start\` - Botni ishga tushirish tugmasi\n` +
+        `• \`/help\` - Yordam xabari\n` +
+        `• \`/create_test\` - Test yaratish\n` +
+        `• \`/my_tests\` - Testlarimni ko‘rish\n` +
+        `• \`/my_results\` - Natijalarni ko'rish` +
+        `\n\n*Yordam kerakmi?* O‘qituvchingiz bilan bog‘laning! 👨‍🏫`,
+      { parse_mode: "Markdown" }
+    );
+  } catch (error) {
+    sendProductionErrors("Error sending start message: " + error);
+    console.error("Error sending start message:", error);
+  }
 }

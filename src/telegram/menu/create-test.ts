@@ -1,6 +1,7 @@
 import { CREATE_SERTICATE } from "@/constants/routes";
 import { sendTelegramMessage } from "@/telegram/bot";
 import { SertificateType } from "@/types/sertificate";
+import { sendProductionErrors } from "../notifications/sendProductionErrors";
 
 const keyboardItems = [
   { text: "📘 Sertifikat UZ: Fizika", type: SertificateType.PHYSICS },
@@ -17,18 +18,23 @@ const keyboardItems = [
 ];
 
 export async function showCreateTestMenu(chatId: number | string) {
-  const keyboard = {
-    inline_keyboard: keyboardItems.map((item) => [
-      {
-        text: item.text,
-        web_app: { url: CREATE_SERTICATE(chatId, item.type) },
-      },
-    ]),
-  };
+  try {
+    const keyboard = {
+      inline_keyboard: keyboardItems.map((item) => [
+        {
+          text: item.text,
+          web_app: { url: CREATE_SERTICATE(chatId, item.type) },
+        },
+      ]),
+    };
 
-  return sendTelegramMessage(
-    chatId,
-    `🧪 Yangi test yarating\n\nQanday usulda yaratmoqchisiz?`,
-    { parse_mode: "Markdown", reply_markup: keyboard }
-  );
+    return sendTelegramMessage(
+      chatId,
+      `🧪 Yangi test yarating\n\nQanday usulda yaratmoqchisiz?`,
+      { parse_mode: "Markdown", reply_markup: keyboard }
+    );
+  } catch (error) {
+    sendProductionErrors("Error showing create test menu: " + error);
+    console.error("Error showing create test menu:", error);
+  }
 }

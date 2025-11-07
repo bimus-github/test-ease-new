@@ -5,6 +5,7 @@ import { ScoringType } from "@/types/test";
 import { getFullSubmissionsByUserId } from "@/dbs/submission-servers";
 import { FullSubmission } from "@/types/submission";
 import { gradeFromT, percentageFromT } from "@/lib/helpers";
+import { sendProductionErrors } from "../notifications/sendProductionErrors";
 
 export async function handleMyResultsCommand(chatId: number, userId: number) {
   try {
@@ -73,5 +74,7 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
       chatId,
       "❌ Natijalarni olishda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring."
     );
+    sendProductionErrors("Error sending my results message: " + err);
+    console.error("Error sending my results message:", err);
   }
 }
