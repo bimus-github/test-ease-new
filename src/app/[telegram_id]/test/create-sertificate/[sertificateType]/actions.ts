@@ -1,6 +1,6 @@
 "use server";
 
-import { createTestWithQuestions } from "@/dbs/test-servers";
+import { checkTestCode, createTestWithQuestions } from "@/dbs/test-servers";
 import { QuestionForm } from "@/types/question";
 import { TestForm } from "@/types/test";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
@@ -25,4 +25,8 @@ export async function createTestQuestionsAction(
   }
 
   return testWithQuestions;
+}
+
+export async function checkTestCodeAction(code: string) {
+  return await checkTestCode(code);
 }

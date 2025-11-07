@@ -5,6 +5,8 @@ import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { testFromActions } from "@/store/slices/forms/test";
 import { isTestCode } from "@/lib/helpers";
+import { useMutation } from "@tanstack/react-query";
+import { checkTestCodeAction } from "../actions";
 
 interface Props {
   onSubmit: () => void;
@@ -13,6 +15,9 @@ interface Props {
 export function BasicInfoForm({ onSubmit }: Props) {
   const dispatch = useAppDispatch();
   const { test } = useAppSelector((state) => state.test);
+  const checkTestCode = useMutation({
+    mutationFn: checkTestCodeAction,
+  });
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -22,8 +27,12 @@ export function BasicInfoForm({ onSubmit }: Props) {
           [e.target.name as keyof TestForm]: e.target.value,
         })
       );
+
+      if (e.target.name === "code" && isTestCode(e.target.value)) {
+        checkTestCode.mutateAsync(e.target.value);
+      }
     },
-    [dispatch, test]
+    [dispatch, test, checkTestCode, isTestCode]
   );
 
   return (
@@ -59,7 +68,25 @@ export function BasicInfoForm({ onSubmit }: Props) {
           required
         />
         {isTestCode(test!.code) ? (
-          <span className="text-sm text-green-500">✅ Test kodi to‘g‘ri</span>
+          <>
+            {checkTestCode.isPending ? (
+              <span className="text-sm text-green-500">
+                ✅ Test kodi tekshirilmoqda...
+              </span>
+            ) : (
+              <>
+                {checkTestCode.data ? (
+                  <span className="text-sm text-green-500">
+                    ✅ Test kodi to‘g‘ri
+                  </span>
+                ) : (
+                  <span className="text-sm text-red-500">
+                    ❌ Bunday test kodi mavjud.
+                  </span>
+                )}
+              </>
+            )}
+          </>
         ) : (
           <span className="text-sm text-red-500">❌ Test kodi noto‘g‘ri</span>
         )}

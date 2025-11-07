@@ -365,3 +365,24 @@ export async function createTestWithQuestions(
     return null;
   }
 }
+
+export async function checkTestCode(code: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from("tests")
+      .select("*")
+      .eq("code", code)
+      .single();
+
+    if (error) {
+      console.error("Error checking test code:", error);
+      return false;
+    }
+
+    return data !== null;
+  } catch (error) {
+    sendProductionErrors("Error checking test code: " + error);
+    console.error("Database error:", error);
+    return false;
+  }
+}

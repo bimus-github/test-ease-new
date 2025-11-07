@@ -6,16 +6,16 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { testFromActions } from "@/store/slices/forms/test";
 import { getTestWithQuestionsAction } from "./actions";
 import { updateTestWithQuestionsThunk } from "./thunks/updateTestWithQuestionsThunk";
-import { Stepper } from "../../create/sertificate/math/components/Stepper";
-import { BasicInfoForm } from "../../create/sertificate/math/components/BasicInfoForm";
-import { QuestionsForm } from "../../create/sertificate/math/components/QuestionsForm";
-import { Preview } from "../../create/sertificate/math/components/Preview";
 import { VIEW_TEST_ROUTE } from "@/constants/routes";
 import { TestForm } from "@/types/test";
 import { QuestionForm } from "@/types/question";
 import toast from "react-hot-toast";
 import { toDateTimeLocalValue } from "@/lib/utils";
 import { isTestCode } from "@/lib/helpers";
+import { Stepper } from "../../create-sertificate/[sertificateType]/components/Stepper";
+import { BasicInfoForm } from "../../create-sertificate/[sertificateType]/components/BasicInfoForm";
+import { QuestionsForm } from "../../create-sertificate/[sertificateType]/components/QuestionsForm";
+import { Preview } from "../../create-sertificate/[sertificateType]/components/Preview";
 
 export default function EditTestClient() {
   const { telegram_id: telegramId, testId } = useParams<{
