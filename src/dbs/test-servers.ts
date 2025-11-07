@@ -384,7 +384,7 @@ export async function checkTestCode(code: string): Promise<boolean> {
       return false;
     }
 
-    return data !== null;
+    return !data;
   } catch (error) {
     sendProductionErrors("Error checking test code: " + error);
     console.error("Database error:", error);
