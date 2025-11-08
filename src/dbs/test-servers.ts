@@ -375,11 +375,12 @@ export async function checkTestCode(code: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from("tests")
-      .select("*")
+      .select("id, code, status")
       .eq("code", code)
-      .single();
+      .maybeSingle();
 
     if (error) {
+      // sendProductionErrors("Error checking test code: " + error);
       console.error("Error checking test code:", error);
       return false;
     }
