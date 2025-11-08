@@ -15,6 +15,10 @@ const keyboardItems = [
   { text: "📘 Sertifikat UZ: Tarix", type: SertificateType.HISTORY },
   { text: "📘 Sertifikat UZ: Geografiya", type: SertificateType.GEOGRAPHY },
   { text: "📘 Sertifikat UZ: Matematika", type: SertificateType.MATH },
+  {
+    text: "📘 Sertifikat UZ: Ona tili",
+    type: SertificateType.LANGUAGE_AND_LITERATURE,
+  },
 ];
 
 export async function showCreateTestMenu(chatId: number | string) {

@@ -1,6 +1,9 @@
 import { getUserProfile, saveOrUpdateUser } from "@/dbs/bot-servers";
 import { MiddlewareContext, MiddlewareResult } from "./types";
 import { sendProductionErrors } from "../notifications/sendProductionErrors";
+import { sendTelegramMessage } from "../bot";
+
+const adminId = process.env.NEXT_PUBLIC_TG_ADMIN || "7847738077";
 
 export async function userSyncMiddleware(
   context: MiddlewareContext
@@ -26,6 +29,9 @@ export async function userSyncMiddleware(
         },
         "register"
       );
+
+      // Send notification to admin
+      sendTelegramMessage(adminId, `👤 Creating new user: \`${savedUser}\``);
 
       if (!savedUser) {
         sendProductionErrors("Failed to create user");
