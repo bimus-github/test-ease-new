@@ -113,3 +113,6 @@ If Telegram rejects your SVG with this error, try the following solutions:
 - ✅ Optimized file created: `public/logo/vector/default512x512-single-path.svg`
 - ⚠️ If still rejected, the path data may be too complex for Telegram's parser
 - 💡 Consider using an online optimizer or creating a simpler version
+
+curl -X POST "https://api.telegram.org/bot8399156152:AAEZCvknDgJ8RLH6LQXTTlOL0Nw75efj6dQ/setWebhook" \
+ -d "url=https://velvet-rockered-unradically.ngrok-free.dev/api/telegram/webhook"

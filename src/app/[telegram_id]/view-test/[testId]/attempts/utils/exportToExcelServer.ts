@@ -1,5 +1,6 @@
 import type { FullSubmission } from "@/types/submission";
-import { calculateRowScore, gradeFromT, percentageFromT } from "@/lib/helpers";
+import { gradeFromT, percentageFromT } from "@/lib/helpers";
+import { formatLocalDate } from "@/lib/utils";
 
 export function generateExcelContent(
   submissions: FullSubmission[],
@@ -10,7 +11,6 @@ export function generateExcelContent(
     "#",
     "Foydalanuvchi",
     "Telegram ID",
-    "Boshlangan",
     "Yuborilgan",
     "To'g'ri javoblar",
   ];
@@ -27,11 +27,8 @@ export function generateExcelContent(
         submission.user.telegram_last_name || ""
       }`.trim(),
       submission.user.telegram_id,
-      new Date(submission.started_at).toLocaleString(),
-      submission.submitted_at
-        ? new Date(submission.submitted_at).toLocaleString()
-        : "—",
-      calculateRowScore(submission),
+      submission.submitted_at ? formatLocalDate(submission.submitted_at) : "—",
+      submission.row_score ?? "—",
     ];
 
     if (showRasch) {
@@ -47,15 +44,16 @@ export function generateExcelContent(
   });
 
   // Convert to CSV format (Excel-compatible)
+  const delimiter = ";";
   const csvContent = [
-    headers.join(","),
+    headers.join(delimiter),
     ...rows.map((row) =>
       row
         .map((cell) => {
-          // Escape cells containing commas, quotes, or newlines
+          // Escape cells containing delimiter, quotes, or newlines
           const cellStr = String(cell);
           if (
-            cellStr.includes(",") ||
+            cellStr.includes(delimiter) ||
             cellStr.includes('"') ||
             cellStr.includes("\n")
           ) {
@@ -63,9 +61,9 @@ export function generateExcelContent(
           }
           return cellStr;
         })
-        .join(",")
+        .join(delimiter)
     ),
-  ].join("\n");
+  ].join("\r\n");
 
   // Add BOM for UTF-8 Excel compatibility
   const BOM = "\uFEFF";
