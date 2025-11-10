@@ -6,7 +6,9 @@ import { sendProductionErrors } from "@/telegram/notifications/sendProductionErr
 
 function logDbError(context: string, error: unknown) {
   console.error(`[DB] ${context}:`, error);
-  sendProductionErrors("Error in database operation: " + error);
+  sendProductionErrors(
+    "Error in database operation: " + context + `\`${error}\``
+  );
 }
 
 /**
@@ -239,8 +241,7 @@ export async function getFullSubmissionsByUserId(
       .select("*")
       .eq("user_tg_id", userId)
       .not("submitted_at", "is", null)
-      .not("submitted_at", "is", "")
-      .not("submitted_at", "is", undefined)
+      .neq("submitted_at", "")
       .order("submitted_at", { ascending: false })
       .order("rasch_score", { ascending: false });
 
