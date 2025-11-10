@@ -18,3 +18,6 @@ export interface Question {
 
 export interface QuestionForm
   extends Omit<Question, "id" | "created_at" | "updated_at"> {}
+
+export interface UpdateQuestionForm
+  extends Omit<QuestionForm, "created_at" | "updated_at"> {}

@@ -8,7 +8,7 @@ import { getTestWithQuestionsAction } from "./actions";
 import { updateTestWithQuestionsThunk } from "./thunks/updateTestWithQuestionsThunk";
 import { VIEW_TEST_ROUTE } from "@/constants/routes";
 import { TestForm } from "@/types/test";
-import { QuestionForm } from "@/types/question";
+import { UpdateQuestionForm } from "@/types/question";
 import toast from "react-hot-toast";
 import { toDateTimeLocalValue } from "@/lib/utils";
 import { isTestCode } from "@/lib/helpers";
@@ -52,19 +52,24 @@ export default function EditTestClient() {
       };
 
       // Map Questions to QuestionForm (exclude id, created_at, updated_at, test_id)
-      const questionsForm: QuestionForm[] = data.questions.map((q) => ({
-        test_id: data.id,
-        question_label: q.question_label,
-        question_text: q.question_text,
-        question_type: q.question_type,
-        question_order: q.question_order,
-        points: q.points,
-        is_required: q.is_required,
-        is_multiple_answers: q.is_multiple_answers,
-        options: q.options,
-        correct_answer: q.correct_answer,
-        correct_options: q.correct_options,
-      }));
+      const questionsForm: UpdateQuestionForm[] = data.questions.map(
+        (q) =>
+          ({
+            id: q.id,
+            test_id: data.id,
+            question_label: q.question_label,
+            question_text: q.question_text,
+            question_type: q.question_type,
+            question_order: q.question_order,
+            points: q.points,
+            is_required: q.is_required,
+            is_multiple_answers: q.is_multiple_answers,
+            options: q.options,
+            correct_answer: q.correct_answer,
+            correct_options: q.correct_options,
+            rasch_difficulty: q.rasch_difficulty,
+          } as UpdateQuestionForm)
+      );
 
       dispatch(testFromActions.setTest(testForm));
       dispatch(testFromActions.setQuestions(questionsForm));

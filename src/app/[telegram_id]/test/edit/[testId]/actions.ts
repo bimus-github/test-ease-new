@@ -1,7 +1,7 @@
 "use server";
 
 import { getTestWithQuestions, updateTest } from "@/dbs/test-servers";
-import { QuestionForm } from "@/types/question";
+import { UpdateQuestionForm } from "@/types/question";
 import { TestForm } from "@/types/test";
 import { supabase } from "@/lib/supabase";
 import { dateTimeLocalToISO } from "@/lib/utils";
@@ -15,7 +15,7 @@ export async function getTestWithQuestionsAction(testId: string) {
 export async function updateTestWithQuestionsAction(
   testId: string,
   form: TestForm,
-  questions: QuestionForm[]
+  questions: UpdateQuestionForm[]
 ): Promise<TestWithQuestions | null> {
   try {
     // Update the test
@@ -29,26 +29,13 @@ export async function updateTestWithQuestionsAction(
       return null;
     }
 
-    // Delete all existing questions for this test
-    const { error: deleteError } = await supabase
-      .from("questions")
-      .delete()
-      .eq("test_id", testId);
-
-    if (deleteError) {
-      console.error("Error deleting old questions:", deleteError);
-      return null;
-    }
-
-    // Insert new questions
-    const questionsWithTestId = questions.map((question) => ({
-      ...question,
-      test_id: testId,
-    }));
-
+    // Upsert new questions
     const { data: questionsData, error: questionsError } = await supabase
       .from("questions")
-      .insert(questionsWithTestId)
+      .upsert(
+        questions.map((q) => ({ ...q, test_id: testId })),
+        { onConflict: "id" }
+      )
       .select();
 
     if (questionsError) {

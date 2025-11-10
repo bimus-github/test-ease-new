@@ -141,10 +141,8 @@ export async function getFullSubmissions(
         test: item.test,
         user: item.user,
         questions: item.questions || [],
+        row_score: calculateRowScore(item),
       };
-
-      // Calculate row_score
-      fullSubmission.row_score = calculateRowScore(fullSubmission);
 
       return fullSubmission;
     });
@@ -321,10 +319,8 @@ export async function getFullSubmission(
       test: data.test,
       user: data.user,
       questions: data.questions || [],
+      row_score: calculateRowScore(data),
     };
-
-    // Calculate row_score
-    fullSubmission.row_score = calculateRowScore(fullSubmission);
 
     return fullSubmission;
   } catch (error) {
