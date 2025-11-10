@@ -238,6 +238,9 @@ export async function getFullSubmissionsByUserId(
       .from("full_submissions")
       .select("*")
       .eq("user_tg_id", userId)
+      .not("submitted_at", "is", null)
+      .not("submitted_at", "is", "")
+      .not("submitted_at", "is", undefined)
       .order("submitted_at", { ascending: false })
       .order("rasch_score", { ascending: false });
 
