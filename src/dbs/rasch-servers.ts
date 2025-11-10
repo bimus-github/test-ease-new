@@ -39,9 +39,14 @@ export async function calculateRaschForTest(testId: string): Promise<{
       throw new Error("Insufficient data for Rasch calculation");
     }
 
+    const isSubmissionValid = (s: FullSubmission) => {
+      return (
+        s.row_score !== undefined && s.row_score !== null && s.row_score !== 0
+      );
+    };
     // Compute Rasch
     const { questionDifficulties } = calculateRasch(
-      submissions,
+      submissions.filter(isSubmissionValid),
       test.questions,
       200,
       1e-4
@@ -56,8 +61,10 @@ export async function calculateRaschForTest(testId: string): Promise<{
 
     const submissionUpdates = submissions.map((s) => ({
       submission_id: s.id,
-      rasch_score: Number(s.rasch_score!.toFixed(2)),
-      rasch_ability: Number(s.rasch_ability!.toFixed(4)),
+      rasch_score: isSubmissionValid(s) ? Number(s.rasch_score!.toFixed(2)) : 0,
+      rasch_ability: isSubmissionValid(s)
+        ? Number(s.rasch_ability!.toFixed(4))
+        : 0,
     }));
 
     const { data, error } = await supabase.rpc("bulk_update_rasch_results", {
