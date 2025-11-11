@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Test, TestForm, TestWithQuestions } from "@/types/test";
+import { Test, TestForm, TestWithQuestions, TestStatus } from "@/types/test";
 import { QuestionForm } from "@/types/question";
 import { dateTimeLocalToISO } from "@/lib/utils";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
@@ -38,7 +38,10 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
   try {
     const { data, error } = await supabase
       .from("tests")
-      .insert(testData)
+      .insert({
+        ...testData,
+        end_date: dateTimeLocalToISO(testData.end_date),
+      })
       .select()
       .single();
 
@@ -140,7 +143,14 @@ export async function updateTest(
   try {
     const { data, error } = await supabase
       .from("tests")
-      .update(updates)
+      .update({
+        ...updates,
+        end_date: dateTimeLocalToISO(updates.end_date),
+        status:
+          updates.end_date && new Date(updates.end_date) <= new Date()
+            ? TestStatus.INACTIVE
+            : TestStatus.ACTIVE,
+      })
       .eq("id", id)
       .select()
       .single();

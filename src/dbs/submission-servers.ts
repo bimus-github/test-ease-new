@@ -117,6 +117,7 @@ export async function getFullSubmissions(
       .from("full_submissions")
       .select("*")
       .eq("test_id", testId)
+      .not("submitted_at", "is", null)
       // .order("submitted_at", { ascending: false })
       .order("rasch_score", { ascending: false });
 
@@ -241,7 +242,6 @@ export async function getFullSubmissionsByUserId(
       .select("*")
       .eq("user_tg_id", userId)
       .not("submitted_at", "is", null)
-      .neq("submitted_at", "")
       .order("submitted_at", { ascending: false })
       .order("rasch_score", { ascending: false });
 
@@ -254,8 +254,16 @@ export async function getFullSubmissionsByUserId(
       return [];
     }
 
+    const filteredData = data.filter(
+      (item: any) => item.submitted_at != null && item.submitted_at !== ""
+    );
+
+    if (filteredData.length === 0) {
+      return [];
+    }
+
     // Map results and calculate row_score for each submission
-    const fullSubmissions: FullSubmission[] = data.map((item: any) => {
+    const fullSubmissions: FullSubmission[] = filteredData.map((item: any) => {
       const fullSubmission: FullSubmission = {
         id: item.id,
         started_at: item.started_at,

@@ -99,5 +99,10 @@ src/
 - [React Query Documentation](https://tanstack.com/query/latest)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
+/// FOR PRODUCTION
 curl -X POST "https://api.telegram.org/bot8399156152:AAEZCvknDgJ8RLH6LQXTTlOL0Nw75efj6dQ/setWebhook" \
  -d "url=https://test-ease-new.vercel.app/api/telegram/webhook"
+
+/// FOR LOCAL
+curl -X POST "https://api.telegram.org/bot8399156152:AAEZCvknDgJ8RLH6LQXTTlOL0Nw75efj6dQ/setWebhook" \
+ -d "url=https://velvet-rockered-unradically.ngrok-free.dev/api/telegram/webhook"
