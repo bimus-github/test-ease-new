@@ -100,7 +100,7 @@ export async function calculateRaschForTest(testId: string): Promise<{
       const updatedSubmissionsList = await getFullSubmissions(testId);
 
       // Send notifications in parallel (but don't await to avoid blocking)
-      updatedSubmissionsList.forEach((submission) => {
+      updatedSubmissionsList.filter(isSubmissionValid).forEach((submission) => {
         if (submission.rasch_score != null) {
           sendRaschResultsNotification(submission).catch((error) => {
             sendProductionErrors("Failed to send Rasch notification: " + error);
