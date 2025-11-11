@@ -27,7 +27,7 @@ export default function TestListItem({
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-neutral-500">
             <div>Yaratilgan: {formatLocalDate(test.created_at)}</div>
-            <div>Tugash: {formatLocalDate(test.end_date)}</div>
+            <div>Tugash: {formatLocalDate(test.end_date!)}</div>
           </div>
         </div>
 

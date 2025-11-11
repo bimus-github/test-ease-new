@@ -40,7 +40,7 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
       .from("tests")
       .insert({
         ...testData,
-        end_date: dateTimeLocalToISO(testData.end_date),
+        end_date: testData.end_date ? new Date(testData.end_date) : undefined,
       })
       .select()
       .single();
@@ -145,7 +145,7 @@ export async function updateTest(
       .from("tests")
       .update({
         ...updates,
-        end_date: dateTimeLocalToISO(updates.end_date),
+        end_date: updates.end_date ? new Date(updates.end_date) : undefined,
         status:
           updates.end_date && new Date(updates.end_date) <= new Date()
             ? TestStatus.INACTIVE
