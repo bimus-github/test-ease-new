@@ -64,12 +64,9 @@ export async function sendExcelViaTelegramAction(params: {
     const showRasch = Boolean(testMeta?.isRaschCalculated);
     const testTitle = testMeta?.title || "Test";
 
-    // Generate Excel content
-    const excelContent = generateExcelContent(submissions, showRasch);
+    // Generate Excel buffer (now returns Buffer directly)
+    const buffer = await generateExcelContent(submissions, showRasch);
     const filename = `${testTitle.replace(/[^a-z0-9]/gi, "_")}_urinishlar.xlsx`;
-
-    // Convert string to Buffer
-    const buffer = Buffer.from(excelContent, "utf-8");
 
     // Send via Telegram
     await sendTelegramDocument(

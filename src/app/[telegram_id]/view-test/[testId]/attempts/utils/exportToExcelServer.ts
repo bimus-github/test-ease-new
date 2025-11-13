@@ -1,11 +1,15 @@
 import type { FullSubmission } from "@/types/submission";
 import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { formatLocalDate } from "@/lib/utils";
+import ExcelJS from "exceljs";
 
-export function generateExcelContent(
+export async function generateExcelContent(
   submissions: FullSubmission[],
   showRasch: boolean
-): string {
+): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Urinishlar");
+
   // Create headers
   const headers = [
     "#",
@@ -19,8 +23,17 @@ export function generateExcelContent(
     headers.push("Rasch T", "Bahosi", "Foizi");
   }
 
-  // Create rows
-  const rows = submissions.map((submission, index) => {
+  // Add header row with styling
+  const headerRow = worksheet.addRow(headers);
+  headerRow.font = { bold: true };
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFE0E0E0" },
+  };
+
+  // Add data rows
+  submissions.forEach((submission, index) => {
     const row: (string | number)[] = [
       index + 1,
       `${submission.user.telegram_first_name || ""} ${
@@ -40,32 +53,15 @@ export function generateExcelContent(
       );
     }
 
-    return row;
+    worksheet.addRow(row);
   });
 
-  // Convert to CSV format (Excel-compatible)
-  const delimiter = ";";
-  const csvContent = [
-    headers.join(delimiter),
-    ...rows.map((row) =>
-      row
-        .map((cell) => {
-          // Escape cells containing delimiter, quotes, or newlines
-          const cellStr = String(cell);
-          if (
-            cellStr.includes(delimiter) ||
-            cellStr.includes('"') ||
-            cellStr.includes("\n")
-          ) {
-            return `"${cellStr.replace(/"/g, '""')}"`;
-          }
-          return cellStr;
-        })
-        .join(delimiter)
-    ),
-  ].join("\r\n");
+  // Auto-fit columns
+  worksheet.columns.forEach((column) => {
+    column.width = 15;
+  });
 
-  // Add BOM for UTF-8 Excel compatibility
-  const BOM = "\uFEFF";
-  return BOM + csvContent;
+  // Generate buffer
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
 }
