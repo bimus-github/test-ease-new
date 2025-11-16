@@ -21,7 +21,13 @@ function stdDev(arr: number[]) {
   return Math.sqrt(varSum);
 }
 
-function fitRaschJML(Xin: (number | null)[][], maxIter = 200, tol = 1e-4) {
+function fitRaschJML(
+  Xin: (number | null)[][],
+  maxIter = 200,
+  tol = 1e-4,
+  betaMin = -5,
+  betaMax = 5
+) {
   const nPersons = Xin.length;
   const nItems = Xin[0]?.length ?? 0;
   const X: number[][] = Xin.map((row) =>
@@ -39,7 +45,9 @@ function fitRaschJML(Xin: (number | null)[][], maxIter = 200, tol = 1e-4) {
       const p = col.length ? col.reduce((a, b) => a + b, 0) / col.length : 0.5;
       return Math.min(1 - 1e-4, Math.max(1e-4, p));
     });
-  let beta = pItem.map((p) => -Math.log(p / (1 - p)));
+  let beta = pItem
+    .map((p) => -Math.log(p / (1 - p)))
+    .map((b) => Math.max(betaMin, Math.min(betaMax, b)));
 
   // init theta from person p-correct
   const pPerson: number[] = X.map((r) => {
@@ -79,12 +87,16 @@ function fitRaschJML(Xin: (number | null)[][], maxIter = 200, tol = 1e-4) {
         h += -p * (1 - p);
       }
       if (h !== 0 && Number.isFinite(h)) beta[j] -= g / h;
+      // Clamp beta to specified range
+      beta[j] = Math.max(betaMin, Math.min(betaMax, beta[j]));
     }
     const shift = nanMean(beta);
     if (Number.isFinite(shift)) {
       beta = beta.map((b) => b - shift);
       theta = theta.map((t) => t - shift);
     }
+    // Re-clamp after shifting (in case shift pushes values out of bounds)
+    beta = beta.map((b) => Math.max(betaMin, Math.min(betaMax, b)));
   }
 
   let converged = false;
