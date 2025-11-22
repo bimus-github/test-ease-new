@@ -57,6 +57,6 @@ export async function sendAttemptSubmissionNotification(opts: {
     });
   } catch (error) {
     console.error("Error sending attempt submission notification:", error);
-    sendProductionErrors(error, `sendAttemptSubmissionNotification - attemptId: ${attemptId}`);
+    sendProductionErrors(error, `sendAttemptSubmissionNotification - attemptId: ${opts.attemptId}`);
   }
 }

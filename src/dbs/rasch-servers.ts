@@ -48,8 +48,7 @@ export async function calculateRaschForTest(testId: string): Promise<{
     const { questionDifficulties } = calculateRasch(
       submissions.filter(isSubmissionValid),
       test.questions,
-      200,
-      1e-4
+      { maxIter: 200, tol: 1e-4 }
     );
 
     const questionUpdates = Array.from(questionDifficulties.entries()).map(
