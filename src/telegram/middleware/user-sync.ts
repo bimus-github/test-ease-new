@@ -31,7 +31,10 @@ export async function userSyncMiddleware(
       );
 
       // Send notification to admin
-      sendTelegramMessage(adminId, `👤 Creating new user: \`${savedUser}\``);
+      sendTelegramMessage(adminId, `👤 Creating new user: 
+        ${userId}\n\n\`\`\`\n${JSON.stringify(savedUser, null, 2)}\`\`\`
+        ${savedUser?.telegram_username ? `Username: @${savedUser.telegram_username}` : ""}
+        `);
 
       if (!savedUser) {
         sendProductionErrors("Failed to create user", `userSyncMiddleware - userId: ${userId}`);
