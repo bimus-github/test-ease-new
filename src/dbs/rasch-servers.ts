@@ -22,20 +22,20 @@ export async function calculateRaschForTest(testId: string): Promise<{
     // Load test with questions
     const test = await getTestWithQuestions(testId);
     if (!test) {
-      sendProductionErrors("Test not found");
+      sendProductionErrors("Test not found", `calculateRaschForTest - testId: ${testId}`);
       throw new Error("Test not found");
     }
 
     // Ensure test ended
     if (!test.end_date || new Date(test.end_date) > new Date()) {
-      sendProductionErrors("Test has not ended yet");
+      sendProductionErrors("Test has not ended yet", `calculateRaschForTest - testId: ${testId}`);
       throw new Error("Test has not ended yet");
     }
 
     // Load full submissions
     const submissions: FullSubmission[] = await getFullSubmissions(testId);
     if (!submissions.length || !test.questions?.length) {
-      sendProductionErrors("Insufficient data for Rasch calculation");
+      sendProductionErrors("Insufficient data for Rasch calculation", `calculateRaschForTest - testId: ${testId}`);
       throw new Error("Insufficient data for Rasch calculation");
     }
 
@@ -74,7 +74,7 @@ export async function calculateRaschForTest(testId: string): Promise<{
     });
 
     if (error) {
-      sendProductionErrors("Error updating Rasch results: " + error);
+      sendProductionErrors(error, `calculateRaschForTest - bulk_update_rasch_results, testId: ${testId}`);
       logDbError("bulk_update_rasch_results", error);
     } else if (data && data.length > 0) {
       updatedQuestions = data[0].updated_questions || 0;
@@ -90,7 +90,7 @@ export async function calculateRaschForTest(testId: string): Promise<{
       })
       .eq("id", testId);
     if (testErr) {
-      sendProductionErrors("Error updating test flags: " + testErr);
+      sendProductionErrors(testErr, `calculateRaschForTest - update test flags, testId: ${testId}`);
       logDbError("update test flags", testErr);
     }
 
@@ -103,7 +103,7 @@ export async function calculateRaschForTest(testId: string): Promise<{
       updatedSubmissionsList.filter(isSubmissionValid).forEach((submission) => {
         if (submission.rasch_score != null) {
           sendRaschResultsNotification(submission).catch((error) => {
-            sendProductionErrors("Failed to send Rasch notification: " + error);
+            sendProductionErrors(error, `calculateRaschForTest - notification, submissionId: ${submission.id}`);
             console.error(
               `Failed to send Rasch notification for submission ${submission.id}:`,
               error
@@ -115,7 +115,7 @@ export async function calculateRaschForTest(testId: string): Promise<{
 
     return { updatedQuestions, updatedSubmissions };
   } catch (err) {
-    sendProductionErrors("Error calculating Rasch for test: " + err);
+    sendProductionErrors(err, `calculateRaschForTest - testId: ${testId}`);
     logDbError("calculateRaschForTest", err);
     return { updatedQuestions, updatedSubmissions };
   }

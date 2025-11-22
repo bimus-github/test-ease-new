@@ -10,7 +10,8 @@ function getBotToken(): string {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
     sendProductionErrors(
-      "TELEGRAM_BOT_TOKEN is not set in environment variables"
+      "TELEGRAM_BOT_TOKEN is not set in environment variables",
+      "getBotToken"
     );
     throw new Error("TELEGRAM_BOT_TOKEN is not set in environment variables");
   }
@@ -50,12 +51,12 @@ export async function sendTelegramMessage(
       return data;
     } else {
       console.error("Error sending Telegram message:", data);
-      sendProductionErrors(data);
+      sendProductionErrors(data, `sendTelegramMessage - chatId: ${chatId}`);
       throw new Error(data.description);
     }
   } catch (error) {
     console.error("Error sending Telegram message:", error);
-    sendProductionErrors(error);
+    sendProductionErrors(error, `sendTelegramMessage - chatId: ${chatId}`);
     throw error;
   }
 }
@@ -83,7 +84,7 @@ export async function setWebhook(
     return data;
   } catch (error) {
     console.error("Error setting webhook:", error);
-    sendProductionErrors(error);
+    sendProductionErrors(error, `setWebhook - url: ${webhookUrl}`);
     throw error;
   }
 }
@@ -104,7 +105,7 @@ export async function deleteWebhook(): Promise<TelegramApiResponse> {
     return data;
   } catch (error) {
     console.error("Error deleting webhook:", error);
-    sendProductionErrors(error);
+    sendProductionErrors(error, "deleteWebhook");
     throw error;
   }
 }
@@ -122,7 +123,7 @@ export async function getWebhookInfo(): Promise<TelegramApiResponse> {
     return data;
   } catch (error) {
     console.error("Error getting webhook info:", error);
-    sendProductionErrors(error);
+    sendProductionErrors(error, "getWebhookInfo");
     throw error;
   }
 }
@@ -156,7 +157,7 @@ export async function sendChatAction(
     return data;
   } catch (error) {
     console.error("Error sending chat action:", error);
-    sendProductionErrors("Error sending chat action: " + error);
+    sendProductionErrors(error, `sendChatAction - chatId: ${chatId}, action: ${action}`);
     throw error;
   }
 }
@@ -234,7 +235,7 @@ export async function sendTelegramDocument(
     }
   } catch (error) {
     console.error("Error sending Telegram document:", error);
-    sendProductionErrors("Error sending Telegram document: " + error);
+    sendProductionErrors(error, `sendTelegramDocument - chatId: ${chatId}, filename: ${filename}`);
     throw error;
   }
 }

@@ -102,7 +102,7 @@ export async function handleTestCode(
       chatId,
       "❌ Test kodini qayta ishlashda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring."
     );
-    sendProductionErrors("Error handling test code: " + error);
+    sendProductionErrors(error, `handleTestCode - testCode: ${testCode}, userId: ${userId}`);
     console.error("Error handling test code:", error);
   }
 }

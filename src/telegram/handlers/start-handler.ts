@@ -29,7 +29,7 @@ export async function handleStartCommand(chatId: number) {
       { parse_mode: "Markdown" }
     );
   } catch (error) {
-    sendProductionErrors("Error sending start message: " + error);
+    sendProductionErrors(error, `handleStartCommand - chatId: ${chatId}`);
     console.error("Error sending start message:", error);
   }
 }

@@ -42,7 +42,7 @@ export async function handleMyTestsCommand(chatId: number, userId: number) {
 
     await showMyTestsMenu(chatId);
   } catch (error) {
-    sendProductionErrors("Error sending my tests message: " + error);
+    sendProductionErrors(error, `handleMyTestsCommand - userId: ${userId}`);
     console.error("Error sending my tests message:", error);
   }
 }

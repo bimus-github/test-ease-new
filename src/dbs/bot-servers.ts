@@ -96,14 +96,14 @@ export async function updateUserCommand(
       .eq("telegram_id", telegramId);
 
     if (error) {
-      sendProductionErrors("Error updating user command: " + error);
+      sendProductionErrors(error, "updateUserCommand");
       console.error("Error updating user command:", error);
       return false;
     }
 
     return true;
   } catch (error) {
-    sendProductionErrors("Error updating user command: " + error);
+    sendProductionErrors(error, "updateUserCommand");
     console.error("Database error:", error);
     return false;
   }
@@ -125,14 +125,14 @@ export async function getUserProfile(
       .single();
 
     if (error) {
-      sendProductionErrors("Error fetching user profile: " + error);
+      sendProductionErrors(error, "getUserProfile");
       console.error("Error fetching user profile:", error);
       return null;
     }
 
     return data;
   } catch (error) {
-    sendProductionErrors("Error fetching user profile: " + error);
+    sendProductionErrors(error, "getUserProfile");
     console.error("Database error:", error);
     return null;
   }
@@ -156,14 +156,14 @@ export async function getAllUsers(
       .range(page * limit, (page + 1) * limit - 1);
 
     if (error) {
-      sendProductionErrors("Error fetching users: " + error);
+      sendProductionErrors(error, "getAllUsers");
       console.error("Error fetching users:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    sendProductionErrors("Error fetching users: " + error);
+    sendProductionErrors(error, "getAllUsers");
     console.error("Database error:", error);
     return [];
   }
@@ -187,14 +187,14 @@ export async function getActiveUsers(): Promise<UserActivity[]> {
       .order("last_interaction_at", { ascending: false });
 
     if (error) {
-      sendProductionErrors("Error fetching active users: " + error);
+      sendProductionErrors(error, "getActiveUsers");
       console.error("Error fetching active users:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    sendProductionErrors("Error fetching active users: " + error);
+    sendProductionErrors(error, "getActiveUsers");
     console.error("Database error:", error);
     return [];
   }
@@ -211,7 +211,7 @@ export async function getBotStats(): Promise<BotStats | null> {
       .select("started_at, last_interaction_at, telegram_is_premium");
 
     if (error) {
-      sendProductionErrors("Error fetching bot stats: " + error);
+      sendProductionErrors(error, "getBotStats");
       console.error("Error fetching bot stats:", error);
       return null;
     }
@@ -247,7 +247,7 @@ export async function getBotStats(): Promise<BotStats | null> {
       avg_days_since_start: Math.round(avgDaysSinceStart * 100) / 100,
     };
   } catch (error) {
-    sendProductionErrors("Error fetching bot stats: " + error);
+    sendProductionErrors(error, "getBotStats");
     console.error("Database error:", error);
     return null;
   }
@@ -273,14 +273,14 @@ export async function searchUsers(
       .limit(limit);
 
     if (error) {
-      sendProductionErrors("Error searching users: " + error);
+      sendProductionErrors(error, "searchUsers");
       console.error("Error searching users:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    sendProductionErrors("Error searching users: " + error);
+    sendProductionErrors(error, "searchUsers");
     console.error("Database error:", error);
     return [];
   }
@@ -299,14 +299,14 @@ export async function deleteUser(telegramId: string): Promise<boolean> {
       .eq("telegram_id", telegramId);
 
     if (error) {
-      sendProductionErrors("Error deleting user: " + error);
+      sendProductionErrors(error, "deleteUser");
       console.error("Error deleting user:", error);
       return false;
     }
 
     return true;
   } catch (error) {
-    sendProductionErrors("Error deleting user: " + error);
+    sendProductionErrors(error, "deleteUser");
     console.error("Database error:", error);
     return false;
   }
@@ -332,14 +332,14 @@ export async function updateUserPremiumStatus(
       .eq("telegram_id", telegramId);
 
     if (error) {
-      sendProductionErrors("Error updating premium status: " + error);
+      sendProductionErrors(error, "updatePremiumStatus");
       console.error("Error updating premium status:", error);
       return false;
     }
 
     return true;
   } catch (error) {
-    sendProductionErrors("Error updating premium status: " + error);
+    sendProductionErrors(error, "updatePremiumStatus");
     console.error("Database error:", error);
     return false;
   }
@@ -361,14 +361,14 @@ export async function getUsersByLanguage(
       .order("last_interaction_at", { ascending: false });
 
     if (error) {
-      sendProductionErrors("Error fetching users by language: " + error);
+      sendProductionErrors(error, "getUsersByLanguage");
       console.error("Error fetching users by language:", error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    sendProductionErrors("Error fetching users by language: " + error);
+    sendProductionErrors(error, "getUsersByLanguage");
     console.error("Database error:", error);
     return [];
   }
@@ -389,14 +389,14 @@ export async function getUserCountByPeriod(days: number): Promise<number> {
       .gte("last_interaction_at", cutoffDate.toISOString());
 
     if (error) {
-      sendProductionErrors("Error fetching user count: " + error);
+      sendProductionErrors(error, "getUserCount");
       console.error("Error fetching user count:", error);
       return 0;
     }
 
     return count || 0;
   } catch (error) {
-    sendProductionErrors("Error fetching user count: " + error);
+    sendProductionErrors(error, "getUserCount");
     console.error("Database error:", error);
     return 0;
   }

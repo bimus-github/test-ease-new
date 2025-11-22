@@ -54,7 +54,7 @@ export async function sendSubmissionNotification(
     });
   } catch (error) {
     console.error("Error sending submission notification:", error);
-    sendProductionErrors(error);
+    sendProductionErrors(error, `sendSubmissionNotification - test: ${test.code}, user: ${user.telegram_id}`);
     // Don't throw - notification failure shouldn't block submission
   }
 }

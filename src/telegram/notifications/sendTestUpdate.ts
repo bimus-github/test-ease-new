@@ -53,7 +53,7 @@ export async function sendTestUpdateNotification(
       parse_mode: "Markdown",
     });
   } catch (error) {
-    sendProductionErrors(error);
+    sendProductionErrors(error, `sendTestUpdateNotification - test: ${test.code}`);
     console.error("Error sending test update notification:", error);
   }
 }

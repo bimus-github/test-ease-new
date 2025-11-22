@@ -28,7 +28,7 @@ export async function handleHelpCommand(chatId: number) {
       { parse_mode: "Markdown" }
     );
   } catch (error) {
-    sendProductionErrors("Error sending help message: " + error);
+    sendProductionErrors(error, `handleHelpCommand - chatId: ${chatId}`);
     console.error("Error sending help message:", error);
   }
 }

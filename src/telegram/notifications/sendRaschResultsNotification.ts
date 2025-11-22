@@ -72,7 +72,7 @@ export async function sendRaschResultsNotification(
       `Error sending Rasch results notification for submission ${submission.id}:`,
       error
     );
-    sendProductionErrors(error);
+    sendProductionErrors(error, `sendRaschResultsNotification - submission: ${submission.id}, test: ${test.code}`);
     // Don't throw to avoid blocking other notifications
   }
 }

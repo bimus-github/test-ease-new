@@ -38,7 +38,7 @@ export async function showCreateTestMenu(chatId: number | string) {
       { parse_mode: "Markdown", reply_markup: keyboard }
     );
   } catch (error) {
-    sendProductionErrors("Error showing create test menu: " + error);
+    sendProductionErrors(error, `showCreateTestMenu - chatId: ${chatId}`);
     console.error("Error showing create test menu:", error);
   }
 }

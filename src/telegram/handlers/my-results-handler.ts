@@ -74,7 +74,7 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
       chatId,
       "❌ Natijalarni olishda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring."
     );
-    sendProductionErrors("Error sending my results message: " + err);
+    sendProductionErrors(err, `handleMyResultsCommand - userId: ${userId}`);
     console.error("Error sending my results message:", err);
   }
 }

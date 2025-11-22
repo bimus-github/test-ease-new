@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       const middlewareResult = await middlewarePipeline.execute(context);
 
       if (!middlewareResult.success || !middlewareResult.shouldContinue) {
-        sendProductionErrors("Middleware failed: " + middlewareResult.error);
+        sendProductionErrors(middlewareResult.error, `webhook POST - middleware failed, userId: ${context.userId}`);
         console.error("Middleware failed:", middlewareResult.error);
         return NextResponse.json({ ok: true });
       }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("❌ Telegram webhook error:", error);
-    sendProductionErrors("Telegram webhook error: " + error);
+    sendProductionErrors(error, "webhook POST");
     return NextResponse.json(
       {
         error: "Internal server error",
@@ -85,7 +85,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("❌ Error in webhook health check:", error);
-    sendProductionErrors("Error in webhook health check: " + error);
+    sendProductionErrors(error, "webhook GET - health check");
     return NextResponse.json(
       {
         status: "Webhook endpoint is running but error occurred",
@@ -122,7 +122,7 @@ async function handleMessage(message: TelegramMessage) {
     }
   } catch (error) {
     console.error("Error handling message:", error);
-    sendProductionErrors("Error handling message: " + error);
+    sendProductionErrors(error, `handleMessage - chatId: ${chatId}, userId: ${userId}`);
     await sendTelegramMessage(
       chatId,
       "❌ Xabaringizni qayta ishlashda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring."

@@ -7,7 +7,7 @@ export async function handleCreateTestCommand(chatId: number, userId: number) {
   try {
     await showCreateTestMenu(chatId);
   } catch (error) {
-    sendProductionErrors("Error showing create test menu: " + error);
+    sendProductionErrors(error, `handleCreateTestCommand - userId: ${userId}`);
     console.error("Error showing create test menu:", error);
   }
 }

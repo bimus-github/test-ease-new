@@ -17,7 +17,7 @@ export function verifyBotToken(request: NextRequest): {
 
   if (!expectedToken) {
     console.error("❌ TELEGRAM_BOT_TOKEN not set in environment");
-    sendProductionErrors("TELEGRAM_BOT_TOKEN not set in environment");
+    sendProductionErrors("TELEGRAM_BOT_TOKEN not set in environment", "verifyBotToken");
     return {
       valid: false,
       response: errorResponse("Bot token not configured", 500),
@@ -26,7 +26,7 @@ export function verifyBotToken(request: NextRequest): {
 
   if (botToken !== expectedToken) {
     console.error("❌ Bot token mismatch - Unauthorized");
-    sendProductionErrors("Bot token mismatch - Unauthorized");
+    sendProductionErrors("Bot token mismatch - Unauthorized", "verifyBotToken");
     return {
       valid: false,
       response: errorResponse("Unauthorized", 401),
@@ -68,7 +68,7 @@ export function errorResponse(
  * Create not found response
  */
 export function notFoundResponse(message = "Not found"): NextResponse {
-  sendProductionErrors(message);
+  sendProductionErrors(message, "notFoundResponse");
   return errorResponse(message, 404);
 }
 
@@ -76,7 +76,7 @@ export function notFoundResponse(message = "Not found"): NextResponse {
  * Create validation error response
  */
 export function validationError(message: string): NextResponse {
-  sendProductionErrors(message);
+  sendProductionErrors(message, "validationError");
   return errorResponse(message, 400);
 }
 

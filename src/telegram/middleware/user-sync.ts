@@ -34,7 +34,7 @@ export async function userSyncMiddleware(
       sendTelegramMessage(adminId, `👤 Creating new user: \`${savedUser}\``);
 
       if (!savedUser) {
-        sendProductionErrors("Failed to create user");
+        sendProductionErrors("Failed to create user", `userSyncMiddleware - userId: ${userId}`);
         return {
           success: false,
           shouldContinue: false,
@@ -74,7 +74,7 @@ export async function userSyncMiddleware(
       );
 
       if (!updatedUser) {
-        sendProductionErrors("Failed to update user");
+        sendProductionErrors("Failed to update user", `userSyncMiddleware - userId: ${userId}`);
         return {
           success: false,
           shouldContinue: false,
@@ -97,7 +97,7 @@ export async function userSyncMiddleware(
     };
   } catch (error) {
     console.error("User sync middleware error:", error);
-    sendProductionErrors(error);
+    sendProductionErrors(error, `userSyncMiddleware - userId: ${userId}`);
     return {
       success: false,
       shouldContinue: false,

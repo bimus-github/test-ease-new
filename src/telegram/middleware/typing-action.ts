@@ -16,7 +16,7 @@ export async function typingActionMiddleware(
       shouldContinue: true,
     };
   } catch (error) {
-    sendProductionErrors(error);
+    sendProductionErrors(error, `typingActionMiddleware - chatId: ${chatId}`);
     console.error("Typing action middleware error:", error);
     // Don't fail the request if typing action fails (graceful degradation)
     return {

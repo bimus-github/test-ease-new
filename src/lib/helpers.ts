@@ -10,7 +10,7 @@ export const isTestCode = (text: string): boolean => {
     return isValid;
   } catch (error) {
     console.error("Error checking test code:", error);
-    sendProductionErrors("Error checking test code: " + error);
+    sendProductionErrors(error, `isTestCode - text: ${text}`);
     return false;
   }
 };

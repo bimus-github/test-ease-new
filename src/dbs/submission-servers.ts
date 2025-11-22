@@ -6,9 +6,7 @@ import { sendProductionErrors } from "@/telegram/notifications/sendProductionErr
 
 function logDbError(context: string, error: unknown) {
   console.error(`[DB] ${context}:`, error);
-  sendProductionErrors(
-    "Error in database operation: " + context + `\`${error}\``
-  );
+  sendProductionErrors(error, `submission-servers - ${context}`);
 }
 
 /**

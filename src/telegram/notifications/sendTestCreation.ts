@@ -58,7 +58,7 @@ export async function sendTestCreationNotification(
       parse_mode: "Markdown",
     });
   } catch (error) {
-    sendProductionErrors(error);
+    sendProductionErrors(error, `sendTestCreationNotification - test: ${test.code}`);
     console.error("Error sending test creation notification:", error);
     // Don't throw error to avoid blocking test creation
   }
