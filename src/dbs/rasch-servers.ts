@@ -45,10 +45,16 @@ export async function calculateRaschForTest(testId: string): Promise<{
       );
     };
     // Compute Rasch
-    const { questionDifficulties } = calculateRasch(
-      submissions.filter(isSubmissionValid),
+    const validSubmissions = submissions.filter(isSubmissionValid);
+    const { questionDifficulties, scoredSubmissions } = calculateRasch(
+      validSubmissions,
       test.questions,
       { maxIter: 200, tol: 1e-4 }
+    );
+
+    // Create a map of submission ID to scored submission for quick lookup
+    const scoredSubmissionsMap = new Map(
+      scoredSubmissions.map((s) => [s.id, s])
     );
 
     const questionUpdates = Array.from(questionDifficulties.entries()).map(
@@ -58,13 +64,18 @@ export async function calculateRaschForTest(testId: string): Promise<{
       })
     );
 
-    const submissionUpdates = submissions.map((s) => ({
-      submission_id: s.id,
-      rasch_score: isSubmissionValid(s) ? Number(s.rasch_score!.toFixed(2)) : 0,
-      rasch_ability: isSubmissionValid(s)
-        ? Number(s.rasch_ability!.toFixed(4))
-        : 0,
-    }));
+    const submissionUpdates = submissions.map((s) => {
+      const scoredSubmission = scoredSubmissionsMap.get(s.id);
+      return {
+        submission_id: s.id,
+        rasch_score: scoredSubmission?.rasch_score != null 
+          ? Number(scoredSubmission.rasch_score.toFixed(2)) 
+          : 0,
+        rasch_ability: scoredSubmission?.rasch_ability != null
+          ? Number(scoredSubmission.rasch_ability.toFixed(4))
+          : 0,
+      };
+    });
 
     const { data, error } = await supabase.rpc("bulk_update_rasch_results", {
       p_test_id: testId,
