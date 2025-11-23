@@ -105,23 +105,23 @@ export async function calculateRaschForTest(testId: string): Promise<{
     }
 
     // Send notifications to all users with their Rasch results
-    // if (updatedSubmissions > 0 && submissions.length > 0) {
-    //   // Reload submissions to get updated Rasch scores from database
-    //   const updatedSubmissionsList = await getFullSubmissions(testId);
+    if (updatedSubmissions > 0 && submissions.length > 0) {
+      // Reload submissions to get updated Rasch scores from database
+      const updatedSubmissionsList = await getFullSubmissions(testId);
 
-    //   // Send notifications in parallel (but don't await to avoid blocking)
-    //   updatedSubmissionsList.filter(isSubmissionValid).forEach((submission) => {
-    //     if (submission.rasch_score != null) {
-    //       sendRaschResultsNotification(submission).catch((error) => {
-    //         sendProductionErrors(error, `calculateRaschForTest - notification, submissionId: ${submission.id}`);
-    //         console.error(
-    //           `Failed to send Rasch notification for submission ${submission.id}:`,
-    //           error
-    //         );
-    //       });
-    //     }
-    //   });
-    // }
+      // Send notifications in parallel (but don't await to avoid blocking)
+      updatedSubmissionsList.filter(isSubmissionValid).forEach((submission) => {
+        if (submission.rasch_score != null) {
+          sendRaschResultsNotification(submission).catch((error) => {
+            sendProductionErrors(error, `calculateRaschForTest - notification, submissionId: ${submission.id}`);
+            console.error(
+              `Failed to send Rasch notification for submission ${submission.id}:`,
+              error
+            );
+          });
+        }
+      });
+    }
 
     return { updatedQuestions, updatedSubmissions };
   } catch (err) {
