@@ -1,8 +1,8 @@
 import { getTestByCode } from "@/dbs/test-servers";
-import { sendTelegramMessage } from "../bot";
+import { sendTelegramMessage } from "../../bot";
 import { TAKE_TEST_ROUTE, TEST_RESULT_ROUTE } from "@/constants/routes";
 import { checkSubmissionStatusByUserAndTest } from "@/dbs/submission-servers";
-import { sendProductionErrors } from "../notifications/sendProductionErrors";
+import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 
 /**
  * Handle test code input

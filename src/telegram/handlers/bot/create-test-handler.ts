@@ -1,6 +1,6 @@
 import { updateUserCommand } from "@/dbs/bot-servers";
 import { showCreateTestMenu } from "@/telegram/menu/create-test";
-import { sendProductionErrors } from "../notifications/sendProductionErrors";
+import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 
 export async function handleCreateTestCommand(chatId: number, userId: number) {
   await updateUserCommand(userId.toString(), "create_test");

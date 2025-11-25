@@ -14,6 +14,7 @@ export interface Question {
   created_at: string; // Created at date
   updated_at: string; // Updated at date
   rasch_difficulty?: number;
+  sat_score?: number;
 }
 
 export interface QuestionForm

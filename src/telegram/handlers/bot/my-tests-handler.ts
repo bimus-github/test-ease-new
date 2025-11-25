@@ -3,7 +3,7 @@ import { getTestsByTeacher } from "@/dbs/test-servers";
 import { sendTelegramMessage } from "@/telegram/bot";
 import { showMyTestsMenu } from "@/telegram/menu/my-tests";
 import { TestStatus } from "@/types/test";
-import { sendProductionErrors } from "../notifications/sendProductionErrors";
+import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 
 export async function handleMyTestsCommand(chatId: number, userId: number) {
   try {

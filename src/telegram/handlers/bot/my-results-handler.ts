@@ -5,7 +5,7 @@ import { ScoringType } from "@/types/test";
 import { getFullSubmissionsByUserId } from "@/dbs/submission-servers";
 import { FullSubmission } from "@/types/submission";
 import { gradeFromT, percentageFromT } from "@/lib/helpers";
-import { sendProductionErrors } from "../notifications/sendProductionErrors";
+import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 
 export async function handleMyResultsCommand(chatId: number, userId: number) {
   try {

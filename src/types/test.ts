@@ -9,6 +9,7 @@ export enum TestStatus {
 export enum ScoringType {
   SIMPLE_SCORING = "simple_scoring", // 1 point for each correct answer
   RASCH_SCORING = "rasch_scoring", // Rasch scoring model
+  SAT_SCORING = "sat_scoring", // SAT scoring model
 }
 
 export interface Test {

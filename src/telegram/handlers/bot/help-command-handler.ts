@@ -1,17 +1,16 @@
-import { sendTelegramMessage } from "@/telegram/bot";
-import { sendProductionErrors } from "../notifications/sendProductionErrors";
+import { updateUserCommand } from "@/dbs/bot-servers";
+import { sendTelegramMessage } from "../../bot";
+import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 
 /**
- * Handle /start command
- * Welcome message with instructions
- * Note: User is already synced by middleware
+ * Handle help command
  */
-export async function handleStartCommand(chatId: number) {
+export async function handleHelpCommand(chatId: number) {
+  await updateUserCommand(String(chatId), "help");
   try {
     await sendTelegramMessage(
       chatId,
-      `🎓 *Test Ease’ga xush kelibsiz!*\n\n` +
-        `Men sizning test topshirishda yordamchingizman! 📝\n\n` +
+      `Men sizning test topshirishda yordamchingizman! 📝\n\n` +
         `*Qanday ishlaydi:*\n` +
         `1️⃣ O‘qituvchingiz sizga test kodi beradi\n` +
         `2️⃣ Shu kodni menga yuboring (masalan: ABC123)\n` +
@@ -29,7 +28,7 @@ export async function handleStartCommand(chatId: number) {
       { parse_mode: "Markdown" }
     );
   } catch (error) {
-    sendProductionErrors(error, `handleStartCommand - chatId: ${chatId}`);
-    console.error("Error sending start message:", error);
+    sendProductionErrors(error, `handleHelpCommand - chatId: ${chatId}`);
+    console.error("Error sending help message:", error);
   }
 }

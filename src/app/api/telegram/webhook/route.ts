@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TelegramUpdate, TelegramMessage } from "@/types/telegram";
-import { sendTelegramMessage } from "@/telegram/bot";
-import { handleStartCommand } from "@/telegram/handlers/start-handler";
-import { updateUserCommand } from "@/dbs/bot-servers";
 import { middlewarePipeline } from "@/telegram/middleware";
 import { MiddlewareContext } from "@/telegram/middleware/types";
-import { handleCreateTestCommand } from "@/telegram/handlers/create-test-handler";
-import { handleMyTestsCommand } from "@/telegram/handlers/my-tests-handler";
-import { handleMyResultsCommand } from "@/telegram/handlers/my-results-handler";
-import { handleTestCode } from "@/telegram/handlers/test-code-handler";
-import { handleHelpCommand } from "@/telegram/handlers/help-command-handler";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
-import { isTestCode } from "@/lib/helpers";
+import { handleMessage } from "./handles/messages";
 
 /**
  * Handle incoming webhook requests from Telegram
@@ -97,96 +89,9 @@ export async function GET() {
   }
 }
 
-/**
- * Handle incoming messages
- */
-async function handleMessage(message: TelegramMessage) {
-  const chatId = message.chat.id;
-  const userId = message.from?.id;
-  const text = message.text;
 
-  if (!userId || !text) {
-    return;
-  }
 
-  try {
-    // Update user command tracking
-    await updateUserCommand(userId.toString(), "message");
 
-    // Handle commands
-    if (text.startsWith("/")) {
-      await handleCommand(chatId, userId, text);
-    } else {
-      // Handle regular messages
-      await handleRegularMessage(chatId, userId, text);
-    }
-  } catch (error) {
-    console.error("Error handling message:", error);
-    sendProductionErrors(error, `handleMessage - chatId: ${chatId}, userId: ${userId}`);
-    await sendTelegramMessage(
-      chatId,
-      "❌ Xabaringizni qayta ishlashda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring."
-    );
-  }
-}
-
-/**
- * Handle bot commands
- */
-async function handleCommand(chatId: number, userId: number, command: string) {
-  const commandName = command.split(" ")[0].toLowerCase();
-
-  switch (commandName) {
-    case "/start":
-      await handleStartCommand(chatId);
-      break;
-
-    case "/help":
-      await handleHelpCommand(chatId);
-      break;
-
-    case "/create_test":
-      await handleCreateTestCommand(chatId, userId);
-      break;
-
-    case "/my_tests":
-      await handleMyTestsCommand(chatId, userId);
-      break;
-
-    case "/my_results":
-      await handleMyResultsCommand(chatId, userId);
-      break;
-
-    default:
-      await sendTelegramMessage(
-        chatId,
-        `❓ Noma’lum buyruq: ${commandName}\n\nMavjud buyruqlarni ko‘rish uchun /help yuboring.`
-      );
-  }
-}
-
-/**
- * Handle regular (non-command) messages
- */
-async function handleRegularMessage(
-  chatId: number,
-  userId: number,
-  text: string
-) {
-  // Check if it's a test code (simple pattern matching)
-  if (isTestCode(text)) {
-    await handleTestCode(chatId, userId, text);
-  } else {
-    // Default response for regular messages
-    await sendTelegramMessage(
-      chatId,
-      `📝 Xabaringiz qabul qilindi: "${text}"\n\n` +
-        `Agar test kodini yuborgan bo'lsangiz, xatolik yuz berdi.\n` +
-        `Test tekshirib qayta yuboring yoki o'qituvchingiz bilan bog'laning.\n` +
-        `Kodda '_' yoki bo'sh joylar bo'lmasligi kerak.`
-    );
-  }
-}
 
 /**
  * Handle other HTTP methods

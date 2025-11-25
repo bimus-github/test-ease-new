@@ -1,0 +1,44 @@
+import { handleCreateTestCommand } from "@/telegram/handlers/bot/create-test-handler";
+import { handleHelpCommand } from "@/telegram/handlers/bot/help-command-handler";
+import { handleStartCommand } from "@/telegram/handlers/bot/start-handler";
+import { handleMyTestsCommand } from "@/telegram/handlers/bot/my-tests-handler";
+import { handleMyResultsCommand } from "@/telegram/handlers/bot/my-results-handler";
+import { sendTelegramMessage } from "@/telegram/bot";
+
+const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
+
+/**
+ * Handle bot commands
+ */
+export async function handleCommand(chatId: number, userId: number, command: string) {
+    const commandName = command.split(" ")[0].toLowerCase();
+  
+    switch (commandName) {
+      case "/start":
+        await handleStartCommand(chatId);
+        break;
+  
+      case "/help":
+        await handleHelpCommand(chatId);
+        break;
+  
+      case "/create_test":
+        await handleCreateTestCommand(chatId, userId);
+        break;
+  
+      case "/my_tests":
+        await handleMyTestsCommand(chatId, userId);
+        break;
+  
+      case "/my_results":
+        await handleMyResultsCommand(chatId, userId);
+        break;
+  
+      default:
+        await sendTelegramMessage(
+          chatId,
+          `❓ Noma’lum buyruq: ${commandName}\n\nMavjud buyruqlarni ko‘rish uchun /help yuboring.`
+        );
+    }
+  }
+  
