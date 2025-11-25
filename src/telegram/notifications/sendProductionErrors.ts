@@ -1,8 +1,9 @@
 "use server";
 
+import { tgGroupThreads } from "@/constants/tg-group-threads";
 import { sendTelegramMessage } from "../bot";
 
-const adminId = process.env.NEXT_PUBLIC_TG_ADMIN || "7847738077";
+const tgGroupId = process.env.NEXT_PUBLIC_TG_GROUP_ID || "-1002968643520";
 
 // Guard to prevent concurrent error notification attempts and infinite loops
 let isNotifyingErrors = false;
@@ -174,8 +175,9 @@ export async function sendProductionErrors(
       message += `\n\n*Stack Trace:*\n\`\`\`\n${truncatedStack}\`\`\``;
     }
     
-    await sendTelegramMessage(adminId, message, {
+    await sendTelegramMessage(tgGroupId, message, {
       parse_mode: "Markdown",
+      message_thread_id: tgGroupThreads.find(thread => thread.name === "Errors")?.id,
     });
   } catch (sendError) {
     // If sending via Telegram fails (especially if it's a network error), 

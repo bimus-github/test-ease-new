@@ -125,7 +125,7 @@ export async function getUserProfile(
       .single();
 
     if (error) {
-      sendProductionErrors(error, "getUserProfile");
+      sendProductionErrors("User not found with Id: " + telegramId + ". It will created soon.", "getUserProfile");
       console.error("Error fetching user profile:", error);
       return null;
     }

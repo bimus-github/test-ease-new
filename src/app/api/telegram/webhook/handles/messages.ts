@@ -5,6 +5,7 @@ import { sendProductionErrors } from "@/telegram/notifications/sendProductionErr
 import { sendTelegramMessage } from "@/telegram/bot";
 import { isTestCode } from "@/lib/helpers";
 import { handleTestCode } from "@/telegram/handlers/bot/test-code-handler";
+import { handleGroupCommand } from "./group-commands";
 
 /**
  * Handle incoming messages
@@ -26,7 +27,7 @@ export async function handleMessage(message: TelegramMessage) {
       // Handle commands
       if (text.startsWith("/")) {
         if (chatType === "group" || chatType === "supergroup") {
-          // await handleGroupCommand(chatId, userId, text);
+          await handleGroupCommand(chatId, userId, text);
         } else {  
           await handleCommand(chatId, userId, text);
         }

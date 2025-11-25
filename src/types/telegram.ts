@@ -97,6 +97,7 @@ export interface SendMessageParams {
     | TelegramReplyKeyboardMarkup
     | TelegramReplyKeyboardRemove
     | TelegramForceReply;
+  message_thread_id?: number;
 }
 
 export interface TelegramInlineKeyboardMarkup {

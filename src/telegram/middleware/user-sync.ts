@@ -1,7 +1,7 @@
 import { getUserProfile, saveOrUpdateUser } from "@/dbs/bot-servers";
 import { MiddlewareContext, MiddlewareResult } from "./types";
 import { sendProductionErrors } from "../notifications/sendProductionErrors";
-import { sendTelegramMessage } from "../bot";
+import { sendCreatingNewUserNotification } from "../notifications/creatingNewUser";
 
 const adminId = process.env.NEXT_PUBLIC_TG_ADMIN || "7847738077";
 
@@ -30,12 +30,6 @@ export async function userSyncMiddleware(
         "register"
       );
 
-      // Send notification to admin
-      sendTelegramMessage(adminId, `👤 Creating new user: 
-        ${userId}\n\n\`\`\`\n${JSON.stringify(savedUser, null, 2)}\`\`\`
-        ${savedUser?.telegram_username ? `Username: @${savedUser.telegram_username}` : ""}
-        `);
-
       if (!savedUser) {
         sendProductionErrors("Failed to create user", `userSyncMiddleware - userId: ${userId}`);
         return {
@@ -43,6 +37,8 @@ export async function userSyncMiddleware(
           shouldContinue: false,
           error: "Failed to create user",
         };
+      } else {
+        await sendCreatingNewUserNotification(savedUser);
       }
 
       return {

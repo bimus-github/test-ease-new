@@ -10,6 +10,7 @@ const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
  */
 export async function handleGroupStartCommand(chatId: number) {
   try {
+    console.log('handleGroupStartCommand', chatId);
     await sendTelegramMessage(
       chatId,
       `🎓 *Test Ease Group’ga xush kelibsiz!*\n\n` +

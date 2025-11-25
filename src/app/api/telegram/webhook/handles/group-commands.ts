@@ -7,11 +7,12 @@ const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
 /**
  * Handle bot commands
  */
-export async function handleCommand(chatId: number, userId: number, command: string) {
+export async function handleGroupCommand(chatId: number, userId: number, command: string) {
     const commandName = command.split(" ")[0].toLowerCase();
   
     switch (commandName) {
         case `/start@${tgBotName}`:
+            console.log('handleCommand', chatId, userId, command);
             await handleGroupStartCommand(chatId);
             break;
         default:
