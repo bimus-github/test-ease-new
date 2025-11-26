@@ -33,3 +33,10 @@ export interface FullSubmission
 
 export interface SubmissionForm
   extends Omit<Submission, "id" | "created_at" | "updated_at" | "answers"> {}
+
+export interface SubmissionStats {
+  total_submissions: number; // Total number of submissions
+  new_submissions_today: number; // Total number of new submissions today
+  new_submissions_week: number; // Total number of new submissions in the last 7 days
+  avg_submissions_since_start: number; // Average number of submissions per day since the user started using the bot
+}

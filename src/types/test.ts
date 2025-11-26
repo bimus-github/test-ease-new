@@ -35,3 +35,12 @@ export interface TestWithQuestions extends Test {
 
 export interface TestForm
   extends Omit<Test, "id" | "created_at" | "updated_at"> {}
+
+export interface TestStats {
+  total_tests: number; // Total number of tests
+  total_active_tests: number; // Total number of active tests
+  total_inactive_tests: number; // Total number of inactive tests
+  new_tests_today: number; // Total number of new tests today
+  new_tests_week: number; // Total number of new tests in the last 7 days
+  avg_tests_since_start: number; // Average number of tests per day since the user started using the bot
+}

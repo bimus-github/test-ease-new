@@ -1,34 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
-import { TGUser } from "@/types/tg-user";
+import { BotStats, TelegramUserData, TGUser, UserActivity } from "@/types/tg-user";
 
-export interface TelegramUserData {
-  id: number;
-  is_bot: boolean;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code?: string;
-  is_premium?: boolean;
-  photo_url?: string;
-}
 
-export interface BotStats {
-  total_users: number;
-  active_users_today: number;
-  active_users_week: number;
-  premium_users: number;
-  avg_days_since_start: number;
-}
-
-export interface UserActivity {
-  telegram_id: string;
-  telegram_username: string;
-  telegram_first_name: string;
-  last_command: string;
-  last_interaction_at: string;
-  started_at: string;
-}
 
 /**
  * Save or update a Telegram user in the database
@@ -207,8 +181,9 @@ export async function getActiveUsers(): Promise<UserActivity[]> {
 export async function getBotStats(): Promise<BotStats | null> {
   try {
     const { data, error } = await supabase
-      .from("bot_users")
-      .select("started_at, last_interaction_at, telegram_is_premium");
+      .from("user_stats")
+      .select("*")
+      .single()
 
     if (error) {
       sendProductionErrors(error, "getBotStats");
@@ -216,36 +191,7 @@ export async function getBotStats(): Promise<BotStats | null> {
       return null;
     }
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    const totalUsers = data.length;
-    const activeUsersToday = data.filter(
-      (user) => new Date(user.last_interaction_at) >= today
-    ).length;
-    const activeUsersWeek = data.filter(
-      (user) => new Date(user.last_interaction_at) >= weekAgo
-    ).length;
-    const premiumUsers = data.filter((user) => user.telegram_is_premium).length;
-
-    const avgDaysSinceStart =
-      data.length > 0
-        ? data.reduce((sum, user) => {
-            const daysSinceStart =
-              (now.getTime() - new Date(user.started_at).getTime()) /
-              (1000 * 60 * 60 * 24);
-            return sum + daysSinceStart;
-          }, 0) / data.length
-        : 0;
-
-    return {
-      total_users: totalUsers,
-      active_users_today: activeUsersToday,
-      active_users_week: activeUsersWeek,
-      premium_users: premiumUsers,
-      avg_days_since_start: Math.round(avgDaysSinceStart * 100) / 100,
-    };
+    return data as BotStats || null;
   } catch (error) {
     sendProductionErrors(error, "getBotStats");
     console.error("Database error:", error);

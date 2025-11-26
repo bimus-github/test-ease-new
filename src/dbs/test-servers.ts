@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Test, TestForm, TestWithQuestions, TestStatus } from "@/types/test";
+import { Test, TestForm, TestWithQuestions, TestStatus, TestStats } from "@/types/test";
 import { QuestionForm } from "@/types/question";
 import { dateTimeLocalToISO } from "@/lib/utils";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
@@ -396,5 +396,26 @@ export async function checkTestCode(code: string): Promise<boolean> {
     sendProductionErrors(error, "checkTestCode");
     console.error("Database error:", error);
     return false;
+  }
+}
+
+export async function getTestStats(): Promise<TestStats | null> {
+  try {
+    const { data, error } = await supabase
+      .from("test_stats")
+      .select("*")
+      .single()
+
+    if (error) {
+      sendProductionErrors(error, "getTestStats");
+      console.error("Error fetching test stats:", error);
+      return null;
+    }
+
+    return data as TestStats|| null;
+  } catch (error) {
+    sendProductionErrors(error, "getTestStats");
+    console.error("Database error:", error);
+    return null;
   }
 }

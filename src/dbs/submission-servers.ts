@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Submission, FullSubmission, Answer } from "@/types/submission";
+import { Submission, FullSubmission, Answer, SubmissionStats } from "@/types/submission";
 import { calculateRowScore } from "@/lib/helpers";
 import { sendSubmissionNotification } from "@/telegram/notifications/sendSubmissionNotification";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
@@ -335,6 +335,28 @@ export async function getFullSubmission(
     return fullSubmission;
   } catch (error) {
     logDbError("getFullSubmission", error);
+    return null;
+  }
+}
+
+
+export async function getSubmissionStats(): Promise<SubmissionStats | null> {
+  try {
+    const { data, error } = await supabase
+      .from("submission_stats")
+      .select("*")
+      .single();
+
+    if (error) {
+      sendProductionErrors(error, "getSubmissionStats");
+      console.error("Error fetching submission stats:", error);
+      return null;
+    }
+    
+    return data as SubmissionStats || null;
+  } catch (error) {
+    sendProductionErrors(error, "getSubmissionStats");
+    console.error("Database error:", error);
     return null;
   }
 }
