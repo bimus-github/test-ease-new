@@ -7,27 +7,27 @@ import { answerCallbackQuery } from "./callbacks";
 
 // RASCH scoring items (certificate types)
 const raschKeyboardItems = [
-  { text: "📘 Sertifikat UZ: Fizika", type: SertificateType.PHYSICS },
-  { text: "📘 Sertifikat UZ: Kimyo", type: SertificateType.CHEMISTRY },
-  { text: "📘 Sertifikat UZ: Biologiya", type: SertificateType.BIOLOGY },
-  { text: "📘 Sertifikat UZ: Rus tili", type: SertificateType.RUSSIAN },
+  { text: "Fizika", type: SertificateType.PHYSICS },
+  { text: "Kimyo", type: SertificateType.CHEMISTRY },
+  { text: "Biologiya", type: SertificateType.BIOLOGY },
+  { text: "Rus tili", type: SertificateType.RUSSIAN },
   {
-    text: "📘 Sertifikat UZ: Qoraqalpoq tili",
+    text: "Qoraqalpoq tili",
     type: SertificateType.QORAQALPAK,
   },
-  { text: "📘 Sertifikat UZ: Tarix", type: SertificateType.HISTORY },
-  { text: "📘 Sertifikat UZ: Geografiya", type: SertificateType.GEOGRAPHY },
-  { text: "📘 Sertifikat UZ: Matematika", type: SertificateType.MATH },
+  { text: "Tarix", type: SertificateType.HISTORY },
+  { text: "Geografiya", type: SertificateType.GEOGRAPHY },
+  { text: "Matematika", type: SertificateType.MATH },
   {
-    text: "📘 Sertifikat UZ: Ona tili",
+    text: "Ona tili",
     type: SertificateType.LANGUAGE_AND_LITERATURE,
   },
 ];
 
 // SAT scoring items
 const satKeyboardItems = [
-  { text: "📊 SAT: Matematika", section: SATSection.MATH },
-  { text: "📊 SAT: Reading & Writing", section: SATSection.READING_WRITING },
+  { text: "Matematika", section: SATSection.MATH },
+  { text: "Reading & Writing", section: SATSection.READING_WRITING },
 ];
 
 // Callback data prefixes
@@ -46,13 +46,13 @@ export async function showCreateTestMenu(chatId: number | string) {
       inline_keyboard: [
         [
           {
-            text: "📊 RASCH Scoring",
+            text: "📘 Sertifikat UZ",
             callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}rasch`,
           },
         ],
         [
           {
-            text: "📈 SAT Scoring",
+            text: "📈 SAT",
             callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}sat`,
           },
         ],
@@ -92,7 +92,7 @@ export async function showRaschTestMenu(chatId: number | string) {
 
     return sendTelegramMessage(
       chatId,
-      `📊 RASCH Scoring\n\nQaysi fan bo'yicha test yaratmoqchisiz?`,
+      `📘 Sertifikat UZ\n\nQaysi fan bo'yicha test yaratmoqchisiz?`,
       { parse_mode: "Markdown", reply_markup: keyboard }
     );
   } catch (error) {
@@ -123,7 +123,7 @@ export async function showSATTestMenu(chatId: number | string) {
 
     return sendTelegramMessage(
       chatId,
-      `📈 SAT Scoring\n\nQaysi bo'lim bo'yicha test yaratmoqchisiz?`,
+      `📈 SAT\n\nQaysi bo'lim bo'yicha test yaratmoqchisiz?`,
       { parse_mode: "Markdown", reply_markup: keyboard }
     );
   } catch (error) {

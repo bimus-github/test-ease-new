@@ -4,6 +4,7 @@ import { middlewarePipeline } from "@/telegram/middleware";
 import { MiddlewareContext } from "@/telegram/middleware/types";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 import { handleMessage } from "./handles/messages";
+import { handleCreateTestCallback, CALLBACK_PREFIXES } from "@/telegram/menu/create-test";
 
 /**
  * Handle incoming webhook requests from Telegram
@@ -51,6 +52,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle callback queries (inline keyboard)
+    if (update.callback_query) {
+      const callbackQuery = update.callback_query;
+      const chatId = callbackQuery.message?.chat.id;
+      const callbackData = callbackQuery.data;
+      const callbackQueryId = callbackQuery.id;
+
+      if (chatId && callbackData && callbackQueryId) {
+        // Handle create test menu callbacks
+        if (callbackData.startsWith(CALLBACK_PREFIXES.CREATE_TEST_SCORING)) {
+          await handleCreateTestCallback(chatId, callbackQueryId, callbackData);
+        }
+        // Add other callback handlers here as needed
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("❌ Telegram webhook error:", error);

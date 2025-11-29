@@ -16,7 +16,7 @@ export const CREATE_TEST_ROUTE = ({
   sertificateType?: SertificateType,
   satSection?: SATSection  
 }) =>
-  `${base}/${telegramId.toString()}/teacher/test-form?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}`;
+  `${base}/${telegramId.toString()}/teacher/test-form/create?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}`;
 
 export const EDIT_TEST_ROUTE = ({
   testId,
