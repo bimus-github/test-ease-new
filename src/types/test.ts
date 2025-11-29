@@ -12,6 +12,11 @@ export enum ScoringType {
   SAT_SCORING = "sat_scoring", // SAT scoring model
 }
 
+export enum SATSection {
+  MATH = "math",
+  READING_WRITING = "reading_writing",
+}
+
 export interface Test {
   id: string;
   code: string;
@@ -25,6 +30,7 @@ export interface Test {
   created_at: string;
   updated_at: string;
   sertificate_type?: SertificateType;
+  sat_section?: SATSection;
   isRaschCalculated?: boolean;
   rasch_calculated_at?: string;
 }

@@ -4,6 +4,7 @@ import { checkTestCode, createTestWithQuestions } from "@/dbs/test-servers";
 import { QuestionForm } from "@/types/question";
 import { TestForm } from "@/types/test";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
+import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 
 export async function createTestQuestionsAction(
   form: TestForm,
@@ -17,9 +18,10 @@ export async function createTestQuestionsAction(
 
   if (testWithQuestions) {
     // Send notification (don't await to avoid blocking)
-    sendTestCreationNotification(telegramId, testWithQuestions).catch(
+   await sendTestCreationNotification(telegramId, testWithQuestions).catch(
       (error) => {
         console.error("Failed to send notification:", error);
+        sendProductionErrors(error, "createTestQuestionsAction - notification");
       }
     );
   }

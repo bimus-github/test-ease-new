@@ -35,7 +35,7 @@ export const testSlice = createSlice({
     },
     setQuestion: (
       state,
-      action: PayloadAction<{ question_label: string; correct_answer: string }>
+      action: PayloadAction<{ question_label: string; correct_answer: string}>
     ) => {
       const currentQuestion = state.questions.find(
         (q) => q.question_label === action.payload.question_label
@@ -46,6 +46,30 @@ export const testSlice = createSlice({
         } else if (currentQuestion.question_type === "fill_blank") {
           currentQuestion.correct_answer = action.payload.correct_answer;
         }
+      }
+    },
+    setSatScore: (
+      state,
+      action: PayloadAction<{ question_label: string; sat_score: number }>
+    ) => {
+      const currentQuestion = state.questions.find(
+        (q) => q.question_label === action.payload.question_label
+      );
+      if (currentQuestion) {
+        currentQuestion.sat_score = action.payload.sat_score;
+      }
+    },
+    setQuestionType: (
+      state,
+      action: PayloadAction<{ question_label: string; question_type: "multiple_choice" | "fill_blank" }>
+    ) => {
+      const currentQuestion = state.questions.find(
+        (q) => q.question_label === action.payload.question_label
+      );
+      if (currentQuestion) {
+        currentQuestion.question_type = action.payload.question_type;
+        // Clear correct_answer when switching types
+        currentQuestion.correct_answer = undefined;
       }
     },
     setStep: (

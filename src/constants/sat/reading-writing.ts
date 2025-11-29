@@ -4,7 +4,7 @@ import { QuestionForm } from "@/types/question";
 export const generateReadingWritingSATQuestions = () => {
   const questions: QuestionForm[] = [];
 
-  for (let i = 1; i <= 57; i++){
+  for (let i = 1; i <= 54; i++){
     questions.push({
       test_id: "",
       question_label: `${i}-savol`,

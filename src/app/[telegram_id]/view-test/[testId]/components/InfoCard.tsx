@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import type { Test } from "@/types/test";
-import { TEST_ATTEMPTS_ROUTE } from "@/constants/routes";
+import type { SATSection, Test } from "@/types/test";
+import { EDIT_TEST_ROUTE, TEST_ATTEMPTS_ROUTE } from "@/constants/routes";
+import { SertificateType } from "@/types/sertificate";
 
 export function InfoCard({
   test,
@@ -43,7 +44,13 @@ export function InfoCard({
         )}
         <div className="mt-2 flex flex-wrap gap-2">
           <Link
-            href={`/${telegramId}/test/edit/${testId}`}
+            href={EDIT_TEST_ROUTE({
+              testId,
+              telegramId,
+              scoringType: test.scoring_type,
+              sertificateType: test.sertificate_type,
+              satSection: test.sat_section,
+            })}
             className="inline-flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50 active:scale-[0.99] dark:border-neutral-700 dark:hover:bg-neutral-900"
           >
             Tahrirlash
