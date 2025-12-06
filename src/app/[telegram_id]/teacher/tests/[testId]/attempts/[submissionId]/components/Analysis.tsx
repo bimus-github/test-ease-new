@@ -35,7 +35,7 @@ export function Analysis({ fullSubmission }: AnalysisProps) {
           const userAnswer = q.is_multiple_answers
             ? a?.answer_options?.join(", ") || "—"
             : a?.answer || "—";
-          const correct = correctAnswerText(a, q);
+          const correct = correctAnswerText(a as any, q as any);
           const points = isCorrect ? q.points || 0 : 0;
 
           return (
