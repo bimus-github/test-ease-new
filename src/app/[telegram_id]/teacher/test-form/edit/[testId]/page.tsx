@@ -1,5 +1,5 @@
 'use client';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useLoadTest } from '../../hooks/useLoadTest';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Stepper } from '../../components/Stepper';
@@ -10,11 +10,14 @@ import { testFromActions } from '@/store/slices/forms/test';
 import { handleQuestionsThunk } from '../../thunks/handleQuestionsThunk';
 import { basicInfoThunk } from '../../thunks/basicInfoThunk';
 import { updateTestWithQuestionsThunk } from '../../thunks/handleEditTestThunk';
+import { VIEW_TEST_ROUTE } from '@/constants/routes';
 
 function EditTest() {
   const { testId } = useParams<{ testId: string, telegram_id: string }>();
   const dispatch = useAppDispatch();
   const { step } = useAppSelector(state => state.test);
+  const { telegram_id: telegramId } = useParams<{ telegram_id: string }>();
+  const router = useRouter();
   useLoadTest()
 
   return (
@@ -41,7 +44,10 @@ function EditTest() {
         {step === "preview" && (
             <Preview
                 onBack={() => dispatch(testFromActions.setStep("questions"))}
-                onConfirm={() => dispatch(updateTestWithQuestionsThunk(testId))}
+                onConfirm={() => dispatch(updateTestWithQuestionsThunk(testId, () => {
+                    router.push(VIEW_TEST_ROUTE({ testId, telegramId }));
+                    router.refresh();
+                }))}
             />
         )}
     </div>

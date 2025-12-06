@@ -244,7 +244,7 @@ export default function AttemptsClient() {
             submissions={submissions}
             showRasch={Boolean(testMeta?.isRaschCalculated)}
             renderResultLink={(submissionId) =>
-              TEST_ATTEMPT_ROUTE(telegram_id ?? "", testId, submissionId)
+              TEST_ATTEMPT_ROUTE({ testId, telegramId: telegram_id, submissionId })
             }
           />
         </>

@@ -117,7 +117,7 @@ export default function EditTestClient() {
 
     // Redirect after a brief delay to allow toast to show
     setTimeout(() => {
-      router.push(VIEW_TEST_ROUTE(testId, telegramId));
+      router.push(VIEW_TEST_ROUTE({ testId, telegramId }));
     }, 1500);
   };
 

@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { updateTestWithQuestionsAction } from "../actions/updateTestWithQuestions";
 
 export const updateTestWithQuestionsThunk =
-  (testId: string): AppThunk =>
+  (testId: string, onSuccess: () => void): AppThunk =>
   async (dispatch, getState) => {
     try {
       const { test, questions, isSubmitting } = getState().test;
@@ -20,6 +20,7 @@ export const updateTestWithQuestionsThunk =
           questions
         );
         if (testWithQuestions) {
+          onSuccess();
           // Reset state
           dispatch(testFromActions.setTest(initialState.test));
           dispatch(testFromActions.setQuestions([]));

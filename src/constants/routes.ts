@@ -31,26 +31,25 @@ export const EDIT_TEST_ROUTE = ({
   sertificateType?: SertificateType,
   satSection?: SATSection
 }) =>
-  `${base}/${telegramId.toString()}/teacher/test-form?testId=${testId}&scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}`;
+  `${base}/${telegramId.toString()}/teacher/test-form/edit/${testId}?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}`;
 
-export const VIEW_TEST_ROUTE = (testId: string, telegramId: number | string) =>
-  `${base}/${telegramId.toString()}/view-test/${testId}`;
-
-export const MY_TESTS_ROUTE = (telegramId: number | string) =>
-  `${base}/${telegramId.toString()}/my-tests`;
-
-
-export const TEST_ATTEMPTS_ROUTE = (
+export const VIEW_TEST_ROUTE = ({
+  testId,
+  telegramId,
+}:{
   testId: string,
   telegramId: number | string
-) => `${base}/${telegramId.toString()}/view-test/${testId}/attempts`;
+}) =>
+  `${base}/${telegramId.toString()}/teacher/tests/${testId}`;
 
-export const TEST_ATTEMPT_ROUTE = (
-  telegramId: number | string,
-  testId: string,
-  submissionId: string
-) =>
-  `${base}/${telegramId.toString()}/view-test/${testId}/attempts/${submissionId}`;
+export const MY_TESTS_ROUTE = (telegramId: number | string) =>
+  `${base}/${telegramId.toString()}/teacher/tests`;
+
+
+export const TEST_ATTEMPTS_ROUTE = ({ testId, telegramId }: { testId: string, telegramId: number | string }) => `${base}/${telegramId.toString()}/teacher/tests/${testId}/attempts`;
+
+export const TEST_ATTEMPT_ROUTE = ({ testId, telegramId, submissionId }: { testId: string, telegramId: number | string, submissionId: string }) =>
+  `${base}/${telegramId.toString()}/teacher/tests/${testId}/attempts/${submissionId}`;
 
 // student routes
 export const TEST_RESULT_ROUTE = (

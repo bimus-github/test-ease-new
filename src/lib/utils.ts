@@ -24,7 +24,7 @@ export function formatLocalDate(
 
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
-    month: "short",
+    month: "numeric",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",

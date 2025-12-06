@@ -27,7 +27,7 @@ export const basicInfoThunk =
             toast.error("Tavsif kamida 3 ta belgidan iborat bo‘lishi kerak");
             return;
           }
-          if (test!.end_date && new Date(test!.end_date) < new Date()) {
+          if (!testId && test!.end_date && new Date(test!.end_date) < new Date()) {
             toast.error("Tugash vaqti kelajakda bo‘lishi kerak");
             return;
           }

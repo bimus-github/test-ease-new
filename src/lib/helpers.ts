@@ -1,6 +1,7 @@
 import { Question } from "@/types/question";
 import { Answer, FullSubmission } from "@/types/submission";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
+import { ScoringType, Test } from "@/types/test";
 
 export const isTestCode = (text: string): boolean => {
   try {
@@ -38,6 +39,23 @@ export const calculateRowScore = (fullSubmission: FullSubmission): number => {
     const question = questionMap.get(answer.question_id);
     if (question && checkAnswer(answer, question)) {
       score += question.points || 0;
+    }
+  });
+  return score;
+};
+
+export const calculateSatScore = (fullSubmission: FullSubmission): number => {
+  let score = 0;
+  if (!fullSubmission.test) return 0;
+  if (!fullSubmission.questions) return 0;
+  if (fullSubmission.test.scoring_type !== ScoringType.SAT_SCORING) return 0;
+
+  const questionMap = new Map(fullSubmission.questions.map((q) => [q.id, q]));
+
+  fullSubmission.answers.forEach((answer) => {
+    const question = questionMap.get(answer.question_id);
+    if (question && checkAnswer(answer, question)) {
+      score += question.sat_score || 0;
     }
   });
   return score;
@@ -94,4 +112,30 @@ export const gradeFromT = (t: number): string => {
 export const percentageFromT = (t: number): string => {
   if (t >= 65) return "100%";
   return `${Math.round((t / 65) * 100)}%`;
+};
+
+export const scoringTypeText = (scoringType: ScoringType): string => {
+ switch (scoringType) {
+  case ScoringType.SIMPLE_SCORING:
+    return "Oddiy baholash";
+  case ScoringType.RASCH_SCORING:
+    return "Rasch baholash";
+  case ScoringType.SAT_SCORING:
+    return "SAT baholash";
+  default:
+    return "Noma'lum";
+ }
+};
+
+export const testTypeText = (testType: ScoringType): string => {
+  switch (testType) {
+    case ScoringType.SIMPLE_SCORING:
+      return "Oddiy baholash";
+    case ScoringType.RASCH_SCORING:
+      return "Rasch baholash";
+    case ScoringType.SAT_SCORING:
+      return "SAT baholash";
+    default:
+      return "Noma'lum";
+  }
 };

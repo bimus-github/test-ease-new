@@ -1,17 +1,19 @@
 "use client";
-
 import { Test, TestStatus } from "@/types/test";
 import { formatLocalDate } from "@/lib/utils";
 import { useParams, useRouter } from "next/navigation";
 import { VIEW_TEST_ROUTE } from "@/constants/routes";
+import toast from "react-hot-toast";
 
 export default function TestListItem({
   test,
-  onCopyCode,
 }: {
   test: Test;
-  onCopyCode: (code: string) => Promise<void>;
 }) {
+  const onCopyCode = async (code: string) => {
+    await navigator.clipboard.writeText(code);
+    toast.success("Kod nusxalandi");
+  };
   const { telegram_id: telegramId } = useParams<{ telegram_id: string }>();
   const router = useRouter();
 
@@ -38,7 +40,7 @@ export default function TestListItem({
               : "bg-neutral-100 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           }`}
         >
-          {test.status}
+          {test.status === TestStatus.ACTIVE ? "Faol" : "Tugatilgan"}
         </span>
       </div>
 
@@ -46,7 +48,7 @@ export default function TestListItem({
         <button
           aria-label={`Testni ko‘rish ${test.title}`}
           className="min-h-[40px] inline-flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50 active:scale-[0.99] dark:border-neutral-700 dark:hover:bg-neutral-900"
-          onClick={() => router.push(VIEW_TEST_ROUTE({telegramId: telegramId, testId: test.id}))}
+          onClick={() => router.push(VIEW_TEST_ROUTE({ testId: test.id, telegramId }))}
         >
           Ko‘rish
         </button>
