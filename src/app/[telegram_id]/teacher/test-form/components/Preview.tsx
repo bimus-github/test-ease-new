@@ -4,6 +4,7 @@ import { LatexRenderer } from "@/components/math-live/LatexRenderer";
 import { useAppSelector } from "@/store/hooks";
 import { QuestionForm } from "@/types/question";
 import { SATSection, ScoringType, TestForm } from "@/types/test";
+import { formatLocalDate } from "@/lib/utils";
 
 interface Props {
   onBack: () => void;
@@ -70,7 +71,7 @@ export function Preview({
           {form.end_date && (
             <div>
               <span className="text-neutral-500">Tugash vaqti:</span>{" "}
-              {new Date(form.end_date).toLocaleString()}
+              {formatLocalDate(form.end_date)}
             </div>
           )}
         </div>

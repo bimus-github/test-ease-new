@@ -48,6 +48,7 @@ export const calculateSatScore = (fullSubmission: FullSubmission): number => {
   let score = 0;
   if (!fullSubmission.test) return 0;
   if (!fullSubmission.questions) return 0;
+  console.log(fullSubmission.questions)
   if (fullSubmission.test.scoring_type !== ScoringType.SAT_SCORING) return 0;
 
   const questionMap = new Map(fullSubmission.questions.map((q) => [q.id, q]));
@@ -58,6 +59,8 @@ export const calculateSatScore = (fullSubmission: FullSubmission): number => {
       score += question.sat_score || 0;
     }
   });
+
+  if(score < 200) return 200;
   return score;
 };
 

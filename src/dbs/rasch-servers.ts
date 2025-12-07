@@ -6,6 +6,7 @@ import type { FullSubmission } from "@/types/submission";
 import { calculateRasch } from "@/lib/rasch";
 import { sendRaschResultsNotification } from "@/telegram/notifications/sendRaschResultsNotification";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
+import { isPast } from "@/lib/utils";
 
 function logDbError(context: string, error: unknown) {
   console.error(`[RASCH] ${context}:`, error);
@@ -27,7 +28,7 @@ export async function calculateRaschForTest(testId: string): Promise<{
     }
 
     // Ensure test ended
-    if (!test.end_date || new Date(test.end_date) > new Date()) {
+    if (!isPast(test.end_date)) {
       sendProductionErrors("Test has not ended yet", `calculateRaschForTest - testId: ${testId}`);
       throw new Error("Test has not ended yet");
     }

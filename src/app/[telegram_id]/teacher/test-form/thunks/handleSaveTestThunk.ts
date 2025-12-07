@@ -1,7 +1,7 @@
-import { createTestQuestionsAction } from "@/app/[telegram_id]/test/create-sertificate/[sertificateType]/actions";
 import { initialState, testFromActions } from "@/store/slices/forms/test";
 import { AppThunk } from "@/store/store";
 import toast from "react-hot-toast";
+import { createTestQuestionsAction } from "../actions/createTestWithQuestions";
 
 
 export const handleSaveTestThunk =

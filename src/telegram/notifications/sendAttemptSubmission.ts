@@ -3,8 +3,8 @@ import { sendTelegramMessage } from "../bot";
 import { answersListText, calculateRowScore } from "@/lib/helpers";
 import { ScoringType } from "@/types/test";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
-import { getAttemptFullSubmissionAction } from "@/app/[telegram_id]/view-test/[testId]/attempts/[submission_id]/actions";
 import { sendProductionErrors } from "./sendProductionErrors";
+import { getFullSubmission } from "@/dbs/submission-servers";
 
 export async function sendAttemptSubmissionNotification(opts: {
   telegramId: string | number;
@@ -12,12 +12,10 @@ export async function sendAttemptSubmissionNotification(opts: {
 }) {
   try {
     const { telegramId, attemptId } = opts;
-    const result = await getAttemptFullSubmissionAction({
-      submissionId: attemptId,
-    });
-    if (!result.ok) return;
+    const result = await getFullSubmission(attemptId);
+    if (!result) return;
 
-    const attempt = result.submission;
+    const attempt = result;
     const test = attempt.test;
 
     const totalQuestions = attempt.answers.length;

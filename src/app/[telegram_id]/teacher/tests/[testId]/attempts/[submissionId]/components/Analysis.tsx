@@ -3,6 +3,7 @@
 import { LatexRenderer } from "@/components/math-live/LatexRenderer";
 import { checkAnswer, correctAnswerText, calculateRowScore } from "@/lib/helpers";
 import type { FullSubmission } from "@/types/submission";
+import { isPast } from "@/lib/utils";
 
 interface AnalysisProps {
   fullSubmission: FullSubmission;
@@ -10,7 +11,7 @@ interface AnalysisProps {
 
 export function Analysis({ fullSubmission }: AnalysisProps) {
   const { questions, answers, test } = fullSubmission;
-  const testHasEnded = test.end_date && new Date(test.end_date) <= new Date();
+  const testHasEnded = isPast(test.end_date);
   const totalScore = calculateRowScore(fullSubmission);
 
   // Sort questions by order

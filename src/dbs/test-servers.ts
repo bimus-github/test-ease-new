@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { Test, TestForm, TestWithQuestions, TestStatus, TestStats } from "@/types/test";
 import { QuestionForm } from "@/types/question";
-import { dateTimeLocalToISO } from "@/lib/utils";
+import { dateTimeLocalToISO, isPast } from "@/lib/utils";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
 import { sendTestUpdateNotification } from "@/telegram/notifications/sendTestUpdate";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
@@ -40,7 +40,7 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
       .from("tests")
       .insert({
         ...testData,
-        end_date: testData.end_date ? new Date(testData.end_date) : undefined,
+        end_date: dateTimeLocalToISO(testData.end_date),
       })
       .select()
       .single();
@@ -143,9 +143,15 @@ export async function updateTest(
       .from("tests")
       .update({
         ...updates,
-        end_date: updates.end_date ? new Date(updates.end_date) : undefined,
+        // updateTestWithQuestionsAction already converts datetime-local to ISO
+        // So updates.end_date should already be ISO, but handle both for safety
+        end_date: updates.end_date 
+          ? new Date(updates.end_date.includes('Z') || updates.end_date.includes('+') 
+              ? updates.end_date 
+              : dateTimeLocalToISO(updates.end_date) || updates.end_date)
+          : undefined,
         status:
-          updates.end_date && new Date(updates.end_date) <= new Date()
+          isPast(updates.end_date)
             ? TestStatus.INACTIVE
             : TestStatus.ACTIVE,
       })

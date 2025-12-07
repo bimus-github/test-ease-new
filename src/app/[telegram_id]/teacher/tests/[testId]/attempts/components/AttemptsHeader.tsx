@@ -5,6 +5,7 @@ import { VIEW_TEST_ROUTE } from "@/constants/routes";
 import { useCalculateRasch } from "../hooks";
 import { useParams } from "next/navigation";
 import { ScoringType, Test } from "@/types/test";
+import { isPast, formatLocalDate } from "@/lib/utils";
 
 interface AttemptsHeaderProps {
   test: Test;
@@ -53,14 +54,14 @@ const CalculateRaschButton = (props: CalculateRaschButtonProps) => {
   const { handleCalculateRasch, isCalculating, test } = props;
 
   const isRaschTest = test.scoring_type === ScoringType.RASCH_SCORING;
-  const isPossible = isRaschTest && test.end_date && new Date(test.end_date) < new Date();
+  const isPossible = isRaschTest && isPast(test.end_date);
 
   if(!isRaschTest) return null;
 
   if(!isPossible) return (
     <div className="inline-flex items-center gap-2 rounded-md border border-neutral-200 px-2.5 py-1 text-xs text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
       <span>Rasch hisoblash uchun test yakunlanishi kerak.</span>
-      <span>{new Date(test.end_date || "").toLocaleString()}</span>
+      <span>{test.end_date ? formatLocalDate(test.end_date) : ""}</span>
     </div>
   )
 

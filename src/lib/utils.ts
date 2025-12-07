@@ -137,3 +137,31 @@ export function dateTimeLocalToISO(
   // Convert to ISO string (UTC)
   return date.toISOString();
 }
+
+/**
+ * Parse a date string (ISO or datetime-local) to Date object
+ * Handles both UTC ISO strings and local datetime-local strings
+ */
+export function parseDate(dateString?: string | null): Date | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * Check if a date is in the past
+ * Works with both ISO (UTC) and datetime-local strings
+ */
+export function isPast(dateString?: string | null): boolean {
+  const date = parseDate(dateString);
+  return date ? date < new Date() : false;
+}
+
+/**
+ * Check if a date is in the future
+ * Works with both ISO (UTC) and datetime-local strings
+ */
+export function isFuture(dateString?: string | null): boolean {
+  const date = parseDate(dateString);
+  return date ? date > new Date() : false;
+}

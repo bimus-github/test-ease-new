@@ -2,6 +2,7 @@ import { AppThunk } from "@/store/store";
 import { isTestCodeUnique } from "../actions/checkTestCode";
 import toast from "react-hot-toast";
 import { testFromActions } from "@/store/slices/forms/test";
+import { isPast } from "@/lib/utils";
 
 export const basicInfoThunk =
   (testId?: string): AppThunk =>
@@ -27,8 +28,8 @@ export const basicInfoThunk =
             toast.error("Tavsif kamida 3 ta belgidan iborat bo‘lishi kerak");
             return;
           }
-          if (!testId && test!.end_date && new Date(test!.end_date) < new Date()) {
-            toast.error("Tugash vaqti kelajakda bo‘lishi kerak");
+          if (!testId && isPast(test!.end_date)) {
+            toast.error("Tugash vaqti kelajakda bo'lishi kerak");
             return;
           }
           dispatch(testFromActions.setStep("questions"));

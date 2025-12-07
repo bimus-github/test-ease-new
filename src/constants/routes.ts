@@ -55,8 +55,8 @@ export const TEST_ATTEMPT_ROUTE = ({ testId, telegramId, submissionId }: { testI
 export const TEST_RESULT_ROUTE = (
   submissionId: string,
   telegramId: number | string
-) => `${base}/${telegramId.toString()}/my-results/${submissionId}`;
+) => `${base}/${telegramId.toString()}/student/my-results/${submissionId}`;
 export const MY_RESULTS_ROUTE = (telegramId: number | string) =>
-  `${base}/${telegramId.toString()}/my-results`;
+  `${base}/${telegramId.toString()}/student/my-results`;
 export const TAKE_TEST_ROUTE = (testId: string, telegramId: number | string) =>
-  `${base}/${telegramId.toString()}/take/${testId}`;
+  `${base}/${telegramId.toString()}/student/take-test/${testId}`;

@@ -3,6 +3,7 @@ import { sendTelegramMessage } from "../../bot";
 import { TAKE_TEST_ROUTE, TEST_RESULT_ROUTE } from "@/constants/routes";
 import { checkSubmissionStatusByUserAndTest } from "@/dbs/submission-servers";
 import { sendProductionErrors } from "../../notifications/sendProductionErrors";
+import { isPast, formatLocalDate } from "@/lib/utils";
 
 /**
  * Handle test code input
@@ -59,12 +60,12 @@ export async function handleTestCode(
       return;
     }
 
-    if (test.end_date && new Date(test.end_date) < new Date()) {
+    if (isPast(test.end_date)) {
       await sendTelegramMessage(
         chatId,
         `⏰ Bu testning muddati tugagan.\n\n📝 ${
           test.title
-        }\nTugash vaqti: ${new Date(test.end_date).toLocaleString()}`
+        }\nTugash vaqti: ${formatLocalDate(test.end_date)}`
       );
       return;
     }
@@ -90,7 +91,7 @@ export async function handleTestCode(
         `${test.description ? `📄 ${test.description}\n` : ""}` +
         `${
           test.end_date
-            ? `⏰ Tugash vaqti: ${new Date(test.end_date).toLocaleString()}\n`
+            ? `⏰ Tugash vaqti: ${formatLocalDate(test.end_date)}\n`
             : ""
         }` +
         `\nQuyidagi tugmani bosib testni boshlang.`,

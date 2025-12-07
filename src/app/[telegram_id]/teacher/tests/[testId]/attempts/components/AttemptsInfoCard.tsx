@@ -1,5 +1,7 @@
 "use client";
 
+import { formatLocalDate } from "@/lib/utils";
+
 interface AttemptsInfoCardProps {
   code?: string;
   description?: string;
@@ -31,7 +33,7 @@ export function AttemptsInfoCard(props: AttemptsInfoCardProps) {
       )}
       {endDate && (
         <div className="text-xs text-neutral-500">
-          Tugash: {new Date(endDate).toLocaleString()}
+          Tugash: {formatLocalDate(endDate)}
         </div>
       )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
