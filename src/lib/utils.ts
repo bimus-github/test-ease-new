@@ -139,6 +139,30 @@ export function dateTimeLocalToISO(
 }
 
 /**
+ * Ensure a date string is in ISO UTC format
+ * Safely converts any date format (ISO, datetime-local, or already ISO) to UTC ISO string
+ * Used as a safety net in database functions
+ * @param dateString - Date string in any format (ISO, datetime-local, or undefined)
+ * @returns ISO string in UTC (e.g., "2025-10-12T14:30:00.000Z") or undefined
+ */
+export function ensureISOString(
+  dateString?: string | null
+): string | undefined {
+  if (!dateString) return undefined;
+
+  // If already in ISO format (contains 'Z' or timezone offset), return as-is
+  if (dateString.includes('Z') || dateString.includes('+') || dateString.includes('-', 10)) {
+    // Validate it's a proper ISO string by parsing it
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return undefined;
+    return date.toISOString();
+  }
+
+  // Otherwise, treat as datetime-local and convert to UTC ISO
+  return dateTimeLocalToISO(dateString);
+}
+
+/**
  * Parse a date string (ISO or datetime-local) to Date object
  * Handles both UTC ISO strings and local datetime-local strings
  */

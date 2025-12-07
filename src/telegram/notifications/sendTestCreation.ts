@@ -41,7 +41,7 @@ export async function sendTestCreationNotification(
 
     // Add optional information if provided
     if (scoring_type) {
-      message += `📋 *Baholash:* ${scoring_type}\n`;
+      message += `📋 *Baholash:* ${scoringText}\n`;
     }
 
     if (description) {

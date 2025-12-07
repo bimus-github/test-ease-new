@@ -1,9 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { Test, TestForm, TestWithQuestions, TestStatus, TestStats } from "@/types/test";
 import { QuestionForm } from "@/types/question";
-import { dateTimeLocalToISO, isPast } from "@/lib/utils";
+import { dateTimeLocalToISO, isPast, ensureISOString } from "@/lib/utils";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
-import { sendTestUpdateNotification } from "@/telegram/notifications/sendTestUpdate";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 
 /**
@@ -144,12 +143,9 @@ export async function updateTest(
       .update({
         ...updates,
         // updateTestWithQuestionsAction already converts datetime-local to ISO
-        // So updates.end_date should already be ISO, but handle both for safety
-        end_date: updates.end_date 
-          ? new Date(updates.end_date.includes('Z') || updates.end_date.includes('+') 
-              ? updates.end_date 
-              : dateTimeLocalToISO(updates.end_date) || updates.end_date)
-          : undefined,
+        // ensureISOString() provides a safety net for any edge cases
+        // Supabase handles ISO strings directly, no need for new Date() wrapper
+        end_date: ensureISOString(updates.end_date),
         status:
           isPast(updates.end_date)
             ? TestStatus.INACTIVE
@@ -163,15 +159,6 @@ export async function updateTest(
       sendProductionErrors(error, "updateTest");
       console.error("Error updating test:", error);
       return null;
-    }
-
-    // Send notification to teacher via Telegram
-    if (data && data.teacher_id) {
-      sendTestUpdateNotification(data.teacher_id, data).catch((error) => {
-        sendProductionErrors(error, "updateTest - notification");
-        console.error("Error sending test update notification:", error);
-        // Don't throw - notification failure shouldn't block test update
-      });
     }
 
     return data;

@@ -16,9 +16,9 @@ export async function createTestQuestionsAction(
     questions
   );
 
-  if (testWithQuestions) {
+  if (testWithQuestions && testWithQuestions.teacher_id) {
     // Send notification (don't await to avoid blocking)
-   await sendTestCreationNotification(telegramId, testWithQuestions).catch(
+    sendTestCreationNotification(testWithQuestions.teacher_id, testWithQuestions).catch(
       (error) => {
         console.error("Failed to send notification:", error);
         sendProductionErrors(error, "createTestQuestionsAction - notification");
