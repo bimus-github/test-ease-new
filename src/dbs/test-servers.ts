@@ -39,7 +39,9 @@ export async function createTest(testData: TestForm): Promise<Test | null> {
       .from("tests")
       .insert({
         ...testData,
-        end_date: dateTimeLocalToISO(testData.end_date),
+        // testData.end_date should already be converted to ISO on client side
+        // ensureISOString provides safety net
+        end_date: ensureISOString(testData.end_date),
       })
       .select()
       .single();
@@ -323,9 +325,11 @@ export async function createTestWithQuestions(
 ): Promise<TestWithQuestions | null> {
   try {
     // First create the test
+    // testData.end_date should already be converted to ISO on client side
+    // ensureISOString provides safety net
     const { data: test, error: testError } = await supabase
       .from("tests")
-      .insert({ ...testData, end_date: dateTimeLocalToISO(testData.end_date) })
+      .insert({ ...testData, end_date: ensureISOString(testData.end_date) })
       .select()
       .single();
 

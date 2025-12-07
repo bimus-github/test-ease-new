@@ -2,7 +2,7 @@
 import { updateTest } from "@/dbs/test-servers";
 import { UpdateQuestionForm } from "@/types/question";
 import { TestForm, TestWithQuestions } from "@/types/test";
-import { dateTimeLocalToISO } from "@/lib/utils";
+import { ensureISOString } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { sendTestUpdateNotification } from "@/telegram/notifications/sendTestUpdate";
 
@@ -13,9 +13,11 @@ export async function updateTestWithQuestionsAction(
   ): Promise<TestWithQuestions | null> {
     try {
       // Update the test
+      // form.end_date should already be converted to ISO on client side
+      // ensureISOString provides safety net for edge cases
       const updatedTest = await updateTest(testId, {
         ...form,
-        end_date: form.end_date ? dateTimeLocalToISO(form.end_date) : undefined,
+        end_date: ensureISOString(form.end_date),
       });
   
       if (!updatedTest) {

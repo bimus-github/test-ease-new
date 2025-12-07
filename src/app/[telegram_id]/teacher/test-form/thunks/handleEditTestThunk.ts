@@ -3,6 +3,7 @@ import { AppThunk } from "@/store/store";
 import { initialState, testFromActions } from "@/store/slices/forms/test";
 import toast from "react-hot-toast";
 import { updateTestWithQuestionsAction } from "../actions/updateTestWithQuestions";
+import { dateTimeLocalToISO } from "@/lib/utils";
 
 export const updateTestWithQuestionsThunk =
   (testId: string, onSuccess: () => void): AppThunk =>
@@ -14,9 +15,14 @@ export const updateTestWithQuestionsThunk =
         return;
       } else {
         dispatch(testFromActions.setIsSubmitting(true));
+        // Convert end_date to UTC ISO on client side (browser timezone context)
+        const testWithConvertedDate = {
+          ...test,
+          end_date: test.end_date ? dateTimeLocalToISO(test.end_date) : undefined,
+        };
         const testWithQuestions = await updateTestWithQuestionsAction(
           testId,
-          test,
+          testWithConvertedDate,
           questions
         );
         if (testWithQuestions) {

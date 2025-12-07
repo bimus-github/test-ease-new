@@ -2,6 +2,7 @@ import { initialState, testFromActions } from "@/store/slices/forms/test";
 import { AppThunk } from "@/store/store";
 import toast from "react-hot-toast";
 import { createTestQuestionsAction } from "../actions/createTestWithQuestions";
+import { dateTimeLocalToISO } from "@/lib/utils";
 
 
 export const handleSaveTestThunk =
@@ -14,8 +15,13 @@ export const handleSaveTestThunk =
           return;
         } else {
           dispatch(testFromActions.setIsSubmitting(true));
+          // Convert end_date to UTC ISO on client side (browser timezone context)
+          const testWithConvertedDate = {
+            ...test,
+            end_date: test.end_date ? dateTimeLocalToISO(test.end_date) : undefined,
+          };
           const testWithQuestions = await createTestQuestionsAction(
-            test,
+            testWithConvertedDate,
             questions,
             telegramId
           );
