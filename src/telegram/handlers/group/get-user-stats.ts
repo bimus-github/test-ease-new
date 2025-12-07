@@ -17,8 +17,8 @@ export async function handleGetUserStatsCommand() {
 
         const message = `👤 User stats:
         Total users: ${stats.total_users}\n
-        Active users today: ${stats.active_users_today}\n
-        Active users week: ${stats.active_users_week}\n
+        Active users today: ${stats.active_today}\n
+        Active users week: ${stats.active_week}\n
         Premium users: ${stats.premium_users}\n
         Avg days since start: ${stats.avg_days_since_start}\n
         `;

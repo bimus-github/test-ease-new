@@ -28,8 +28,8 @@ export interface TelegramUserData {
 
 export interface BotStats {
   total_users: number; // Total number of users
-  active_users_today: number; // Total number of active users today
-  active_users_week: number; // Total number of active users in the last 7 days
+  active_today: number; // Total number of active users today
+  active_week: number; // Total number of active users in the last 7 days
   premium_users: number; // Total number of premium users
   avg_days_since_start: number; // Average number of days since the user started using the bot
 }
