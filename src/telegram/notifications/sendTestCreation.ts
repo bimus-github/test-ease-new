@@ -1,4 +1,4 @@
-import { formatLocalDate } from "@/lib/utils";
+import { formatUzbekistanDate } from "@/lib/utils";
 import { Test, TestWithQuestions } from "@/types/test";
 import { sendTelegramMessage } from "../bot";
 import { sendProductionErrors } from "./sendProductionErrors";
@@ -37,7 +37,7 @@ export async function sendTestCreationNotification(
       message += `📊 *Savollar:* ${questions.length}\n`;
     }
     message += `📌 *Holat:* ${status === "active" ? "Faol" : "Nofaol"}\n`;
-    message += `⏰ *Tugash vaqti:* ${formatLocalDate(end_date)}\n\n`;
+    message += `⏰ *Tugash vaqti:* ${formatUzbekistanDate(end_date)}\n\n`;
 
     // Add optional information if provided
     if (scoring_type) {

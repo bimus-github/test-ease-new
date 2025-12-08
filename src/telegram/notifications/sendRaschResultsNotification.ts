@@ -4,6 +4,7 @@ import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
 import type { FullSubmission } from "@/types/submission";
 import { sendProductionErrors } from "./sendProductionErrors";
+import { formatUzbekistanDate } from "@/lib/utils";
 
 export async function sendRaschResultsNotification(
   submission: FullSubmission
@@ -30,8 +31,7 @@ export async function sendRaschResultsNotification(
     }
 
     if (test.end_date) {
-      const endDate = new Date(test.end_date);
-      testInfo += `⏰ *Tugash vaqti:* ${endDate.toLocaleString()}\n`;
+      testInfo += `⏰ *Tugash vaqti:* ${formatUzbekistanDate(test.end_date)}\n`;
     }
 
     if (submission.questions?.length) {

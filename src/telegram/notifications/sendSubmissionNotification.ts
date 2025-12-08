@@ -1,6 +1,6 @@
 "use server";
 import { sendTelegramMessage } from "../bot";
-import { formatLocalDate } from "@/lib/utils";
+import { formatUzbekistanDate } from "@/lib/utils";
 import type { FullSubmission } from "@/types/submission";
 import { sendProductionErrors } from "./sendProductionErrors";
 
@@ -31,7 +31,7 @@ export async function sendSubmissionNotification(
         : "Username yo'q";
 
     // Format submission date
-    const submittedDate = submitted_at ? formatLocalDate(submitted_at) : "—";
+    const submittedDate = submitted_at ? formatUzbekistanDate(submitted_at) : "—";
 
     // Get total questions count
     const totalQuestions =

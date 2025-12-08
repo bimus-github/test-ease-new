@@ -12,8 +12,10 @@ export async function createTestQuestionsAction(
   questions: QuestionForm[],
   telegramId: string
 ) {
+  // form.end_date should already be converted to ISO on client side
+  // createTestWithQuestions uses ensureISOString as safety net
   const testWithQuestions = await createTestWithQuestions(
-    { ...form, teacher_id: telegramId, end_date: ensureISOString(form.end_date) },
+    { ...form, teacher_id: telegramId },
     questions
   );
 

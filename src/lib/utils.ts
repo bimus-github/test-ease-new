@@ -37,6 +37,38 @@ export function formatLocalDate(
 }
 
 /**
+ * Format a date string to Uzbekistan timezone (for server-side use)
+ * @param dateString - ISO date string (UTC)
+ * @param options - Optional Intl.DateTimeFormatOptions to override defaults
+ * @returns Formatted date string in Uzbekistan timezone (Asia/Tashkent, UTC+5)
+ */
+export function formatUzbekistanDate(
+  dateString?: string | null,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (!dateString) return "—";
+
+  const date = new Date(dateString);
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) return "—";
+
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Tashkent", // Uzbekistan timezone
+  };
+
+  return new Intl.DateTimeFormat("uz-UZ", {
+    ...defaultOptions,
+    ...options,
+  }).format(date);
+}
+
+/**
  * Format a date string to local date only (no time)
  */
 export function formatLocalDateOnly(dateString?: string | null): string {
