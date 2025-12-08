@@ -2,9 +2,10 @@
 
 import { checkTestCode, createTestWithQuestions } from "@/dbs/test-servers";
 import { QuestionForm } from "@/types/question";
-import { TestForm } from "@/types/test";
+import { TestForm, TestWithQuestions } from "@/types/test";
 import { sendTestCreationNotification } from "@/telegram/notifications/sendTestCreation";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
+import { ensureISOString, formatLocalDate } from "@/lib/utils";
 
 export async function createTestQuestionsAction(
   form: TestForm,
@@ -12,13 +13,22 @@ export async function createTestQuestionsAction(
   telegramId: string
 ) {
   const testWithQuestions = await createTestWithQuestions(
-    { ...form, teacher_id: telegramId },
+    { ...form, teacher_id: telegramId, end_date: ensureISOString(form.end_date) },
     questions
   );
 
+  if (!testWithQuestions) {
+    return null;
+  }
+
+  const result: TestWithQuestions = {
+    ...testWithQuestions,
+    end_date: formatLocalDate(testWithQuestions.end_date)
+  };
+
   if (testWithQuestions && testWithQuestions.teacher_id) {
     // Send notification (don't await to avoid blocking)
-    sendTestCreationNotification(testWithQuestions.teacher_id, testWithQuestions).catch(
+    sendTestCreationNotification(testWithQuestions.teacher_id, result).catch(
       (error) => {
         console.error("Failed to send notification:", error);
         sendProductionErrors(error, "createTestQuestionsAction - notification");

@@ -23,7 +23,7 @@ export const updateTestWithQuestionsThunk =
         const testWithQuestions = await updateTestWithQuestionsAction(
           testId,
           testWithConvertedDate,
-          questions
+          questions,
         );
         if (testWithQuestions) {
           onSuccess();

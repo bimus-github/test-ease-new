@@ -2,7 +2,7 @@
 import { updateTest } from "@/dbs/test-servers";
 import { UpdateQuestionForm } from "@/types/question";
 import { TestForm, TestWithQuestions } from "@/types/test";
-import { ensureISOString } from "@/lib/utils";
+import { ensureISOString, formatLocalDate } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { sendTestUpdateNotification } from "@/telegram/notifications/sendTestUpdate";
 
@@ -42,7 +42,9 @@ export async function updateTestWithQuestionsAction(
       const result: TestWithQuestions = {
         ...updatedTest,
         questions: questionsData || [],
+        end_date: formatLocalDate(updatedTest.end_date)
       };
+
       // Fire-and-forget notification
       if (form.teacher_id) {
         sendTestUpdateNotification(form.teacher_id, result).catch((error) =>
