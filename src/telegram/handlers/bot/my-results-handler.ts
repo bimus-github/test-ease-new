@@ -6,6 +6,7 @@ import { getFullSubmissionsByUserId } from "@/dbs/submission-servers";
 import { FullSubmission } from "@/types/submission";
 import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { sendProductionErrors } from "../../notifications/sendProductionErrors";
+import { formatUzbekistanDate } from "@/lib/utils";
 
 export async function handleMyResultsCommand(chatId: number, userId: number) {
   try {
@@ -31,8 +32,12 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
           submission.test.scoring_type === ScoringType.RASCH_SCORING
             ? "Rasch baholash"
             : "Oddiy baholash";
-        const startedAt = submission.started_at;
-        const submittedAt = submission.submitted_at;
+        const startedAt = submission.started_at
+          ? formatUzbekistanDate(submission.started_at)
+          : "—";
+        const submittedAt = submission.submitted_at
+          ? formatUzbekistanDate(submission.submitted_at)
+          : "—";
         const questionCount = submission.answers.length;
         const rowScore = submission.row_score;
         const raschScore = submission.rasch_score ?? "—";

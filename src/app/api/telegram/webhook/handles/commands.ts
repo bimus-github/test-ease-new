@@ -3,6 +3,7 @@ import { handleHelpCommand } from "@/telegram/handlers/bot/help-command-handler"
 import { handleStartCommand } from "@/telegram/handlers/bot/start-handler";
 import { handleMyTestsCommand } from "@/telegram/handlers/bot/my-tests-handler";
 import { handleMyResultsCommand } from "@/telegram/handlers/bot/my-results-handler";
+import { handleConnectWithAdminCommand } from "@/telegram/handlers/bot/connect-with-admin-handler";
 import { sendTelegramMessage } from "@/telegram/bot";
 
 const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
@@ -32,6 +33,10 @@ export async function handleCommand(chatId: number, userId: number, command: str
   
       case "/my_results":
         await handleMyResultsCommand(chatId, userId);
+        break;
+  
+      case "/connect_with_admin":
+        await handleConnectWithAdminCommand(chatId);
         break;
   
       default:
