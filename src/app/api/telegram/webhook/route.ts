@@ -5,6 +5,7 @@ import { MiddlewareContext } from "@/telegram/middleware/types";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 import { handleMessage } from "./handles/messages";
 import { handleCreateTestCallback, CALLBACK_PREFIXES } from "@/telegram/menu/create-test";
+import { handleBroadcastConfirmation } from "@/telegram/handlers/group/broadcast-confirmation-handler";
 
 /**
  * Handle incoming webhook requests from Telegram
@@ -57,11 +58,24 @@ export async function POST(request: NextRequest) {
       const chatId = callbackQuery.message?.chat.id;
       const callbackData = callbackQuery.data;
       const callbackQueryId = callbackQuery.id;
+      const userId = callbackQuery.from?.id;
 
-      if (chatId && callbackData && callbackQueryId) {
+      if (chatId && callbackData && callbackQueryId && userId) {
         // Handle create test menu callbacks
         if (callbackData.startsWith(CALLBACK_PREFIXES.CREATE_TEST_SCORING)) {
           await handleCreateTestCallback(chatId, callbackQueryId, callbackData);
+        }
+        // Handle broadcast confirmation callbacks
+        else if (
+          callbackData.startsWith(CALLBACK_PREFIXES.CONFIRM_BROADCAST) ||
+          callbackData.startsWith(CALLBACK_PREFIXES.CANCEL_BROADCAST)
+        ) {
+          await handleBroadcastConfirmation(
+            callbackQueryId,
+            userId,
+            callbackData,
+            chatId
+          );
         }
         // Add other callback handlers here as needed
       }

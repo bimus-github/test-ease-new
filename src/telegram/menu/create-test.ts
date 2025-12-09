@@ -35,6 +35,8 @@ export const CALLBACK_PREFIXES = {
   CREATE_TEST_SCORING: "create_test_scoring:",
   CREATE_TEST_RASCH: "create_test_rasch:",
   CREATE_TEST_SAT: "create_test_sat:",
+  CONFIRM_BROADCAST: "confirm_broadcast:",
+  CANCEL_BROADCAST: "cancel_broadcast",
 } as const;
 
 /**
