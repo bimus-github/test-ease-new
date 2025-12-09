@@ -58,7 +58,7 @@ export async function handleSendMessageCommand(
 
     // Start broadcast
     const stats = await sendBroadcastToAllUsers(message, {
-      delayMs: 100, // 100ms delay between messages
+      delayMs: 150, // 150ms delay between messages (safer rate limit)
       parseMode: "Markdown",
     });
 

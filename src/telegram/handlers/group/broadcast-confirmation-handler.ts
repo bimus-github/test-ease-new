@@ -94,7 +94,7 @@ export async function handleBroadcastConfirmation(
 
       // Start broadcast with progress updates
       const stats = await sendBroadcastToAllUsers(message, {
-        delayMs: 100, // 100ms delay between messages
+        delayMs: 150, // 150ms delay between messages (safer rate limit)
         parseMode: "Markdown",
         onProgress: async (progress) => {
           // Send progress update to group every 50 users

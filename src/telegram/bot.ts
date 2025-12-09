@@ -130,6 +130,35 @@ export async function sendTelegramMessage(
     if (data.ok) {
       return data;
     } else {
+      // Handle rate limiting (429 Too Many Requests)
+      if (data.error_code === 429) {
+        const retryAfter = data.parameters?.retry_after || 1;
+        console.warn(`⚠️ Rate limited by Telegram. Retry after ${retryAfter} seconds.`);
+        
+        // Create a special error with retry_after info
+        const rateLimitError: any = new Error(`Too Many Requests: retry after ${retryAfter}`);
+        rateLimitError.code = 429;
+        rateLimitError.retryAfter = retryAfter;
+        rateLimitError.isRateLimit = true;
+        throw rateLimitError;
+      }
+      
+      // Handle user blocking bot (403 Forbidden) - this is expected, don't log as error
+      if (data.error_code === 403) {
+        const description = data.description?.toLowerCase() || "";
+        if (
+          description.includes("bot was blocked") ||
+          description.includes("blocked by the user") ||
+          description.includes("chat not found")
+        ) {
+          // User blocked bot - this is expected, create a silent error
+          const blockedError: any = new Error(data.description || "Bot was blocked by user");
+          blockedError.code = 403;
+          blockedError.isBlocked = true;
+          throw blockedError;
+        }
+      }
+      
       // API returned an error (non-network issue)
       console.error("Error sending Telegram message:", data);
       // Only notify for non-network errors
@@ -150,6 +179,12 @@ export async function sendTelegramMessage(
       }
     }
 
+    // Don't log blocked users as errors - this is expected behavior
+    if ((error as any)?.isBlocked || (error as any)?.code === 403) {
+      // User blocked bot - this is expected, just rethrow without logging
+      throw error;
+    }
+    
     console.error("Error sending Telegram message:", error);
     
     // Only send error notifications for non-network errors to prevent loops
