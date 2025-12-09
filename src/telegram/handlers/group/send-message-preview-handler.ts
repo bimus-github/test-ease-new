@@ -51,21 +51,10 @@ export async function handleSendMessagePreviewCommand(
 
     // Encode message and group chatId for callback data (base64)
     // Format: confirm_broadcast:<groupChatId>:<encodedMessage>
-    // Telegram callback data has 64-byte limit, so we need to handle long messages
+    // Note: Telegram callback_data has 64-byte limit. If exceeded, Telegram will reject it
+    // and our error handling will catch it. For very long messages, use /send_msg instead.
     const encodedMessage = Buffer.from(message).toString("base64");
     const callbackData = `${CALLBACK_PREFIXES.CONFIRM_BROADCAST}${chatId}:${encodedMessage}`;
-
-    // Check if callback data exceeds 64 bytes limit
-    // If it does, we'll need to use a different approach (temporary storage)
-    if (callbackData.length > 64) {
-      // For very long messages, we could use a hash/ID approach with temporary storage
-      // For now, we'll truncate and warn the admin
-      await sendTelegramMessage(
-        chatId,
-        "⚠️ Xabar juda uzun. Iltimos, xabarni qisqartiring yoki `/send_msg` buyrug'idan foydalaning."
-      );
-      return;
-    }
 
     // Create preview message for admin
     const previewText = 
