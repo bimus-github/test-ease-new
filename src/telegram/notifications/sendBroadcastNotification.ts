@@ -6,207 +6,204 @@ import { sendProductionErrors } from "./sendProductionErrors";
 // Guard to prevent multiple simultaneous broadcasts
 let isBroadcasting = false;
 
+// Constants
+const DEFAULT_DELAY_MS = 150; // ~6.7 msg/sec (safe under 30 msg/sec limit)
+const PROGRESS_UPDATE_INTERVAL = 50;
+const BATCH_SIZE = 100;
+const MAX_PAGES = 1000; // Safety: max 100,000 users
+const MAX_USERS = 100000;
+const MAX_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+
+interface BroadcastStats {
+  sent: number;
+  total: number;
+  success: number;
+  failed: number;
+}
+
+interface BroadcastOptions {
+  delayMs?: number;
+  parseMode?: "HTML" | "Markdown" | "MarkdownV2";
+  onProgress?: (stats: BroadcastStats) => Promise<void>;
+}
+
+/**
+ * Check if error indicates user is unreachable (blocked, deactivated, etc.)
+ */
+function isUnreachableUser(error: any): boolean {
+  if (error?.isBlocked || error?.code === 403) {
+    return true;
+  }
+  const message = error?.message?.toLowerCase() || "";
+  return (
+    message.includes("chat not found") ||
+    message.includes("user not found") ||
+    message.includes("blocked") ||
+    message.includes("bot was blocked") ||
+    message.includes("deactivated")
+  );
+}
+
+/**
+ * Send message to a single user with retry logic for rate limits
+ */
+async function sendToUser(
+  userId: string,
+  message: string,
+  parseMode: "HTML" | "Markdown" | "MarkdownV2",
+  delayMs: number
+): Promise<{ success: boolean; error?: any }> {
+  try {
+    await sendTelegramMessage(userId, message, { parse_mode: parseMode });
+    return { success: true };
+  } catch (error: any) {
+    // Handle rate limiting - retry once after waiting
+    if (error?.isRateLimit && error?.retryAfter) {
+      const retryAfter = error.retryAfter;
+      console.warn(`⏳ Rate limited. Waiting ${retryAfter}s for user ${userId}...`);
+      
+      await new Promise((resolve) => setTimeout(resolve, (retryAfter + 1) * 1000));
+      
+      try {
+        await sendTelegramMessage(userId, message, { parse_mode: parseMode });
+        return { success: true };
+      } catch (retryError) {
+        return { success: false, error: retryError };
+      }
+    }
+    
+    return { success: false, error };
+  }
+}
+
+/**
+ * Wait for specified delay
+ */
+function wait(delayMs: number): Promise<void> {
+  return delayMs > 0 
+    ? new Promise((resolve) => setTimeout(resolve, delayMs))
+    : Promise.resolve();
+}
+
+/**
+ * Send progress update if callback provided and interval reached
+ */
+async function maybeSendProgress(
+  stats: BroadcastStats,
+  onProgress?: (stats: BroadcastStats) => Promise<void>
+): Promise<void> {
+  if (onProgress && stats.sent % PROGRESS_UPDATE_INTERVAL === 0) {
+    await onProgress(stats);
+  }
+}
+
+/**
+ * Check safety limits to prevent infinite loops
+ */
+function checkSafetyLimits(page: number, total: number, startTime: number): void {
+  if (page >= MAX_PAGES) {
+    throw new Error(`Safety limit: Maximum pages reached (${MAX_PAGES})`);
+  }
+  if (total >= MAX_USERS) {
+    throw new Error(`Safety limit: Maximum users reached (${MAX_USERS})`);
+  }
+  const elapsed = Date.now() - startTime;
+  if (elapsed > MAX_DURATION_MS) {
+    throw new Error(`Safety limit: Maximum duration exceeded (${Math.round(elapsed / 1000 / 60)} minutes)`);
+  }
+}
+
 /**
  * Broadcast message to all users in the database
  * Uses streaming batch processing for memory efficiency (handles 1000+ users)
- * @param message - Message text to send to all users
- * @param options - Optional configuration
- * @returns Statistics about the broadcast
  */
 export async function sendBroadcastToAllUsers(
   message: string,
-  options?: {
-    delayMs?: number; // Delay between messages (default: 100ms, Telegram limit: 30 msg/sec)
-    parseMode?: "HTML" | "Markdown" | "MarkdownV2";
-    onProgress?: (stats: { sent: number; total: number; success: number; failed: number }) => Promise<void>;
-  }
+  options?: BroadcastOptions
 ): Promise<{ success: number; failed: number; total: number }> {
-  // Default 150ms delay (~6.7 msg/sec) to stay safely under Telegram's 30 msg/sec limit
-  // Increased from 100ms to be more conservative and avoid rate limits
-  const delayMs = options?.delayMs || 150;
-  let success = 0;
-  let failed = 0;
-  let total = 0;
-  let sent = 0;
-  const PROGRESS_UPDATE_INTERVAL = 50; // Send progress update every 50 users
-  
-  // Safety limits to prevent infinite loops
-  const MAX_PAGES = 1000; // Maximum 1000 pages (100,000 users) - safety limit
-  const MAX_USERS = 100000; // Absolute maximum users to process
-  const startTime = Date.now();
-  const MAX_DURATION_MS = 30 * 60 * 1000; // 30 minutes maximum duration
-
   // Prevent multiple simultaneous broadcasts
   if (isBroadcasting) {
     throw new Error("Broadcast is already in progress. Please wait for it to complete.");
   }
 
   isBroadcasting = true;
+  const delayMs = options?.delayMs || DEFAULT_DELAY_MS;
+  const parseMode = options?.parseMode || "Markdown";
+  
+  const stats: BroadcastStats = {
+    sent: 0,
+    total: 0,
+    success: 0,
+    failed: 0,
+  };
+
+  const startTime = Date.now();
 
   try {
-    // Stream users in batches - process as we fetch (memory efficient)
-    let page = 0;
-    const limit = 100; // Fetch 100 users per page
-    let hasMore = true;
-
     console.log(`📢 Starting broadcast...`);
 
-    // Process users page by page without loading all into memory
-    while (hasMore) {
-      // Safety check: prevent infinite loops
-      if (page >= MAX_PAGES) {
-        console.error(`⚠️ Maximum page limit reached (${MAX_PAGES} pages). Stopping broadcast.`);
-        throw new Error(`Maximum page limit reached (${MAX_PAGES} pages). This prevents infinite loops.`);
-      }
-      
-      if (total >= MAX_USERS) {
-        console.error(`⚠️ Maximum user limit reached (${MAX_USERS} users). Stopping broadcast.`);
-        throw new Error(`Maximum user limit reached (${MAX_USERS} users). This prevents infinite loops.`);
-      }
-      
-      // Check if we've exceeded maximum duration
-      if (Date.now() - startTime > MAX_DURATION_MS) {
-        console.error(`⚠️ Maximum duration exceeded (${MAX_DURATION_MS / 1000 / 60} minutes). Stopping broadcast.`);
-        throw new Error(`Maximum duration exceeded. Broadcast stopped after ${Math.round((Date.now() - startTime) / 1000 / 60)} minutes.`);
-      }
-      // Fetch batch of users
-      const users = await getAllUsers(page, limit);
-      
-      if (users.length === 0) {
-        hasMore = false;
-        break;
-      }
+    // Stream users in batches - process as we fetch (memory efficient)
+    for (let page = 0; ; page++) {
+      // Safety checks
+      checkSafetyLimits(page, stats.total, startTime);
 
-      total += users.length;
+      // Fetch batch
+      const users = await getAllUsers(page, BATCH_SIZE);
+      if (users.length === 0) break;
 
-      // Process each user in the current batch immediately
+      stats.total += users.length;
+
+      // Process each user in batch
       for (const user of users) {
-        try {
-          await sendTelegramMessage(
-            user.telegram_id,
-            message,
-            {
-              parse_mode: options?.parseMode || "Markdown",
-            }
-          );
-          success++;
-          sent++;
+        const result = await sendToUser(user.telegram_id, message, parseMode, delayMs);
 
-          // Send progress update periodically (every PROGRESS_UPDATE_INTERVAL users)
-          if (options?.onProgress && sent % PROGRESS_UPDATE_INTERVAL === 0) {
-            await options.onProgress({ sent, total, success, failed });
-          }
-
-          // Add delay between messages to avoid rate limiting
-          if (delayMs > 0) {
-            await new Promise((resolve) => setTimeout(resolve, delayMs));
-          }
-        } catch (error: any) {
-          // Don't retry for blocked/deactivated users - they will always fail
-          if (error?.isBlocked || error?.code === 403) {
-            failed++;
-            sent++;
-            const errorType = error?.isDeactivated ? "deactivated" : "blocked";
-            console.log(`⚠️ User ${user.telegram_id} is ${errorType} - skipping`);
-            
-            // Still send progress updates
-            if (options?.onProgress && sent % PROGRESS_UPDATE_INTERVAL === 0) {
-              await options.onProgress({ sent, total, success, failed });
-            }
-            
-            // Add delay and continue to next user
-            if (delayMs > 0) {
-              await new Promise((resolve) => setTimeout(resolve, delayMs));
-            }
-            continue; // Skip to next user, don't retry
-          }
+        stats.sent++;
+        if (result.success) {
+          stats.success++;
+        } else {
+          stats.failed++;
           
-          // Handle rate limiting - wait and retry once
-          if (error?.isRateLimit && error?.retryAfter) {
-            const retryAfter = error.retryAfter;
-            console.warn(`⏳ Rate limited. Waiting ${retryAfter} seconds before continuing...`);
-            
-            // Wait for the retry_after period + a small buffer
-            await new Promise((resolve) => setTimeout(resolve, (retryAfter + 1) * 1000));
-            
-            // Try sending again (only once to avoid infinite retries)
-            try {
-              await sendTelegramMessage(
-                user.telegram_id,
-                message,
-                {
-                  parse_mode: options?.parseMode || "Markdown",
-                }
-              );
-              success++;
-              sent++;
-              console.log(`✅ Retry successful for user ${user.telegram_id}`);
-            } catch (retryError: any) {
-              // If retry also fails, mark as failed
-              failed++;
-              sent++;
-              console.error(`❌ Retry failed for user ${user.telegram_id}:`, retryError);
-            }
+          // Log unreachable users silently
+          if (isUnreachableUser(result.error)) {
+            const errorType = result.error?.isDeactivated ? "deactivated" : "blocked";
+            console.log(`⚠️ User ${user.telegram_id} is ${errorType}`);
           } else {
-            failed++;
-            sent++;
-            
-            // Handle specific Telegram errors silently
-            const errorMessage = error?.message?.toLowerCase() || "";
-            if (
-              errorMessage.includes("chat not found") ||
-              errorMessage.includes("user not found") ||
-              errorMessage.includes("blocked") ||
-              errorMessage.includes("bot was blocked") ||
-              errorMessage.includes("deactivated")
-            ) {
-              // User blocked bot, deactivated, or doesn't exist - this is expected, just log
-              console.log(`⚠️ User ${user.telegram_id} not reachable (blocked, deactivated, or not found)`);
-            } else {
-              // Other errors - log but continue
-              console.error(`❌ Error sending to user ${user.telegram_id}:`, error);
-            }
-          }
-
-          // Still send progress updates on errors
-          if (options?.onProgress && sent % PROGRESS_UPDATE_INTERVAL === 0) {
-            await options.onProgress({ sent, total, success, failed });
-          }
-
-          // Add delay even on errors to maintain rate limiting
-          // Use longer delay after rate limit errors
-          const currentDelay = error?.isRateLimit ? delayMs * 2 : delayMs;
-          if (currentDelay > 0) {
-            await new Promise((resolve) => setTimeout(resolve, currentDelay));
+            console.error(`❌ Error sending to user ${user.telegram_id}:`, result.error);
           }
         }
+
+        // Send progress update periodically
+        await maybeSendProgress(stats, options?.onProgress);
+
+        // Rate limiting delay
+        await wait(delayMs);
       }
 
       // Check if we have more pages
-      if (users.length < limit) {
-        hasMore = false;
-      } else {
-        page++;
-      }
+      if (users.length < BATCH_SIZE) break;
     }
 
-    // Send final progress update if callback provided
-    if (options?.onProgress && sent > 0) {
-      await options.onProgress({ sent, total, success, failed });
+    // Send final progress update
+    if (options?.onProgress && stats.sent > 0) {
+      await options.onProgress(stats);
     }
 
-    console.log(`✅ Broadcast completed: ${success} successful, ${failed} failed out of ${total} total`);
+    console.log(
+      `✅ Broadcast completed: ${stats.success} successful, ${stats.failed} failed out of ${stats.total} total`
+    );
 
-    return { success, failed, total };
+    return {
+      success: stats.success,
+      failed: stats.failed,
+      total: stats.total,
+    };
   } catch (error) {
     sendProductionErrors(
       error,
-      `sendBroadcastToAllUsers - total: ${total}, success: ${success}, failed: ${failed}`
+      `sendBroadcastToAllUsers - total: ${stats.total}, success: ${stats.success}, failed: ${stats.failed}`
     );
     throw error;
   } finally {
-    // Always reset the broadcasting flag
     isBroadcasting = false;
   }
 }
-
