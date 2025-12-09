@@ -5,7 +5,7 @@
 ### 1. Delete Webhook (Fastest - Stops receiving updates)
 ```bash
 # Using curl
-curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/deleteWebhook"
+curl -X POST "https://api.telegram.org/bot8399156152:AAEZCvknDgJ8RLH6LQXTTlOL0Nw75efj6dQ/deleteWebhook"
 
 # Or create a quick script
 node -e "

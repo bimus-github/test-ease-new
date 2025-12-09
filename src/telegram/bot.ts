@@ -143,18 +143,21 @@ export async function sendTelegramMessage(
         throw rateLimitError;
       }
       
-      // Handle user blocking bot (403 Forbidden) - this is expected, don't log as error
+      // Handle user blocking bot or deactivated users (403 Forbidden) - this is expected, don't log as error
       if (data.error_code === 403) {
         const description = data.description?.toLowerCase() || "";
         if (
           description.includes("bot was blocked") ||
           description.includes("blocked by the user") ||
-          description.includes("chat not found")
+          description.includes("chat not found") ||
+          description.includes("user is deactivated") ||
+          description.includes("deactivated")
         ) {
-          // User blocked bot - this is expected, create a silent error
-          const blockedError: any = new Error(data.description || "Bot was blocked by user");
+          // User blocked bot or deactivated - this is expected, create a silent error
+          const blockedError: any = new Error(data.description || "User unavailable");
           blockedError.code = 403;
           blockedError.isBlocked = true;
+          blockedError.isDeactivated = description.includes("deactivated");
           throw blockedError;
         }
       }

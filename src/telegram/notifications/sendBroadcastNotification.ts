@@ -3,6 +3,9 @@ import { sendTelegramMessage } from "../bot";
 import { getAllUsers } from "@/dbs/bot-servers";
 import { sendProductionErrors } from "./sendProductionErrors";
 
+// Guard to prevent multiple simultaneous broadcasts
+let isBroadcasting = false;
+
 /**
  * Broadcast message to all users in the database
  * Uses streaming batch processing for memory efficiency (handles 1000+ users)
@@ -32,6 +35,13 @@ export async function sendBroadcastToAllUsers(
   const MAX_USERS = 100000; // Absolute maximum users to process
   const startTime = Date.now();
   const MAX_DURATION_MS = 30 * 60 * 1000; // 30 minutes maximum duration
+
+  // Prevent multiple simultaneous broadcasts
+  if (isBroadcasting) {
+    throw new Error("Broadcast is already in progress. Please wait for it to complete.");
+  }
+
+  isBroadcasting = true;
 
   try {
     // Stream users in batches - process as we fetch (memory efficient)
@@ -92,6 +102,25 @@ export async function sendBroadcastToAllUsers(
             await new Promise((resolve) => setTimeout(resolve, delayMs));
           }
         } catch (error: any) {
+          // Don't retry for blocked/deactivated users - they will always fail
+          if (error?.isBlocked || error?.code === 403) {
+            failed++;
+            sent++;
+            const errorType = error?.isDeactivated ? "deactivated" : "blocked";
+            console.log(`⚠️ User ${user.telegram_id} is ${errorType} - skipping`);
+            
+            // Still send progress updates
+            if (options?.onProgress && sent % PROGRESS_UPDATE_INTERVAL === 0) {
+              await options.onProgress({ sent, total, success, failed });
+            }
+            
+            // Add delay and continue to next user
+            if (delayMs > 0) {
+              await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+            continue; // Skip to next user, don't retry
+          }
+          
           // Handle rate limiting - wait and retry once
           if (error?.isRateLimit && error?.retryAfter) {
             const retryAfter = error.retryAfter;
@@ -123,24 +152,19 @@ export async function sendBroadcastToAllUsers(
             sent++;
             
             // Handle specific Telegram errors silently
-            // Check for blocked user (403) or other expected errors
-            if (error?.isBlocked || error?.code === 403) {
-              // User blocked bot - this is expected, just log
-              console.log(`⚠️ User ${user.telegram_id} blocked the bot`);
+            const errorMessage = error?.message?.toLowerCase() || "";
+            if (
+              errorMessage.includes("chat not found") ||
+              errorMessage.includes("user not found") ||
+              errorMessage.includes("blocked") ||
+              errorMessage.includes("bot was blocked") ||
+              errorMessage.includes("deactivated")
+            ) {
+              // User blocked bot, deactivated, or doesn't exist - this is expected, just log
+              console.log(`⚠️ User ${user.telegram_id} not reachable (blocked, deactivated, or not found)`);
             } else {
-              const errorMessage = error?.message?.toLowerCase() || "";
-              if (
-                errorMessage.includes("chat not found") ||
-                errorMessage.includes("user not found") ||
-                errorMessage.includes("blocked") ||
-                errorMessage.includes("bot was blocked")
-              ) {
-                // User blocked bot or doesn't exist - this is expected, just log
-                console.log(`⚠️ User ${user.telegram_id} not reachable (blocked or not found)`);
-              } else {
-                // Other errors - log but continue
-                console.error(`❌ Error sending to user ${user.telegram_id}:`, error);
-              }
+              // Other errors - log but continue
+              console.error(`❌ Error sending to user ${user.telegram_id}:`, error);
             }
           }
 
@@ -180,6 +204,9 @@ export async function sendBroadcastToAllUsers(
       `sendBroadcastToAllUsers - total: ${total}, success: ${success}, failed: ${failed}`
     );
     throw error;
+  } finally {
+    // Always reset the broadcasting flag
+    isBroadcasting = false;
   }
 }
 
