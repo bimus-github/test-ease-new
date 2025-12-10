@@ -3,7 +3,7 @@
 import { LatexRenderer } from "@/components/math-live/LatexRenderer";
 import { useAppSelector } from "@/store/hooks";
 import { QuestionForm } from "@/types/question";
-import { SATSection, ScoringType, TestForm } from "@/types/test";
+import { SATSection, ScoringType, TestForm, UZDTMSection } from "@/types/test";
 import { formatLocalDate } from "@/lib/utils";
 
 interface Props {
@@ -68,6 +68,12 @@ export function Preview({
               SAT
             </div>
           )}
+          {form.scoring_type === ScoringType.UZ_DTM && (
+            <div>
+              <span className="text-neutral-500">Test turi:</span>{" "}
+              UZ DTM
+            </div>
+          )}
           {form.end_date && (
             <div>
               <span className="text-neutral-500">Tugash vaqti:</span>{" "}
@@ -106,6 +112,12 @@ export function Preview({
               SAT bo'limi
             </div>
             <div className="font-semibold">{form.sat_section === SATSection.MATH ? "Math" : "Reading and Writing"}</div>
+          </div>}
+          {form.scoring_type === ScoringType.UZ_DTM && <div className="rounded-md bg-neutral-100 p-3 text-center dark:bg-neutral-900">
+            <div className="text-xs text-neutral-500">
+              UZ DTM bo'limi
+            </div>
+            <div className="font-semibold">{form.uz_dtm_section}</div>
           </div>}
         </div>
       </section>

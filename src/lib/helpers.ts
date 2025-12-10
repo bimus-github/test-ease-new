@@ -38,9 +38,26 @@ export const calculateRowScore = (fullSubmission: FullSubmission): number => {
   fullSubmission.answers.forEach((answer) => {
     const question = questionMap.get(answer.question_id);
     if (question && checkAnswer(answer, question)) {
-      score += question.points || 0;
+      score += 1 || 0;
     }
   });
+  return score;
+};
+
+export const calculatePoints = (fullSubmission: FullSubmission): number => {
+  let score = 0;
+  if (!fullSubmission.test) return 0;
+  if (!fullSubmission.questions) return 0;
+  if (fullSubmission.test.scoring_type !== ScoringType.UZ_DTM) return 0;
+
+  const questionMap = new Map(fullSubmission.questions.map((q) => [q.id, q]));
+
+  fullSubmission.answers.forEach((answer) => {
+    const question = questionMap.get(answer.question_id);
+    if (question && checkAnswer(answer, question)) {
+      score += question.points || 0;
+    }
+  }); 
   return score;
 };
 
@@ -125,6 +142,8 @@ export const scoringTypeText = (scoringType: ScoringType): string => {
     return "Rasch baholash";
   case ScoringType.SAT_SCORING:
     return "SAT baholash";
+  case ScoringType.UZ_DTM:
+    return "UZ DTM baholash";
   default:
     return "Noma'lum";
  }
@@ -138,6 +157,8 @@ export const testTypeText = (testType: ScoringType): string => {
       return "Rasch baholash";
     case ScoringType.SAT_SCORING:
       return "SAT baholash";
+    case ScoringType.UZ_DTM:
+      return "UZ DTM baholash";
     default:
       return "Noma'lum";
   }

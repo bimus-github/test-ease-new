@@ -26,15 +26,20 @@ export async function sendAttemptSubmissionNotification(opts: {
       test?.scoring_type === ScoringType.RASCH_SCORING
         ? `Rasch bali test yakunlangandan keyin hisoblab beriladi.`
         : "";
+    const textOfUzDtmScoring =
+      test?.scoring_type === ScoringType.UZ_DTM
+        ? `UZ DTM bali test yakunlangandan keyin hisoblab beriladi.`
+        : "";
 
+    const additionalInfo = textOfRaschScoring || textOfUzDtmScoring;
     const text =
       `✅ Urinish yuborildi\n\n` +
       `📝 Test: ${attempt.test.title}\n` +
       `📊 Javoblar: ${correctAnswersCount}/${totalQuestions}\n\n` +
-      `${textOfRaschScoring ? textOfRaschScoring + "\n\n" : ""}` +
-      `Javoblar ro‘yxati:\n\n` +
+      `${additionalInfo ? additionalInfo + "\n\n" : ""}` +
+      `Javoblar ro'yxati:\n\n` +
       `${answersList}\n\n` +
-      `Natijangizni ko‘rish uchun quyidagi tugmani bosing.`;
+      `Natijangizni ko'rish uchun quyidagi tugmani bosing.`;
 
     const keyboard = {
       inline_keyboard: [

@@ -1,10 +1,9 @@
 "use server";
 import { sendTelegramMessage } from "@/telegram/bot";
 import { MY_RESULTS_ROUTE } from "@/constants/routes";
-import { ScoringType } from "@/types/test";
 import { getFullSubmissionsByUserId } from "@/dbs/submission-servers";
 import { FullSubmission } from "@/types/submission";
-import { gradeFromT, percentageFromT } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, testTypeText } from "@/lib/helpers";
 import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 import { formatUzbekistanDate } from "@/lib/utils";
 
@@ -28,10 +27,7 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
         const No = index + 1;
         const testTitle = submission.test.title;
         const testCode = submission.test.code;
-        const testTypeText =
-          submission.test.scoring_type === ScoringType.RASCH_SCORING
-            ? "Rasch baholash"
-            : "Oddiy baholash";
+        const testTypeTextValue = testTypeText(submission.test.scoring_type);
         const startedAt = submission.started_at
           ? formatUzbekistanDate(submission.started_at)
           : "—";
@@ -50,7 +46,7 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
           : "—";
 
         text += `${No}. ${testTitle} (${testCode})\n`;
-        text += `📋 Test turi: ${testTypeText}\n`;
+        text += `📋 Test turi: ${testTypeTextValue}\n`;
         text += `📅 Boshlangan: ${startedAt}\n`;
         text += `📅 Yuborilgan: ${submittedAt}\n`;
         text += `📊 Tog'ri javoblar: ${rowScore}\n`;

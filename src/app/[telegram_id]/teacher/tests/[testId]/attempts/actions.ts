@@ -8,7 +8,7 @@ import { ScoringType } from "@/types/test";
 import { sendTelegramDocument, sendTelegramMessage } from "@/telegram/bot";
 import { generateExcelContent } from "./components/submissions/utils/generateExcelContent";
 import { generateIndividualExcel } from "./components/submissions/utils/generateIndividualExcel";
-import { gradeFromT, percentageFromT, calculateSatScore } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
 import { formatLocalDate } from "@/lib/utils";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
 
@@ -118,6 +118,7 @@ export async function sendResultsToUsersAction(params: {
     const isRaschCalculated = test.isRaschCalculated ?? false;
     const showRasch = isRaschTest && isRaschCalculated;
     const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+    const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
 
     let sent = 0;
     let failed = 0;
@@ -153,6 +154,11 @@ export async function sendResultsToUsersAction(params: {
         if (isSatTest) {
           const satScore = calculateSatScore(submission);
           summaryText += `📊 SAT bali: ${satScore ?? "—"}\n`;
+        }
+
+        if (isUzDtmTest) {
+          const uzDtmPoints = calculatePoints(submission);
+          summaryText += `📊 UZ DTM bali: ${uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—"}\n`;
         }
 
         summaryText += `\n📎 Batafsil ma'lumot Excel faylida.`;

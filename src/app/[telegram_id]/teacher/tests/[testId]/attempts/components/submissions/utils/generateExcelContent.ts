@@ -1,6 +1,6 @@
 import type { FullSubmission } from "@/types/submission";
 import { Test, ScoringType } from "@/types/test";
-import { gradeFromT, percentageFromT, calculateSatScore } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
 import { formatLocalDate } from "@/lib/utils";
 import ExcelJS from "exceljs";
 
@@ -15,6 +15,7 @@ export async function generateExcelContent(
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
 
   // Create headers
   const headers = [
@@ -32,6 +33,10 @@ export async function generateExcelContent(
 
   if (isSatTest) {
     headers.push("SAT bali");
+  }
+
+  if (isUzDtmTest) {
+    headers.push("UZ DTM bali");
   }
 
   // Add header row with styling
@@ -68,6 +73,11 @@ export async function generateExcelContent(
     if (isSatTest) {
       const satScore = calculateSatScore(submission);
       row.push(satScore ?? "—");
+    }
+
+    if (isUzDtmTest) {
+      const uzDtmPoints = calculatePoints(submission);
+      row.push(uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—");
     }
 
     worksheet.addRow(row);

@@ -3,10 +3,11 @@ import { generateReadingWritingSATQuestions } from "@/constants/sat/reading-writ
 import { generateChemistrySertificateUzQuestions } from "@/constants/sertificate-uz/chemstry"
 import { generateMathSertificateUzQuestions } from "@/constants/sertificate-uz/math"
 import { generateRussianSertificateUzQuestions } from "@/constants/sertificate-uz/russian"
+import { generateUZDTMQuestions } from "@/constants/uz-dtm/index"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { testFromActions, initialState } from "@/store/slices/forms/test"
 import { SertificateType } from "@/types/sertificate"
-import { ScoringType, SATSection } from "@/types/test"
+import { ScoringType, SATSection, UZDTMSection } from "@/types/test"
 import { useParams, useSearchParams } from "next/navigation"
 import { useEffect, useRef } from "react"
 
@@ -18,6 +19,7 @@ export const useInitTest = () => {
     const {telegram_id} = useParams<{telegram_id: string}>()
     const satSection = searchParams.get('satSection')
     const sertificateType = searchParams.get('sertificateType')
+    const uzDtmSection = searchParams.get('uzDtmSection')
     const scoringType = searchParams.get('scoringType')
     
     // Use ref to track if initialization has happened to prevent unnecessary re-initializations
@@ -27,10 +29,11 @@ export const useInitTest = () => {
         // Check if any of the required params have changed
         const isNewSection = satSection && satSection !== test?.sat_section
         const isNewSertificateType = sertificateType && sertificateType !== test?.sertificate_type
+        const isNewUzDtmSection = uzDtmSection && uzDtmSection !== test?.uz_dtm_section
         const isNewScoringType = scoringType && scoringType !== test?.scoring_type
         const isNewTg = telegram_id && telegram_id !== test?.teacher_id
 
-        const shouldReset = isNewSection || isNewSertificateType || isNewScoringType || isNewTg
+        const shouldReset = isNewSection || isNewSertificateType || isNewUzDtmSection || isNewScoringType || isNewTg
         
         if (shouldReset) {
             // Build the new test object with all values at once to avoid race conditions
@@ -38,6 +41,7 @@ export const useInitTest = () => {
                 ...initialState.test,
                 ...(satSection && { sat_section: satSection as SATSection }),
                 ...(sertificateType && { sertificate_type: sertificateType as SertificateType }),
+                ...(uzDtmSection && { uz_dtm_section: uzDtmSection as UZDTMSection }),
                 ...(scoringType && { scoring_type: scoringType as ScoringType }),
                 ...(telegram_id && { teacher_id: telegram_id }),
             }
@@ -46,7 +50,8 @@ export const useInitTest = () => {
             const initialQuestions = getInitQuestions(
                 (scoringType as ScoringType) || ScoringType.RASCH_SCORING,
                 sertificateType as SertificateType | undefined,
-                satSection as SATSection | undefined
+                satSection as SATSection | undefined,
+                uzDtmSection as UZDTMSection | undefined
             )
 
             // Dispatch all updates in a single batch
@@ -55,12 +60,13 @@ export const useInitTest = () => {
             dispatch(testFromActions.setQuestions(initialQuestions))
             
             initializedRef.current = true
-        } else if (!initializedRef.current && (satSection || sertificateType || scoringType || telegram_id)) {
+        } else if (!initializedRef.current && (satSection || sertificateType || uzDtmSection || scoringType || telegram_id)) {
             // Initial setup when component first mounts with params
             const newTest = {
                 ...initialState.test,
                 ...(satSection && { sat_section: satSection as SATSection }),
                 ...(sertificateType && { sertificate_type: sertificateType as SertificateType }),
+                ...(uzDtmSection && { uz_dtm_section: uzDtmSection as UZDTMSection }),
                 ...(scoringType && { scoring_type: scoringType as ScoringType }),
                 ...(telegram_id && { teacher_id: telegram_id }),
             }
@@ -68,20 +74,22 @@ export const useInitTest = () => {
             const initialQuestions = getInitQuestions(
                 (scoringType as ScoringType) || ScoringType.RASCH_SCORING,
                 sertificateType as SertificateType | undefined,
-                satSection as SATSection | undefined
+                satSection as SATSection | undefined,
+                uzDtmSection as UZDTMSection | undefined
             )
 
             dispatch(testFromActions.setTest(newTest))
             dispatch(testFromActions.setQuestions(initialQuestions))
             initializedRef.current = true
         }
-    }, [satSection, sertificateType, scoringType, telegram_id, dispatch, test?.sat_section, test?.sertificate_type, test?.scoring_type, test?.teacher_id])
+    }, [satSection, sertificateType, uzDtmSection, scoringType, telegram_id, dispatch, test?.sat_section, test?.sertificate_type, test?.uz_dtm_section, test?.scoring_type, test?.teacher_id])
 }
 
 export const getInitQuestions = (
     scoringType: ScoringType, 
     sertificateType?: SertificateType, 
-    satSection?: SATSection
+    satSection?: SATSection,
+    uzDtmSection?: UZDTMSection
 ) => {
     switch (scoringType) {
         case ScoringType.RASCH_SCORING:
@@ -112,6 +120,9 @@ export const getInitQuestions = (
                 default:
                     return []
             }
+        case ScoringType.UZ_DTM:
+            if (!uzDtmSection) return []
+            return generateUZDTMQuestions(uzDtmSection)
         default:
             return []
     }

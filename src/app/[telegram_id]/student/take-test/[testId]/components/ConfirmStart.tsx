@@ -1,6 +1,6 @@
 "use client";
 
-import { ScoringType, SATSection } from "@/types/test";
+import { ScoringType, SATSection, UZDTMSection } from "@/types/test";
 import { formatLocalDate } from "@/lib/utils";
 
 export function ConfirmStart({
@@ -8,6 +8,7 @@ export function ConfirmStart({
   endDate,
   scoringType,
   satSection,
+  uzDtmSection,
   isStarting,
   onStart,
 }: {
@@ -15,6 +16,7 @@ export function ConfirmStart({
   endDate?: string;
   scoringType: ScoringType;
   satSection?: SATSection;
+  uzDtmSection?: UZDTMSection;
   isStarting: boolean;
   onStart: () => Promise<void>;
 }) {
@@ -32,6 +34,13 @@ export function ConfirmStart({
           title: "Rasch Baholash",
           description: "Rasch bali test yakunlangandan keyin hisoblab beriladi.",
           badgeColor: "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300",
+        };
+      case ScoringType.UZ_DTM:
+        return {
+          title: "UZ DTM Test",
+          description: `Bu UZ DTM test. Jami ${questionCount} ta savol.`,
+          section: uzDtmSection,
+          badgeColor: "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-300",
         };
       default:
         return {

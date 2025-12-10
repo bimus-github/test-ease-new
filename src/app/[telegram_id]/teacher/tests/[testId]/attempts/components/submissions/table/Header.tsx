@@ -11,6 +11,7 @@ function Header(props: HeaderProps) {
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
 
   return (
     <thead className="bg-neutral-50 text-xs dark:bg-neutral-900">
@@ -41,6 +42,11 @@ function Header(props: HeaderProps) {
         {isSatTest && (
           <th className="px-3 py-2 font-medium text-neutral-600">
             SAT bali
+          </th>
+        )}
+        {isUzDtmTest && (
+          <th className="px-3 py-2 font-medium text-neutral-600">
+            UZ DTM bali
           </th>
         )}
         <th className="px-3 py-2 font-medium text-neutral-600">Amal</th>

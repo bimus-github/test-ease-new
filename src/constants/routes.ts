@@ -1,5 +1,5 @@
 import { SertificateType } from "@/types/sertificate";
-import { SATSection, ScoringType } from "@/types/test";
+import { SATSection, ScoringType, UZDTMSection } from "@/types/test";
 
 const redirectBase = process.env.NEXT_PUBLIC_REDIRECT_BASE || "";
 const base = redirectBase || "";
@@ -9,29 +9,33 @@ export const CREATE_TEST_ROUTE = ({
   telegramId,
   scoringType,
   sertificateType,
-  satSection
+  satSection,
+  uzDtmSection
 }:{
   telegramId: number | string,
   scoringType?: ScoringType,
   sertificateType?: SertificateType,
-  satSection?: SATSection  
+  satSection?: SATSection,
+  uzDtmSection?: UZDTMSection
 }) =>
-  `${base}/${telegramId.toString()}/teacher/test-form/create?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}`;
+  `${base}/${telegramId.toString()}/teacher/test-form/create?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}&uzDtmSection=${uzDtmSection}`;
 
 export const EDIT_TEST_ROUTE = ({
   testId,
   telegramId,
   scoringType,
   sertificateType,
-  satSection
+  satSection,
+  uzDtmSection
 }:{
   testId: string,
   telegramId: number | string,
   scoringType: ScoringType,
   sertificateType?: SertificateType,
-  satSection?: SATSection
+  satSection?: SATSection,
+  uzDtmSection?: UZDTMSection
 }) =>
-  `${base}/${telegramId.toString()}/teacher/test-form/edit/${testId}?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}`;
+  `${base}/${telegramId.toString()}/teacher/test-form/edit/${testId}?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}&uzDtmSection=${uzDtmSection}`;
 
 export const VIEW_TEST_ROUTE = ({
   testId,

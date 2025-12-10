@@ -10,11 +10,18 @@ export enum ScoringType {
   SIMPLE_SCORING = "simple_scoring", // 1 point for each correct answer
   RASCH_SCORING = "rasch_scoring", // Rasch scoring model
   SAT_SCORING = "sat_scoring", // SAT scoring model
+  UZ_DTM = "uz_dtm", // UZ DTM scoring model
 }
 
 export enum SATSection {
   MATH = "math",
   READING_WRITING = "reading_writing",
+}
+
+export enum UZDTMSection {
+  ONE_DOT_ONE = "Majburiy Fanlar",
+  TWO_DOT_ONE = "2-mutaxassislik fani",
+  THREE_DOT_ONE = "1-mutaxassislik fani",
 }
 
 export interface Test {
@@ -31,8 +38,10 @@ export interface Test {
   updated_at: string;
   sertificate_type?: SertificateType;
   sat_section?: SATSection;
+  uz_dtm_section?: UZDTMSection;
   isRaschCalculated?: boolean;
   rasch_calculated_at?: string;
+
 }
 
 export interface TestWithQuestions extends Test {

@@ -1,6 +1,6 @@
 import type { FullSubmission } from "@/types/submission";
 import { Test, ScoringType } from "@/types/test";
-import { gradeFromT, percentageFromT, calculateSatScore, checkAnswer } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints, checkAnswer } from "@/lib/helpers";
 import { formatLocalDate } from "@/lib/utils";
 import ExcelJS from "exceljs";
 
@@ -14,6 +14,7 @@ export async function generateIndividualExcel(
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
 
   // Sheet 1: Summary
   const summarySheet = workbook.addWorksheet("Natijalar");
@@ -68,6 +69,11 @@ export async function generateIndividualExcel(
   if (isSatTest) {
     const satScore = calculateSatScore(submission);
     summarySheet.addRow(["SAT bali:", satScore]);
+  }
+
+  if (isUzDtmTest) {
+    const uzDtmPoints = calculatePoints(submission);
+    summarySheet.addRow(["UZ DTM bali:", uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—"]);
   }
 
   // Style summary sheet

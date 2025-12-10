@@ -35,6 +35,7 @@ export const useLoadTest = () => {
             teacher_id: data.teacher_id,
             sat_section: data.sat_section,
             sertificate_type: data.sertificate_type,
+            uz_dtm_section: data.uz_dtm_section,
           };
     
           // Map Questions to QuestionForm (exclude id, created_at, updated_at, test_id)

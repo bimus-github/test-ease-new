@@ -2,7 +2,7 @@
 
 import type { FullSubmission } from "@/types/submission";
 import { ScoringType } from "@/types/test";
-import { gradeFromT, percentageFromT, calculateSatScore } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
 import { formatLocalDate, isPast } from "@/lib/utils";
 import { ScoringBadge } from "./ScoringBadge";
 
@@ -23,9 +23,11 @@ export function MobileCard({
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
 
   const t = submission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(submission) : null;
+  const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
 
   // Check if test has ended
   const testHasEnded = isPast(test.end_date);
@@ -44,7 +46,7 @@ export function MobileCard({
             </div>
           </div>
           <div className="mb-2 text-xs text-neutral-500">{test.code}</div>
-          <ScoringBadge scoringType={test.scoring_type} satSection={test.sat_section} />
+          <ScoringBadge scoringType={test.scoring_type} satSection={test.sat_section} uzDtmSection={test.uz_dtm_section} />
         </div>
         <a
           href={renderResultLink(submission.id)}
@@ -91,7 +93,7 @@ export function MobileCard({
             </div>
           </div>
 
-          {/* SAT Score or Rasch T or Percentage */}
+          {/* SAT Score or UZ DTM Points or Rasch T or Percentage */}
           {isSatTest ? (
             <div className="rounded-md border border-purple-200 bg-purple-50/50 p-2.5 dark:border-purple-800 dark:bg-purple-950/20">
               <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">
@@ -99,6 +101,15 @@ export function MobileCard({
               </div>
               <div className="text-lg font-bold text-purple-700 dark:text-purple-300">
                 {testHasEnded && satScore != null ? satScore : ""}
+              </div>
+            </div>
+          ) : isUzDtmTest ? (
+            <div className="rounded-md border border-green-200 bg-green-50/50 p-2.5 dark:border-green-800 dark:bg-green-950/20">
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-green-600 dark:text-green-400">
+                UZ DTM bali
+              </div>
+              <div className="text-lg font-bold text-green-700 dark:text-green-300">
+                {testHasEnded && uzDtmPoints != null ? uzDtmPoints.toFixed(1) : ""}
               </div>
             </div>
           ) : showRasch ? (

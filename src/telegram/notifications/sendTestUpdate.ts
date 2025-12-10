@@ -2,6 +2,8 @@ import { formatUzbekistanDate } from "@/lib/utils";
 import { Test, TestWithQuestions } from "@/types/test";
 import { sendTelegramMessage } from "../bot";
 import { sendProductionErrors } from "./sendProductionErrors";
+import { testTypeText } from "@/lib/helpers";
+import { ScoringType } from "@/types/test";
 
 /**
  * Send test update notification to teacher's Telegram chat
@@ -25,8 +27,7 @@ export async function sendTestUpdateNotification(
 
     const questions = "questions" in test ? test.questions : undefined;
 
-    const scoringText =
-      scoring_type === "simple_scoring" ? "Oddiy baholash" : "Rasch baholash";
+    const scoringText = testTypeText(scoring_type as ScoringType);
 
     let message = `✏️ *Test muvaffaqiyatli yangilandi!*\n\n`;
     message += `📝 *Sarlavha:* ${title}\n`;

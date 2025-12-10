@@ -2,7 +2,7 @@
 
 import type { FullSubmission } from "@/types/submission";
 import { ScoringType } from "@/types/test";
-import { gradeFromT, percentageFromT, calculateSatScore } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
 import { formatLocalDate, isPast } from "@/lib/utils";
 import { ScoringBadge } from "../ScoringBadge";
 
@@ -19,9 +19,11 @@ export function Row({ submission, index, renderResultLink }: RowProps) {
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
 
   const t = submission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(submission) : null;
+  const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
 
   // Check if test has ended
   const testHasEnded = isPast(test.end_date);
@@ -36,7 +38,7 @@ export function Row({ submission, index, renderResultLink }: RowProps) {
         <div className="text-xs text-neutral-500">{test.code}</div>
       </td>
       <td className="px-3 py-2">
-        <ScoringBadge scoringType={test.scoring_type} satSection={test.sat_section} />
+        <ScoringBadge scoringType={test.scoring_type} satSection={test.sat_section} uzDtmSection={test.uz_dtm_section} />
       </td>
       <td className="px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300">
         {submission.submitted_at ? formatLocalDate(submission.submitted_at) : ""}
@@ -78,6 +80,15 @@ export function Row({ submission, index, renderResultLink }: RowProps) {
       {isSatTest ? (
         <td className="px-3 py-2">
           {testHasEnded && satScore != null ? satScore : ""}
+        </td>
+      ) : (
+        <td className="px-3 py-2">
+          -
+        </td>
+      )}
+      {isUzDtmTest ? (
+        <td className="px-3 py-2">
+          {testHasEnded && uzDtmPoints != null ? uzDtmPoints.toFixed(1) : ""}
         </td>
       ) : (
         <td className="px-3 py-2">

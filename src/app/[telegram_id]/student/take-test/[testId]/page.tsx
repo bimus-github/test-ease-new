@@ -118,6 +118,7 @@ export default function Page() {
           endDate={test.end_date}
           scoringType={test.scoring_type}
           satSection={test.sat_section}
+          uzDtmSection={test.uz_dtm_section}
           isStarting={startMutation.isPending}
           onStart={async () => {
             await startMutation.mutateAsync({

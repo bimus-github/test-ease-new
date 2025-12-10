@@ -2,7 +2,7 @@ import { sendTelegramMessage } from "@/telegram/bot";
 import { SertificateType } from "@/types/sertificate";
 import { sendProductionErrors } from "../notifications/sendProductionErrors";
 import { CREATE_TEST_ROUTE } from "@/constants/routes";
-import { ScoringType, SATSection } from "@/types/test";
+import { ScoringType, SATSection, UZDTMSection } from "@/types/test";
 import { answerCallbackQuery } from "./callbacks";
 
 // RASCH scoring items (certificate types)
@@ -30,11 +30,19 @@ const satKeyboardItems = [
   { text: "Reading & Writing", section: SATSection.READING_WRITING },
 ];
 
+// UZ DTM scoring items
+const uzDtmKeyboardItems = [
+  { text: "Majburiy Fanlar", section: UZDTMSection.ONE_DOT_ONE },
+  { text: "2-mutaxassislik fani", section: UZDTMSection.TWO_DOT_ONE },
+  { text: "1-mutaxassislik fani", section: UZDTMSection.THREE_DOT_ONE },
+];
+
 // Callback data prefixes
 export const CALLBACK_PREFIXES = {
   CREATE_TEST_SCORING: "create_test_scoring:",
   CREATE_TEST_RASCH: "create_test_rasch:",
   CREATE_TEST_SAT: "create_test_sat:",
+  CREATE_TEST_UZ_DTM: "create_test_uz_dtm:",
   CONFIRM_BROADCAST: "confirm_broadcast:",
   CANCEL_BROADCAST: "cancel_broadcast",
 } as const;
@@ -56,6 +64,12 @@ export async function showCreateTestMenu(chatId: number | string) {
           {
             text: "📈 SAT",
             callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}sat`,
+          },
+        ],
+        [
+          {
+            text: "🎓 UZ DTM",
+            callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}uz_dtm`,
           },
         ],
       ],
@@ -135,6 +149,37 @@ export async function showSATTestMenu(chatId: number | string) {
 }
 
 /**
+ * Show UZ DTM scoring menu with sections
+ */
+export async function showUZDTMTestMenu(chatId: number | string) {
+  try {
+    const keyboard = {
+      inline_keyboard: uzDtmKeyboardItems.map((item) => [
+        {
+          text: item.text,
+          web_app: {
+            url: CREATE_TEST_ROUTE({
+              telegramId: chatId,
+              uzDtmSection: item.section,
+              scoringType: ScoringType.UZ_DTM,
+            }),
+          },
+        },
+      ]),
+    };
+
+    return sendTelegramMessage(
+      chatId,
+      `🎓 UZ DTM\n\nQaysi bo'lim bo'yicha test yaratmoqchisiz?`,
+      { parse_mode: "Markdown", reply_markup: keyboard }
+    );
+  } catch (error) {
+    sendProductionErrors(error, `showUZDTMTestMenu - chatId: ${chatId}`);
+    console.error("Error showing UZ DTM test menu:", error);
+  }
+}
+
+/**
  * Handle callback query for scoring type selection
  */
 export async function handleCreateTestCallback(
@@ -154,6 +199,8 @@ export async function handleCreateTestCallback(
         await showRaschTestMenu(chatId);
       } else if (scoringType === "sat") {
         await showSATTestMenu(chatId);
+      } else if (scoringType === "uz_dtm") {
+        await showUZDTMTestMenu(chatId);
       }
     }
   } catch (error) {

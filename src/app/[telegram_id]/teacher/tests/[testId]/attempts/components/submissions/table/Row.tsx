@@ -1,7 +1,7 @@
 import type { FullSubmission } from "@/types/submission";
 import { Test, ScoringType } from "@/types/test";
 import Link from "next/link";
-import { gradeFromT, percentageFromT, calculateSatScore } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
 import { formatLocalDate } from "@/lib/utils";
 
 interface RowProps {
@@ -18,9 +18,11 @@ function Row(props: RowProps) {
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
   
   const t = submission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(submission) : null;
+  const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
 
   return (
     <tr
@@ -56,6 +58,9 @@ function Row(props: RowProps) {
       )}
       {isSatTest && (
         <td className="px-3 py-2">{satScore ?? "—"}</td>
+      )}
+      {isUzDtmTest && (
+        <td className="px-3 py-2">{uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—"}</td>
       )}
       <td className="px-3 py-2">
         <a

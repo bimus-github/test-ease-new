@@ -5,6 +5,7 @@ import { ScoringType } from "@/types/test";
 import {
   calculateRowScore,
   calculateSatScore,
+  calculatePoints,
   gradeFromT,
   percentageFromT,
 } from "@/lib/helpers";
@@ -28,6 +29,7 @@ export function ScoreSummary({
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
   const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
 
 
@@ -35,6 +37,7 @@ export function ScoreSummary({
   const totalQuestions = questions.length;
   const raschT = fullSubmission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(fullSubmission) : null;
+  const uzDtmPoints = isUzDtmTest ? calculatePoints(fullSubmission) : null;
 
   console.log(satScore)
   return (
@@ -68,6 +71,21 @@ export function ScoreSummary({
             </div>
             <div className="mt-1 text-xs text-purple-600 dark:text-purple-400">
               / 800 maksimal
+            </div>
+          </div>
+        )}
+
+        {/* UZ DTM Points - Only for UZ DTM tests */}
+        {isUzDtmTest && uzDtmPoints !== null && (
+          <div className="rounded-lg border-2 border-green-200 bg-green-50/50 p-4 dark:border-green-800 dark:bg-green-950/20">
+            <div className="mb-1 text-xs font-medium text-green-600 dark:text-green-400">
+              UZ DTM bali
+            </div>
+            <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+              {uzDtmPoints.toFixed(1)}
+            </div>
+            <div className="mt-1 text-xs text-green-600 dark:text-green-400">
+              Ballar
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import type { FullSubmission } from "@/types/submission";
 import { ScoringType } from "@/types/test";
-import { calculateSatScore } from "@/lib/helpers";
+import { calculateSatScore, calculatePoints } from "@/lib/helpers";
 
 interface ScoreSummaryProps {
   fullSubmission: FullSubmission;
@@ -10,7 +10,9 @@ interface ScoreSummaryProps {
 
 export function ScoreSummary({ fullSubmission }: ScoreSummaryProps) {
   const isSatTest = fullSubmission.test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = fullSubmission.test.scoring_type === ScoringType.UZ_DTM;
   const satScore = isSatTest ? calculateSatScore(fullSubmission) : null;
+  const uzDtmPoints = isUzDtmTest ? calculatePoints(fullSubmission) : null;
   const totalQuestions = fullSubmission.questions?.length || 0;
   const correctAnswers = fullSubmission.row_score ?? 0;
   const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
@@ -40,6 +42,19 @@ export function ScoreSummary({ fullSubmission }: ScoreSummaryProps) {
             </div>
             <div className="mt-1 text-xs text-purple-600 dark:text-purple-400">
               / 800
+            </div>
+          </div>
+        )}
+        {isUzDtmTest && uzDtmPoints != null && (
+          <div className="rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30">
+            <div className="mb-1 text-xs font-medium uppercase tracking-wide text-green-600 dark:text-green-400">
+              UZ DTM bali
+            </div>
+            <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+              {uzDtmPoints.toFixed(1)}
+            </div>
+            <div className="mt-1 text-xs text-green-600 dark:text-green-400">
+              Ballar
             </div>
           </div>
         )}

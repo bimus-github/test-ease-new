@@ -1,13 +1,14 @@
 "use client";
 
-import { ScoringType, SATSection } from "@/types/test";
+import { ScoringType, SATSection, UZDTMSection } from "@/types/test";
 
 interface ScoringBadgeProps {
   scoringType: ScoringType;
   satSection?: SATSection;
+  uzDtmSection?: UZDTMSection;
 }
 
-export function ScoringBadge({ scoringType, satSection }: ScoringBadgeProps) {
+export function ScoringBadge({ scoringType, satSection, uzDtmSection }: ScoringBadgeProps) {
   switch (scoringType) {
     case ScoringType.SAT_SCORING:
       return (
@@ -19,6 +20,12 @@ export function ScoringBadge({ scoringType, satSection }: ScoringBadgeProps) {
       return (
         <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
           Rasch Baholash
+        </span>
+      );
+    case ScoringType.UZ_DTM:
+      return (
+        <span className="inline-flex items-center rounded-full border border-green-300 bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:border-green-700 dark:bg-green-950/30 dark:text-green-300">
+          UZ DTM Test{uzDtmSection && ` (${uzDtmSection})`}
         </span>
       );
     default:

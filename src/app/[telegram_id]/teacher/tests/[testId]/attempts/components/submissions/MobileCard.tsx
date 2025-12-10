@@ -1,7 +1,7 @@
 import type { FullSubmission } from "@/types/submission";
 import { Test, ScoringType } from "@/types/test";
 import Link from "next/link";
-import { gradeFromT, percentageFromT, calculateSatScore } from "@/lib/helpers";
+import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
 
 interface MobileCardProps {
   submission: FullSubmission;
@@ -17,9 +17,11 @@ function MobileCard(props: MobileCardProps) {
   const isRaschCalculated = test.isRaschCalculated ?? false;
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
+  const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
   
   const t = submission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(submission) : null;
+  const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
 
   return (
     <div className="group rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
@@ -96,7 +98,7 @@ function MobileCard(props: MobileCardProps) {
             </div>
           </div>
 
-          {/* SAT Score or Rasch/Space */}
+          {/* SAT Score or UZ DTM Points or Rasch/Space */}
           {isSatTest ? (
             <div className="rounded-md bg-purple-50 p-2.5 dark:bg-purple-950/30">
               <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">
@@ -104,6 +106,15 @@ function MobileCard(props: MobileCardProps) {
               </div>
               <div className="text-lg font-bold text-purple-700 dark:text-purple-300">
                 {satScore ?? "—"}
+              </div>
+            </div>
+          ) : isUzDtmTest ? (
+            <div className="rounded-md bg-green-50 p-2.5 dark:bg-green-950/30">
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-green-600 dark:text-green-400">
+                UZ DTM bali
+              </div>
+              <div className="text-lg font-bold text-green-700 dark:text-green-300">
+                {uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—"}
               </div>
             </div>
           ) : showRasch ? (
