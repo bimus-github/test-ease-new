@@ -35,14 +35,17 @@ export async function updateExpiredTests(): Promise<number> {
  */
 export async function createTest(testData: TestForm): Promise<Test | null> {
   try {
+    // Filter out undefined values to prevent enum errors
+    const cleanTestData = Object.fromEntries(
+      Object.entries({
+        ...testData,
+        end_date: ensureISOString(testData.end_date),
+      }).filter(([_, value]) => value !== undefined)
+    );
+
     const { data, error } = await supabase
       .from("tests")
-      .insert({
-        ...testData,
-        // testData.end_date should already be converted to ISO on client side
-        // ensureISOString provides safety net
-        end_date: ensureISOString(testData.end_date),
-      })
+      .insert(cleanTestData)
       .select()
       .single();
 
@@ -140,19 +143,21 @@ export async function updateTest(
   updates: Partial<TestForm>
 ): Promise<Test | null> {
   try {
-    const { data, error } = await supabase
-      .from("tests")
-      .update({
+    // Filter out undefined values to prevent enum errors
+    const cleanUpdates = Object.fromEntries(
+      Object.entries({
         ...updates,
-        // updateTestWithQuestionsAction already converts datetime-local to ISO
-        // ensureISOString() provides a safety net for any edge cases
-        // Supabase handles ISO strings directly, no need for new Date() wrapper
         end_date: ensureISOString(updates.end_date),
         status:
           isPast(updates.end_date)
             ? TestStatus.INACTIVE
             : TestStatus.ACTIVE,
-      })
+      }).filter(([_, value]) => value !== undefined)
+    );
+
+    const { data, error } = await supabase
+      .from("tests")
+      .update(cleanUpdates)
       .eq("id", id)
       .select()
       .single();
@@ -325,11 +330,17 @@ export async function createTestWithQuestions(
 ): Promise<TestWithQuestions | null> {
   try {
     // First create the test
-    // testData.end_date should already be converted to ISO on client side
-    // ensureISOString provides safety net
+    // Filter out undefined values to prevent enum errors
+    const cleanTestData = Object.fromEntries(
+      Object.entries({
+        ...testData,
+        end_date: ensureISOString(testData.end_date),
+      }).filter(([_, value]) => value !== undefined)
+    );
+
     const { data: test, error: testError } = await supabase
       .from("tests")
-      .insert({ ...testData, end_date: ensureISOString(testData.end_date) })
+      .insert(cleanTestData)
       .select()
       .single();
 
