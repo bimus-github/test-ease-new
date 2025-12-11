@@ -20,10 +20,12 @@ export function Row({ submission, index, renderResultLink }: RowProps) {
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
   const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
+  const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
 
   const t = submission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(submission) : null;
   const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
+  const simplePoints = isSimpleTest ? calculatePoints(submission) : null;
 
   // Check if test has ended
   const testHasEnded = isPast(test.end_date);
@@ -89,6 +91,15 @@ export function Row({ submission, index, renderResultLink }: RowProps) {
       {isUzDtmTest ? (
         <td className="px-3 py-2">
           {testHasEnded && uzDtmPoints != null ? uzDtmPoints.toFixed(1) : ""}
+        </td>
+      ) : (
+        <td className="px-3 py-2">
+          -
+        </td>
+      )}
+      {isSimpleTest ? (
+        <td className="px-3 py-2">
+          {testHasEnded && simplePoints != null ? simplePoints.toFixed(1) : ""}
         </td>
       ) : (
         <td className="px-3 py-2">

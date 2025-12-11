@@ -16,6 +16,7 @@ export async function generateExcelContent(
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
   const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
+  const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
 
   // Create headers
   const headers = [
@@ -37,6 +38,10 @@ export async function generateExcelContent(
 
   if (isUzDtmTest) {
     headers.push("UZ DTM bali");
+  }
+
+  if (isSimpleTest) {
+    headers.push("Ballar");
   }
 
   // Add header row with styling
@@ -78,6 +83,11 @@ export async function generateExcelContent(
     if (isUzDtmTest) {
       const uzDtmPoints = calculatePoints(submission);
       row.push(uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—");
+    }
+
+    if (isSimpleTest) {
+      const simplePoints = calculatePoints(submission);
+      row.push(simplePoints != null ? simplePoints.toFixed(1) : "—");
     }
 
     worksheet.addRow(row);

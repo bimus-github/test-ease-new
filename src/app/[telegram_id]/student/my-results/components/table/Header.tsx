@@ -20,6 +20,9 @@ export function Header({ submissions }: HeaderProps) {
   const hasUzDtmTest = submissions.some(
     (s) => s.test.scoring_type === ScoringType.UZ_DTM
   );
+  const hasSimpleTest = submissions.some(
+    (s) => s.test.scoring_type === ScoringType.SIMPLE_SCORING
+  );
 
   return (
     <thead className="bg-neutral-50 text-xs dark:bg-neutral-900">
@@ -45,6 +48,9 @@ export function Header({ submissions }: HeaderProps) {
         )}
         {hasUzDtmTest && (
           <th className="px-3 py-2 font-medium text-neutral-600">UZ DTM bali</th>
+        )}
+        {hasSimpleTest && (
+          <th className="px-3 py-2 font-medium text-neutral-600">Ballar</th>
         )}
         <th className="px-3 py-2 font-medium text-neutral-600">Amal</th>
       </tr>

@@ -84,6 +84,43 @@ export const testSlice = createSlice({
     setSertificateType: (state, action: PayloadAction<SertificateType>) => {
       state.test.sertificate_type = action.payload;
     },
+    setQuestionPoints: (
+      state,
+      action: PayloadAction<{ question_label: string; points: number }>
+    ) => {
+      const currentQuestion = state.questions.find(
+        (q) => q.question_label === action.payload.question_label
+      );
+      if (currentQuestion) {
+        currentQuestion.points = action.payload.points;
+      }
+    },
+    setQuestionsCount: (state, action: PayloadAction<number>) => {
+      const count = action.payload;
+      const currentCount = state.questions.length;
+      
+      if (count > currentCount) {
+        // Add new questions
+        const newQuestions: QuestionForm[] = [];
+        for (let i = currentCount + 1; i <= count; i++) {
+          newQuestions.push({
+            test_id: "",
+            question_label: `${i}-savol`,
+            question_text: "Savol matnini o'qituvchidan olishingiz mumkin.",
+            question_type: "multiple_choice",
+            question_order: i,
+            points: 1,
+            is_required: true,
+            options: ["A", "B", "C", "D"],
+            correct_answer: "",
+          });
+        }
+        state.questions = [...state.questions, ...newQuestions];
+      } else if (count < currentCount) {
+        // Remove questions
+        state.questions = state.questions.slice(0, count);
+      }
+    },
     reset: (state) => {
       state.test = initialState.test;
       state.questions = initialState.questions;

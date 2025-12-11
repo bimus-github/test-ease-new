@@ -92,6 +92,9 @@ export const getInitQuestions = (
     uzDtmSection?: UZDTMSection
 ) => {
     switch (scoringType) {
+        case ScoringType.SIMPLE_SCORING:
+            // For simple scoring, return empty array - user will set count via input
+            return [];
         case ScoringType.RASCH_SCORING:
             if (!sertificateType) return []
             switch (sertificateType) {

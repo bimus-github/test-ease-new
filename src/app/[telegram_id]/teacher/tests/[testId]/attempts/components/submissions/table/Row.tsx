@@ -19,10 +19,12 @@ function Row(props: RowProps) {
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
   const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
+  const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
   
   const t = submission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(submission) : null;
   const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
+  const simplePoints = isSimpleTest ? calculatePoints(submission) : null;
 
   return (
     <tr
@@ -61,6 +63,9 @@ function Row(props: RowProps) {
       )}
       {isUzDtmTest && (
         <td className="px-3 py-2">{uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—"}</td>
+      )}
+      {isSimpleTest && (
+        <td className="px-3 py-2">{simplePoints != null ? simplePoints.toFixed(1) : "—"}</td>
       )}
       <td className="px-3 py-2">
         <a

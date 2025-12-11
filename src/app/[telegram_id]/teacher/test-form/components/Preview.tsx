@@ -26,6 +26,12 @@ export function Preview({
     (q) => !!q.correct_answer?.length || !!q.correct_options?.length
   ).length;
 
+  const isSimpleScoring = form.scoring_type === ScoringType.SIMPLE_SCORING;
+  const isUzDtm = form.scoring_type === ScoringType.UZ_DTM;
+  const maxPoints = (isSimpleScoring || isUzDtm)
+    ? questions.reduce((sum, q) => sum + (q.points || 0), 0)
+    : 0;
+
   return (
     <div className="mx-auto w-full max-w-3xl p-4 sm:p-6">
       <div className="mb-4 grid gap-2">
@@ -54,6 +60,12 @@ export function Preview({
             <div>
               <span className="text-neutral-500">Ko‘rsatmalar:</span>{" "}
               {form.instructions}
+            </div>
+          )}
+          {form.scoring_type === ScoringType.SIMPLE_SCORING && (
+            <div>
+              <span className="text-neutral-500">Baholash turi:</span>{" "}
+              Oddiy baholash
             </div>
           )}
           {form.scoring_type === ScoringType.RASCH_SCORING && (
@@ -112,6 +124,12 @@ export function Preview({
               SAT bo'limi
             </div>
             <div className="font-semibold">{form.sat_section === SATSection.MATH ? "Math" : "Reading and Writing"}</div>
+          </div>}
+          {(isSimpleScoring || isUzDtm) && <div className="rounded-md bg-neutral-100 p-3 text-center dark:bg-neutral-900">
+            <div className="text-xs text-neutral-500">
+              Jami ball
+            </div>
+            <div className="text-lg font-semibold">{maxPoints.toFixed(1)}</div>
           </div>}
           {form.scoring_type === ScoringType.UZ_DTM && <div className="rounded-md bg-neutral-100 p-3 text-center dark:bg-neutral-900">
             <div className="text-xs text-neutral-500">

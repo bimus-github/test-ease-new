@@ -30,8 +30,12 @@ export async function sendAttemptSubmissionNotification(opts: {
       test?.scoring_type === ScoringType.UZ_DTM
         ? `UZ DTM bali test yakunlangandan keyin hisoblab beriladi.`
         : "";
+    const textOfSimpleScoring =
+      test?.scoring_type === ScoringType.SIMPLE_SCORING
+        ? `Ballar test yakunlangandan keyin hisoblab beriladi.`
+        : "";
 
-    const additionalInfo = textOfRaschScoring || textOfUzDtmScoring;
+    const additionalInfo = textOfRaschScoring || textOfUzDtmScoring || textOfSimpleScoring;
     const text =
       `✅ Urinish yuborildi\n\n` +
       `📝 Test: ${attempt.test.title}\n` +

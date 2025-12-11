@@ -24,10 +24,12 @@ export function MobileCard({
   const showRasch = isRaschTest && isRaschCalculated;
   const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
   const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
+  const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
 
   const t = submission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(submission) : null;
   const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
+  const simplePoints = isSimpleTest ? calculatePoints(submission) : null;
 
   // Check if test has ended
   const testHasEnded = isPast(test.end_date);
@@ -93,7 +95,7 @@ export function MobileCard({
             </div>
           </div>
 
-          {/* SAT Score or UZ DTM Points or Rasch T or Percentage */}
+          {/* SAT Score or UZ DTM Points or Simple Points or Rasch T or Percentage */}
           {isSatTest ? (
             <div className="rounded-md border border-purple-200 bg-purple-50/50 p-2.5 dark:border-purple-800 dark:bg-purple-950/20">
               <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-purple-600 dark:text-purple-400">
@@ -110,6 +112,15 @@ export function MobileCard({
               </div>
               <div className="text-lg font-bold text-green-700 dark:text-green-300">
                 {testHasEnded && uzDtmPoints != null ? uzDtmPoints.toFixed(1) : ""}
+              </div>
+            </div>
+          ) : isSimpleTest ? (
+            <div className="rounded-md border border-green-200 bg-green-50/50 p-2.5 dark:border-green-800 dark:bg-green-950/20">
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-green-600 dark:text-green-400">
+                Ballar
+              </div>
+              <div className="text-lg font-bold text-green-700 dark:text-green-300">
+                {testHasEnded && simplePoints != null ? simplePoints.toFixed(1) : ""}
               </div>
             </div>
           ) : showRasch ? (

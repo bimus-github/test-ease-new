@@ -48,7 +48,8 @@ export const calculatePoints = (fullSubmission: FullSubmission): number => {
   let score = 0;
   if (!fullSubmission.test) return 0;
   if (!fullSubmission.questions) return 0;
-  if (fullSubmission.test.scoring_type !== ScoringType.UZ_DTM) return 0;
+  if (fullSubmission.test.scoring_type !== ScoringType.UZ_DTM && 
+      fullSubmission.test.scoring_type !== ScoringType.SIMPLE_SCORING) return 0;
 
   const questionMap = new Map(fullSubmission.questions.map((q) => [q.id, q]));
 

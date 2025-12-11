@@ -11,8 +11,13 @@ interface ScoreSummaryProps {
 export function ScoreSummary({ fullSubmission }: ScoreSummaryProps) {
   const isSatTest = fullSubmission.test.scoring_type === ScoringType.SAT_SCORING;
   const isUzDtmTest = fullSubmission.test.scoring_type === ScoringType.UZ_DTM;
+  const isSimpleTest = fullSubmission.test.scoring_type === ScoringType.SIMPLE_SCORING;
   const satScore = isSatTest ? calculateSatScore(fullSubmission) : null;
   const uzDtmPoints = isUzDtmTest ? calculatePoints(fullSubmission) : null;
+  const simplePoints = isSimpleTest ? calculatePoints(fullSubmission) : null;
+  const maxPoints = isSimpleTest 
+    ? (fullSubmission.questions?.reduce((sum, q) => sum + (q.points || 0), 0) || 0)
+    : 0;
   const totalQuestions = fullSubmission.questions?.length || 0;
   const correctAnswers = fullSubmission.row_score ?? 0;
   const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
@@ -55,6 +60,19 @@ export function ScoreSummary({ fullSubmission }: ScoreSummaryProps) {
             </div>
             <div className="mt-1 text-xs text-green-600 dark:text-green-400">
               Ballar
+            </div>
+          </div>
+        )}
+        {isSimpleTest && simplePoints != null && (
+          <div className="rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30">
+            <div className="mb-1 text-xs font-medium uppercase tracking-wide text-green-600 dark:text-green-400">
+              Ballar
+            </div>
+            <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+              {simplePoints.toFixed(1)}
+            </div>
+            <div className="mt-1 text-xs text-green-600 dark:text-green-400">
+              / {maxPoints.toFixed(1)} maksimal
             </div>
           </div>
         )}

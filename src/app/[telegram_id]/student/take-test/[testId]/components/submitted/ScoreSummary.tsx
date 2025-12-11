@@ -38,6 +38,10 @@ export function ScoreSummary({
   const raschT = fullSubmission.rasch_score;
   const satScore = isSatTest ? calculateSatScore(fullSubmission) : null;
   const uzDtmPoints = isUzDtmTest ? calculatePoints(fullSubmission) : null;
+  const simplePoints = isSimpleTest ? calculatePoints(fullSubmission) : null;
+  const maxPoints = isSimpleTest 
+    ? questions.reduce((sum, q) => sum + (q.points || 0), 0)
+    : 0;
 
   console.log(satScore)
   return (
@@ -120,19 +124,32 @@ export function ScoreSummary({
           </>
         )}
 
-        {/* Simple Scoring - Show percentage if simple test */}
-        {isSimpleTest && (
-          <div className="rounded-lg border-2 border-green-200 bg-green-50/50 p-4 dark:border-green-800 dark:bg-green-950/20">
-            <div className="mb-1 text-xs font-medium text-green-600 dark:text-green-400">
-              Foizi
+        {/* Simple Scoring - Show points and percentage */}
+        {isSimpleTest && simplePoints !== null && (
+          <>
+            <div className="rounded-lg border-2 border-green-200 bg-green-50/50 p-4 dark:border-green-800 dark:bg-green-950/20">
+              <div className="mb-1 text-xs font-medium text-green-600 dark:text-green-400">
+                Ballar
+              </div>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                {simplePoints.toFixed(1)}
+              </div>
+              <div className="mt-1 text-xs text-green-600 dark:text-green-400">
+                / {maxPoints.toFixed(1)} maksimal
+              </div>
             </div>
-            <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-              {totalQuestions > 0
-                ? Math.round((correctAnswers / totalQuestions) * 100)
-                : 0}
-              %
+            <div className="rounded-lg border-2 border-green-200 bg-green-50/50 p-4 dark:border-green-800 dark:bg-green-950/20">
+              <div className="mb-1 text-xs font-medium text-green-600 dark:text-green-400">
+                Foizi
+              </div>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                {totalQuestions > 0
+                  ? Math.round((correctAnswers / totalQuestions) * 100)
+                  : 0}
+                %
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </section>

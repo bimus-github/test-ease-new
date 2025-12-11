@@ -37,6 +37,16 @@ export function Timing({
           Rasch bali test yakunlangandan keyin hisoblab beriladi.
         </div>
       )}
+      {scoringType === ScoringType.SIMPLE_SCORING && (
+        <div className="rounded-md border border-green-200 bg-green-50 p-2 text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-300">
+          Ballar test yakunlangandan keyin hisoblab beriladi.
+        </div>
+      )}
+      {scoringType === ScoringType.UZ_DTM && (
+        <div className="rounded-md border border-green-200 bg-green-50 p-2 text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-300">
+          UZ DTM bali test yakunlangandan keyin hisoblab beriladi.
+        </div>
+      )}
     </section>
   );
 }

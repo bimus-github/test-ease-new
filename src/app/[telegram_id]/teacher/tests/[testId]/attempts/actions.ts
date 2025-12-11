@@ -119,6 +119,7 @@ export async function sendResultsToUsersAction(params: {
     const showRasch = isRaschTest && isRaschCalculated;
     const isSatTest = test.scoring_type === ScoringType.SAT_SCORING;
     const isUzDtmTest = test.scoring_type === ScoringType.UZ_DTM;
+    const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
 
     let sent = 0;
     let failed = 0;
@@ -159,6 +160,12 @@ export async function sendResultsToUsersAction(params: {
         if (isUzDtmTest) {
           const uzDtmPoints = calculatePoints(submission);
           summaryText += `📊 UZ DTM bali: ${uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—"}\n`;
+        }
+
+        if (isSimpleTest) {
+          const simplePoints = calculatePoints(submission);
+          const maxPoints = submission.questions?.reduce((sum, q) => sum + (q.points || 0), 0) || 0;
+          summaryText += `📊 Ballar: ${simplePoints != null ? `${simplePoints.toFixed(1)} / ${maxPoints.toFixed(1)}` : "—"}\n`;
         }
 
         summaryText += `\n📎 Batafsil ma'lumot Excel faylida.`;

@@ -72,6 +72,12 @@ export async function showCreateTestMenu(chatId: number | string) {
             callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}uz_dtm`,
           },
         ],
+        [
+          {
+            text: "📝 Oddiy baholash",
+            callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}simple`,
+          },
+        ],
       ],
     };
 
@@ -180,6 +186,38 @@ export async function showUZDTMTestMenu(chatId: number | string) {
 }
 
 /**
+ * Show Simple scoring menu (direct link, no sub-options)
+ */
+export async function showSimpleTestMenu(chatId: number | string) {
+  try {
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "📝 Test yaratish",
+            web_app: {
+              url: CREATE_TEST_ROUTE({
+                telegramId: chatId,
+                scoringType: ScoringType.SIMPLE_SCORING,
+              }),
+            },
+          },
+        ],
+      ],
+    };
+
+    return sendTelegramMessage(
+      chatId,
+      `📝 Oddiy baholash\n\nOddiy baholash testini yaratish uchun quyidagi tugmani bosing.`,
+      { parse_mode: "Markdown", reply_markup: keyboard }
+    );
+  } catch (error) {
+    sendProductionErrors(error, `showSimpleTestMenu - chatId: ${chatId}`);
+    console.error("Error showing Simple test menu:", error);
+  }
+}
+
+/**
  * Handle callback query for scoring type selection
  */
 export async function handleCreateTestCallback(
@@ -201,6 +239,8 @@ export async function handleCreateTestCallback(
         await showSATTestMenu(chatId);
       } else if (scoringType === "uz_dtm") {
         await showUZDTMTestMenu(chatId);
+      } else if (scoringType === "simple") {
+        await showSimpleTestMenu(chatId);
       }
     }
   } catch (error) {

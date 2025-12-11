@@ -3,9 +3,11 @@
 export function QuestionsSummary({
   total,
   stats,
+  maxPoints,
 }: {
   total: number;
   stats: Array<{ title: string; value: number }>;
+  maxPoints?: number;
 }) {
   return (
     <section className="mb-6 grid gap-3 rounded-md border border-neutral-200 p-4 shadow-sm dark:border-neutral-800">
@@ -25,6 +27,12 @@ export function QuestionsSummary({
             <div className="text-lg font-semibold">{s.value}</div>
           </div>
         ))}
+        {maxPoints !== undefined && (
+          <div className="rounded-md bg-neutral-100 p-3 text-center dark:bg-neutral-900">
+            <div className="text-xs text-neutral-500">Jami ball</div>
+            <div className="text-lg font-semibold">{maxPoints.toFixed(1)}</div>
+          </div>
+        )}
       </div>
     </section>
   );

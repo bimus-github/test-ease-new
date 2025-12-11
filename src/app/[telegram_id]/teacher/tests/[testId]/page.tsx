@@ -9,6 +9,7 @@ import { ViewSkeleton } from "./components/ViewSkeleton";
 import { InfoCard } from "./components/InfoCard";
 import { QuestionsSummary } from "./components/QuestionsSummary";
 import { QuestionsGrid } from "./components/QuestionsGrid";
+import { ScoringType } from "@/types/test";
 
 function Test() {
   const { testId, telegram_id: telegramId } = useParams<{ testId: string, telegram_id: string }>();
@@ -72,6 +73,12 @@ function Test() {
   const fillCount = test.questions.filter(
     (q) => q.question_type === "fill_blank"
   ).length;
+  
+  const isSimpleScoring = test.scoring_type === ScoringType.SIMPLE_SCORING;
+  const isUzDtm = test.scoring_type === ScoringType.UZ_DTM;
+  const maxPoints = (isSimpleScoring || isUzDtm)
+    ? test.questions.reduce((sum, q) => sum + (q.points || 0), 0)
+    : undefined;
 
   return (
     <main className="mx-auto w-full max-w-5xl p-4 sm:p-6">
@@ -95,6 +102,7 @@ function Test() {
           { title: "Bir nechta javobli", value: mcCount },
           { title: "Bo‘sh joyni to‘ldiring", value: fillCount },
         ]}
+        maxPoints={maxPoints}
       />
 
       <QuestionsGrid questions={test.questions as any} />

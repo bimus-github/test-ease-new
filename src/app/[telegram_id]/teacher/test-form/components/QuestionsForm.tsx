@@ -15,6 +15,7 @@ export function QuestionsForm({ onSubmit }: Props) {
   const dispatch = useAppDispatch();
 
   const unansweredQuestions = useMemo(() => questions.filter(q => !q.correct_answer && !q.correct_options?.length),[questions])
+  const isSimpleScoring = test?.scoring_type === ScoringType.SIMPLE_SCORING;
 
   const setMCAnswer = (label: string, answer: string) => {
     dispatch(
@@ -52,9 +53,47 @@ export function QuestionsForm({ onSubmit }: Props) {
     );
   };
 
+  const setQuestionPoints = (label: string, points: number) => {
+    dispatch(
+      testFromActions.setQuestionPoints({
+        question_label: label,
+        points: points || 1,
+      })
+    );
+  };
+
+  const handleQuestionsCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const count = parseInt(e.target.value) || 0;
+    if (count === 0) {
+      dispatch(testFromActions.setQuestionsCount(1));
+    }
+    if (count > 0 && count <= 200) {
+      dispatch(testFromActions.setQuestionsCount(count));
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-3xl p-4 sm:p-6">
       <h2 className="mb-4 text-lg font-semibold">Savollar</h2>
+      
+      {isSimpleScoring && (
+        <div className="mb-4 grid gap-2">
+          <label htmlFor="questions_count" className="text-sm font-medium">
+            Savollar soni
+          </label>
+          <input
+            id="questions_count"
+            type="number"
+            min="1"
+            max="200"
+            value={questions.length.toString()}
+            onChange={handleQuestionsCountChange}
+            className="w-32 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-black dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-white"
+            placeholder="Savollar soni"
+          />
+        </div>
+      )}
+
       <div className="grid gap-4">
         {questions.map((q) => (
           <div
@@ -63,6 +102,25 @@ export function QuestionsForm({ onSubmit }: Props) {
           >
             <div className="mb-2 flex items-center justify-between gap-3">
               <div className="text-sm font-medium"><b>{q.question_label}</b></div>
+              
+              {isSimpleScoring && (
+                <div className="flex items-center gap-2">
+                  <label htmlFor={`points_${q.question_label}`} className="text-xs text-neutral-500">
+                    Ball:
+                  </label>
+                  <input 
+                    type="number" 
+                    name="points" 
+                    id={`points_${q.question_label}`}
+                    value={q.points || 1} 
+                    onChange={(e) => setQuestionPoints(q.question_label, parseInt(e.target.value) || 1)} 
+                    placeholder="1"
+                    min="1"
+                    className="w-16 rounded border border-neutral-200 bg-transparent px-2 py-1 text-sm text-center outline-none transition-colors focus:border-black focus:bg-white dark:border-neutral-700 dark:focus:border-white dark:focus:bg-neutral-900" 
+                  />
+                </div>
+              )}
+
               {test?.scoring_type === ScoringType.SAT_SCORING && (
                 <div className="flex items-center gap-2">
                   <label htmlFor={`sat_score_${q.question_label}`} className="text-xs text-neutral-500">
@@ -80,7 +138,7 @@ export function QuestionsForm({ onSubmit }: Props) {
                   />
                 </div>
               )}
-              {test?.sat_section === SATSection.MATH && test.scoring_type === ScoringType.SAT_SCORING ? (
+              {(test?.sat_section === SATSection.MATH && test.scoring_type === ScoringType.SAT_SCORING) || isSimpleScoring ? (
                 <div className="flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-700 dark:bg-neutral-800">
                   <button
                     type="button"
