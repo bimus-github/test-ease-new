@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { FullSubmission } from "@/types/submission";
 import { calculateRasch } from "@/lib/rasch";
 import { calculateRowScore, gradeFromT } from "@/lib/helpers";
@@ -74,9 +75,15 @@ export default function RaschFakePage() {
       setSubmissions(submissionsCopy);
       setCalculationResults(result);
       setIsCalculated(true);
+      toast.success("Rasch hisoblash muvaffaqiyatli yakunlandi");
     } catch (error) {
       console.error("Rasch hisoblashda xatolik:", error);
-      alert("Rasch hisoblashda xatolik: " + (error as Error).message);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Noma'lum xatolik yuz berdi";
+      toast.error(`Rasch hisoblashda xatolik: ${errorMessage}`, {
+        duration: 5000,
+      });
     } finally {
       setIsCalculating(false);
     }
