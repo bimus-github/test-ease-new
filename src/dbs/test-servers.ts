@@ -35,12 +35,22 @@ export async function updateExpiredTests(): Promise<number> {
  */
 export async function createTest(testData: TestForm): Promise<Test | null> {
   try {
-    // Filter out undefined values to prevent enum errors
+    // Filter out undefined values and string "undefined" to prevent enum errors
     const cleanTestData = Object.fromEntries(
       Object.entries({
         ...testData,
         end_date: ensureISOString(testData.end_date),
-      }).filter(([_, value]) => value !== undefined)
+      }).filter(([key, value]) => {
+        // Filter out undefined
+        if (value === undefined) return false;
+        // Filter out string "undefined" (can come from URL params)
+        if (value === "undefined") return false;
+        // Additional check for enum fields to be extra safe
+        if ((key === 'sertificate_type' || key === 'sat_section' || key === 'uz_dtm_section') && value === "undefined") {
+          return false;
+        }
+        return true;
+      })
     );
 
     const { data, error } = await supabase
@@ -143,7 +153,7 @@ export async function updateTest(
   updates: Partial<TestForm>
 ): Promise<Test | null> {
   try {
-    // Filter out undefined values to prevent enum errors
+    // Filter out undefined values and string "undefined" to prevent enum errors
     const cleanUpdates = Object.fromEntries(
       Object.entries({
         ...updates,
@@ -152,7 +162,17 @@ export async function updateTest(
           isPast(updates.end_date)
             ? TestStatus.INACTIVE
             : TestStatus.ACTIVE,
-      }).filter(([_, value]) => value !== undefined)
+      }).filter(([key, value]) => {
+        // Filter out undefined
+        if (value === undefined) return false;
+        // Filter out string "undefined" (can come from URL params)
+        if (value === "undefined") return false;
+        // Additional check for enum fields to be extra safe
+        if ((key === 'sertificate_type' || key === 'sat_section' || key === 'uz_dtm_section') && value === "undefined") {
+          return false;
+        }
+        return true;
+      })
     );
 
     const { data, error } = await supabase
@@ -330,12 +350,22 @@ export async function createTestWithQuestions(
 ): Promise<TestWithQuestions | null> {
   try {
     // First create the test
-    // Filter out undefined values to prevent enum errors
+    // Filter out undefined values and string "undefined" to prevent enum errors
     const cleanTestData = Object.fromEntries(
       Object.entries({
         ...testData,
         end_date: ensureISOString(testData.end_date),
-      }).filter(([_, value]) => value !== undefined)
+      }).filter(([key, value]) => {
+        // Filter out undefined
+        if (value === undefined) return false;
+        // Filter out string "undefined" (can come from URL params)
+        if (value === "undefined") return false;
+        // Additional check for enum fields to be extra safe
+        if ((key === 'sertificate_type' || key === 'sat_section' || key === 'uz_dtm_section') && value === "undefined") {
+          return false;
+        }
+        return true;
+      })
     );
 
     const { data: test, error: testError } = await supabase

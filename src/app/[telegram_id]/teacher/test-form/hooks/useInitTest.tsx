@@ -17,10 +17,16 @@ export const useInitTest = () => {
     const searchParams = useSearchParams()
     const dispatch = useAppDispatch()
     const {telegram_id} = useParams<{telegram_id: string}>()
-    const satSection = searchParams.get('satSection')
-    const sertificateType = searchParams.get('sertificateType')
-    const uzDtmSection = searchParams.get('uzDtmSection')
-    const scoringType = searchParams.get('scoringType')
+    const satSectionRaw = searchParams.get('satSection')
+    const sertificateTypeRaw = searchParams.get('sertificateType')
+    const uzDtmSectionRaw = searchParams.get('uzDtmSection')
+    const scoringTypeRaw = searchParams.get('scoringType')
+    
+    // Filter out "undefined" string values that can come from URL template literals
+    const satSection = satSectionRaw && satSectionRaw !== 'undefined' ? satSectionRaw : null;
+    const sertificateType = sertificateTypeRaw && sertificateTypeRaw !== 'undefined' ? sertificateTypeRaw : null;
+    const uzDtmSection = uzDtmSectionRaw && uzDtmSectionRaw !== 'undefined' ? uzDtmSectionRaw : null;
+    const scoringType = scoringTypeRaw && scoringTypeRaw !== 'undefined' ? scoringTypeRaw : null;
     
     // Use ref to track if initialization has happened to prevent unnecessary re-initializations
     const initializedRef = useRef(false)

@@ -17,8 +17,16 @@ export const CREATE_TEST_ROUTE = ({
   sertificateType?: SertificateType,
   satSection?: SATSection,
   uzDtmSection?: UZDTMSection
-}) =>
-  `${base}/${telegramId.toString()}/teacher/test-form/create?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}&uzDtmSection=${uzDtmSection}`;
+}) => {
+  const params = new URLSearchParams();
+  if (scoringType) params.set('scoringType', scoringType);
+  if (sertificateType) params.set('sertificateType', sertificateType);
+  if (satSection) params.set('satSection', satSection);
+  if (uzDtmSection) params.set('uzDtmSection', uzDtmSection);
+  
+  const queryString = params.toString();
+  return `${base}/${telegramId.toString()}/teacher/test-form/create${queryString ? `?${queryString}` : ''}`;
+};
 
 export const EDIT_TEST_ROUTE = ({
   testId,
@@ -34,8 +42,16 @@ export const EDIT_TEST_ROUTE = ({
   sertificateType?: SertificateType,
   satSection?: SATSection,
   uzDtmSection?: UZDTMSection
-}) =>
-  `${base}/${telegramId.toString()}/teacher/test-form/edit/${testId}?scoringType=${scoringType}&sertificateType=${sertificateType}&satSection=${satSection}&uzDtmSection=${uzDtmSection}`;
+}) => {
+  const params = new URLSearchParams();
+  params.set('scoringType', scoringType);
+  if (sertificateType) params.set('sertificateType', sertificateType);
+  if (satSection) params.set('satSection', satSection);
+  if (uzDtmSection) params.set('uzDtmSection', uzDtmSection);
+  
+  const queryString = params.toString();
+  return `${base}/${telegramId.toString()}/teacher/test-form/edit/${testId}?${queryString}`;
+};
 
 export const VIEW_TEST_ROUTE = ({
   testId,
