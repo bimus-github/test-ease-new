@@ -218,3 +218,33 @@ export async function sendResultsToUsersAction(params: {
     };
   }
 }
+
+export async function sendingMessageToUsersAction(params:{ids:string[], message:string}): Promise<{ ok: true; sent: number; failed: number } | { ok: false; error: string; sent: number; failed: number }> {
+  const { ids, message } = params || ({} as any);
+  let sent = 0;
+  let failed = 0;
+  
+  if (!ids || ids.length === 0) {
+    return { ok: false, error: "ids is required", sent: 0, failed: 0 };
+  }
+  if (!isNonEmptyString(message)) { 
+    return { ok: false, error: "message is required", sent: 0, failed: 0 };
+  }
+  try {
+    for (const id of ids) {
+      try {
+        await sendTelegramMessage(id, message, {
+          parse_mode: "Markdown", // Optional: add if you want Markdown support
+        });
+        sent++;
+      } catch (err) {
+        console.error("sendingMessageToUsersAction error", err); // Fixed typo
+        failed++;
+      }
+    }
+    return { ok: true, sent, failed };
+  } catch (err) {
+    console.error("sendingMessageToUsersAction error", err); // Fixed typo
+    return { ok: false, error: "Server error while sending message to users", sent, failed };
+  }
+}
