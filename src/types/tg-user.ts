@@ -32,6 +32,18 @@ export interface BotStats {
   active_week: number; // Total number of active users in the last 7 days
   premium_users: number; // Total number of premium users
   avg_days_since_start: number; // Average number of days since the user started using the bot
+  top_teachers: {
+    [key:string]: {
+      user: TGUser;
+      total_tests: number;
+    };
+  } // Top 15 users by total tests created(tests table), telegram_username => { user: TGUser, total_tests: number }
+  top_students: {
+    [key:string]: {
+      user: TGUser;
+      total_submissions: number;
+    };
+  } // Top 15 users by total tests taken(submissions table), telegram_username => { user: TGUser, total_submissions: number }
 }
 
 export interface UserActivity {

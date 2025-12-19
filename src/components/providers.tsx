@@ -22,7 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ReduxProvider>
       <QueryClientProvider client={queryClient}>
         {children}
-        <Toaster position="top-right" />
+        <Toaster position="top-center" />
       </QueryClientProvider>
     </ReduxProvider>
   );

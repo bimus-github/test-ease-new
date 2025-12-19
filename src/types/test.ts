@@ -58,4 +58,10 @@ export interface TestStats {
   new_tests_today: number; // Total number of new tests today
   new_tests_week: number; // Total number of new tests in the last 7 days
   avg_tests_since_start: number; // Average number of tests per day since the user started using the bot
+  tests_per_scoring_type: {
+    [key in ScoringType]: number;
+  }; // Total number of tests per scoring type
+  top_tests: {
+    [key:string]: number;
+  } // Top 10 tests by total submissions
 }
