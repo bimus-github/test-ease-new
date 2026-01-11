@@ -111,25 +111,46 @@ export async function getFullSubmissions(
     // Auto-submit any expired submissions before fetching
     await supabase.rpc("auto_submit_expired_submissions");
 
-    const { data, error } = await supabase
-      .from("full_submissions")
-      .select("*")
-      .eq("test_id", testId)
-      .not("submitted_at", "is", null)
-      // .order("submitted_at", { ascending: false })
-      .order("rasch_score", { ascending: false });
+    let allData: any[] = [];
+    let from = 0;
+    const pageSize = 1000; // Supabase's default limit per query
 
-    if (error) {
-      logDbError("getFullSubmissions", error);
-      return [];
+    // Fetch all data in batches to avoid 1k row limit
+    while (true) {
+      const { data, error } = await supabase
+        .from("full_submissions")
+        .select("*")
+        .eq("test_id", testId)
+        .not("submitted_at", "is", null)
+        // .order("submitted_at", { ascending: false })
+        .order("rasch_score", { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        logDbError("getFullSubmissions", error);
+        return [];
+      }
+
+      if (!data || data.length === 0) {
+        break; // No more data
+      }
+
+      allData = allData.concat(data);
+
+      // If we got fewer rows than requested, we've reached the end
+      if (data.length < pageSize) {
+        break;
+      }
+
+      from += pageSize;
     }
 
-    if (!data || data.length === 0) {
+    if (allData.length === 0) {
       return [];
     }
 
     // Map results and calculate row_score for each submission
-    const fullSubmissions: FullSubmission[] = data.map((item: any) => {
+    const fullSubmissions: FullSubmission[] = allData.map((item: any) => {
       const fullSubmission: FullSubmission = {
         id: item.id,
         started_at: item.started_at,
@@ -235,24 +256,45 @@ export async function getFullSubmissionsByUserId(
     // Auto-submit any expired submissions before fetching
     await supabase.rpc("auto_submit_expired_submissions");
 
-    const { data, error } = await supabase
-      .from("full_submissions")
-      .select("*")
-      .eq("user_tg_id", userId)
-      .not("submitted_at", "is", null)
-      .order("submitted_at", { ascending: false })
-      .order("rasch_score", { ascending: false });
+    let allData: any[] = [];
+    let from = 0;
+    const pageSize = 1000; // Supabase's default limit per query
 
-    if (error) {
-      logDbError("getFullSubmissionsByUserId", error);
+    // Fetch all data in batches to avoid 1k row limit
+    while (true) {
+      const { data, error } = await supabase
+        .from("full_submissions")
+        .select("*")
+        .eq("user_tg_id", userId)
+        .not("submitted_at", "is", null)
+        .order("submitted_at", { ascending: false })
+        .order("rasch_score", { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        logDbError("getFullSubmissionsByUserId", error);
+        return [];
+      }
+
+      if (!data || data.length === 0) {
+        break; // No more data
+      }
+
+      allData = allData.concat(data);
+
+      // If we got fewer rows than requested, we've reached the end
+      if (data.length < pageSize) {
+        break;
+      }
+
+      from += pageSize;
+    }
+
+    if (allData.length === 0) {
       return [];
     }
 
-    if (!data || data.length === 0) {
-      return [];
-    }
-
-    const filteredData = data.filter(
+    const filteredData = allData.filter(
       (item: any) => item.submitted_at != null && item.submitted_at !== ""
     );
 
