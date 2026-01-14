@@ -93,3 +93,5 @@ export const MathField = forwardRef<HTMLInputElement, MathFieldProps>(
 );
 
 MathField.displayName = "MathField";
+
+export { ToggleMathInput } from "./ToggleMathInput";

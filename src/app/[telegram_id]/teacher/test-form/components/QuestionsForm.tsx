@@ -1,6 +1,6 @@
 "use client";
 
-import { MathField } from "@/components/math-live";
+import { ToggleMathInput } from "@/components/math-live";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { testFromActions } from "@/store/slices/forms/test";
 import { SATSection, ScoringType } from "@/types/test";
@@ -193,10 +193,10 @@ export function QuestionsForm({ onSubmit }: Props) {
 
             {q.question_type === "fill_blank" && (
               <div className="mt-3">
-                <MathField
+                <ToggleMathInput
                   value={q.correct_answer || ""}
                   onChange={(value) => setFillAnswer(q.question_label, value)}
-                  placeholder="To‘g‘ri matematik javobni kiriting"
+                  placeholder="To‘g‘ri javobni kiriting"
                   className="w-full"
                 />
               </div>

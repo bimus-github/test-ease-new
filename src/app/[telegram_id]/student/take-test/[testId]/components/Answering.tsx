@@ -4,7 +4,7 @@ import type { Question } from "@/types/question";
 import { ScoringType } from "@/types/test";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { takeActions } from "@/store/slices/take";
-import { MathField } from "@/components/math-live";
+import { ToggleMathInput } from "@/components/math-live";
 import { formatLocalDate } from "@/lib/utils";
 
 export function Answering({
@@ -74,7 +74,7 @@ export function Answering({
               </div>
 
               {q.question_type === "fill_blank" && (
-                <MathField
+                <ToggleMathInput
                   value={
                     answers.find((x) => x.question_id === q.id)?.answer || ""
                   }
