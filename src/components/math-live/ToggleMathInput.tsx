@@ -26,7 +26,7 @@ export function ToggleMathInput({
   readOnly,
   id,
   name,
-  initialPlainMode = false,
+  initialPlainMode = true,
 }: ToggleMathInputProps) {
   const [plainMode, setPlainMode] = useState(initialPlainMode);
 
