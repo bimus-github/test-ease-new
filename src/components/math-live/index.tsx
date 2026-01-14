@@ -40,7 +40,7 @@ export const MathField = forwardRef<HTMLInputElement, MathFieldProps>(
 
       // Configure MathLive options
       (mathField as any).setOptions({
-        virtualKeyboardMode: "manual",
+        virtualKeyboardMode: "off",
         virtualKeyboards: "all",
         smartFence: true,
         smartSuperscript: true,
