@@ -161,7 +161,18 @@ export async function sendTelegramMessage(
           throw blockedError;
         }
       }
-      
+
+      // Handle chat not found (400) - user deleted account or never started bot, treat like blocked
+      if (data.error_code === 400) {
+        const description = data.description?.toLowerCase() || "";
+        if (description.includes("chat not found")) {
+          const blockedError: any = new Error(data.description || "Chat not found");
+          blockedError.code = 400;
+          blockedError.isBlocked = true;
+          throw blockedError;
+        }
+      }
+
       // API returned an error (non-network issue)
       console.error("Error sending Telegram message:", data);
       // Only notify for non-network errors
@@ -182,9 +193,8 @@ export async function sendTelegramMessage(
       }
     }
 
-    // Don't log blocked users as errors - this is expected behavior
-    if ((error as any)?.isBlocked || (error as any)?.code === 403) {
-      // User blocked bot - this is expected, just rethrow without logging
+    // Don't log blocked/unavailable users as errors - this is expected behavior
+    if ((error as any)?.isBlocked || (error as any)?.code === 403 || (error as any)?.code === 400) {
       throw error;
     }
     
