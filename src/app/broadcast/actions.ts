@@ -1,116 +1,71 @@
 "use server";
 
-import { getAllUsers } from "@/dbs/bot-servers";
-import { sendTelegramMessage } from "@/telegram/bot";
+/*
+ * ============================================================================
+ *  ONE-TIME SETUP — run this SQL in the Supabase SQL editor once:
+ * ============================================================================
+ *
+ *  create table if not exists public.broadcast_jobs (
+ *    id           uuid primary key default gen_random_uuid(),
+ *    message      text not null,
+ *    status       text not null default 'pending'
+ *                   check (status in ('pending','running','completed','failed')),
+ *    total_users  integer,
+ *    last_page    integer not null default 0,
+ *    sent         integer not null default 0,
+ *    failed       integer not null default 0,
+ *    blocked      integer not null default 0,
+ *    error        text,
+ *    created_at   timestamptz not null default now(),
+ *    updated_at   timestamptz not null default now(),
+ *    completed_at timestamptz
+ *  );
+ *
+ *  create index if not exists broadcast_jobs_status_created_at_idx
+ *    on public.broadcast_jobs (status, created_at);
+ *
+ * ============================================================================
+ */
 
-const BATCH_SIZE = 150;
+import { supabaseAdmin } from "@/lib/supabase";
 
-export type BroadcastState = {
-  status: "idle" | "success" | "error";
-  message: string;
-  total: number;
-  sent: number;
-  failed: number;
-  blocked: number;
-  /** Chunked: more batches left */
-  hasMore?: boolean;
-  /** Next page index for "Send next batch" */
-  nextPage?: number;
-  /** Message text to resubmit for next batch */
-  lastMessage?: string;
-};
+export type CreateBroadcastJobResult =
+  | { ok: true; jobId: string }
+  | { ok: false; error: string };
 
-const getErrorText = (error: unknown): string => {
-  if (error && typeof error === "object") {
-    const maybeDescription = (error as { description?: unknown }).description;
-    if (typeof maybeDescription === "string") {
-      return maybeDescription;
-    }
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error ?? "");
-};
-
-const isBlockedError = (error: unknown): boolean => {
-  const err = error as { isBlocked?: boolean };
-  if (err?.isBlocked === true) return true;
-  const text = getErrorText(error).toLowerCase();
-  return (
-    text.includes("blocked") ||
-    text.includes("deactivated") ||
-    text.includes("chat not found")
-  );
-};
-
-export async function broadcastMessageAction(
-  prevState: BroadcastState,
+export async function createBroadcastJob(
+  _prev: CreateBroadcastJobResult | null,
   formData: FormData
-): Promise<BroadcastState> {
-  const rawMessage = formData.get("message");
-  const message = typeof rawMessage === "string" ? rawMessage.trim() : "";
+): Promise<CreateBroadcastJobResult> {
+  const raw = formData.get("message");
+  const message = typeof raw === "string" ? raw.trim() : "";
 
   if (!message) {
+    return { ok: false, error: "Xabar matni bo'sh." };
+  }
+
+  // Best-effort total for progress UI — nullable if the count fails.
+  const { count } = await supabaseAdmin
+    .from("bot_users")
+    .select("*", { count: "exact", head: true });
+
+  const { data, error } = await supabaseAdmin
+    .from("broadcast_jobs")
+    .insert({
+      message,
+      status: "pending",
+      total_users: count ?? null,
+      last_page: 0,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
     return {
-      ...prevState,
-      status: "error",
-      message: "Xabar matni bo'sh.",
+      ok: false,
+      error: error?.message ?? "Job yaratilmadi.",
     };
   }
 
-  const rawPage = formData.get("page");
-  const page = typeof rawPage === "string" ? Math.max(0, parseInt(rawPage, 10) || 0) : 0;
-
-  const chunk = await getAllUsers(page, BATCH_SIZE);
-  const users = chunk.map((u) => ({ telegram_id: u.telegram_id }));
-
-  if (users.length === 0) {
-    return {
-      status: "success",
-      message:
-        page === 0
-          ? "Yuborish uchun foydalanuvchi topilmadi."
-          : "Barcha batchlar yuborildi.",
-      total: 0,
-      sent: 0,
-      failed: 0,
-      blocked: 0,
-    };
-  }
-
-  let sent = 0;
-  let failed = 0;
-  let blocked = 0;
-
-  for (const user of users) {
-    try {
-      await sendTelegramMessage(user.telegram_id, message);
-      sent += 1;
-    } catch (error) {
-      if (isBlockedError(error)) {
-        blocked += 1;
-      } else {
-        failed += 1;
-      }
-    }
-  }
-
-  const total = users.length;
-  const hasMore = chunk.length === BATCH_SIZE;
-  const nextPage = page + 1;
-
-  return {
-    status: "success",
-    message: hasMore
-      ? `Batch yuborildi: ${sent}/${total}. Bloklangan: ${blocked}. Xato: ${failed}. Keyingi batchni yuborish uchun tugmani bosing.`
-      : `Yuborildi: ${sent}/${total}. Bloklangan: ${blocked}. Xato: ${failed}.`,
-    total,
-    sent,
-    failed,
-    blocked,
-    ...(hasMore && { hasMore: true, nextPage, lastMessage: message }),
-  };
+  return { ok: true, jobId: data.id };
 }
