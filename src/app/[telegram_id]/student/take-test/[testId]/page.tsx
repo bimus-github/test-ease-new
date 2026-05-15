@@ -135,6 +135,7 @@ export default function Page() {
           scoringType={test.scoring_type}
           startDate={startedAt}
           endDate={test.end_date}
+          sharedAudioUrl={test.shared_audio_url}
           onPreview={() => dispatch(takeActions.setStep("preview"))}
         />
       )}

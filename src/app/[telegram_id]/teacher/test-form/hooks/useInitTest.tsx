@@ -3,6 +3,7 @@ import { generateReadingWritingSATQuestions } from "@/constants/sat/reading-writ
 import { generateChemistrySertificateUzQuestions } from "@/constants/sertificate-uz/chemstry"
 import { generateMathSertificateUzQuestions } from "@/constants/sertificate-uz/math"
 import { generateRussianSertificateUzQuestions } from "@/constants/sertificate-uz/russian"
+import { generateMilliySertifikatTilQuestions } from "@/constants/sertificate-uz/milliy-sertifikat-til"
 import { generateUZDTMQuestions } from "@/constants/uz-dtm/index"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { testFromActions, initialState } from "@/store/slices/forms/test"
@@ -116,6 +117,15 @@ export const getInitQuestions = (
                 case SertificateType.LANGUAGE_AND_LITERATURE:
                 case SertificateType.QORAQALPAK:
                     return generateRussianSertificateUzQuestions()
+                case SertificateType.MS_ENGLISH_B2:
+                case SertificateType.MS_ENGLISH_C1:
+                case SertificateType.MS_RUSSIAN_B2:
+                case SertificateType.MS_RUSSIAN_C1:
+                case SertificateType.MS_GERMAN_B2:
+                case SertificateType.MS_GERMAN_C1:
+                case SertificateType.MS_UZBEK_B2:
+                case SertificateType.MS_UZBEK_C1:
+                    return generateMilliySertifikatTilQuestions()
                 default:
                     return []
             }

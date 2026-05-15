@@ -7,6 +7,7 @@ import { testFromActions } from "@/store/slices/forms/test";
 import { isTestCode } from "@/lib/helpers";
 import { useMutation } from "@tanstack/react-query";
 import { isTestCodeUnique } from "../actions/checkTestCode";
+import { MediaUpload } from "@/components/MediaUpload";
 
 interface Props {
   onSubmit: () => void;
@@ -145,6 +146,29 @@ export function BasicInfoForm({ onSubmit, testId }: Props) {
           value={test!.end_date || ""}
           onChange={handleChange}
           className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-black dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-white"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <label className="text-sm font-medium">
+          Umumiy audio <span className="text-neutral-500">(ixtiyoriy — IELTS Listening uchun)</span>
+        </label>
+        <p className="text-xs text-neutral-500">
+          Agar test bir audio'ga asoslangan bo'lsa (masalan, Listening), shu yerga yuklang. Barcha savollar tepasida ko'rinadi.
+        </p>
+        <MediaUpload
+          accept="audio"
+          teacherId={test?.teacher_id || "anon"}
+          url={test?.shared_audio_url}
+          type={test?.shared_audio_url ? "audio" : undefined}
+          onChange={(url) =>
+            dispatch(
+              testFromActions.setTest({
+                ...test,
+                shared_audio_url: url,
+              })
+            )
+          }
         />
       </div>
 

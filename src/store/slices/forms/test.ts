@@ -111,6 +111,29 @@ export const testSlice = createSlice({
         currentQuestion.media_type = action.payload.media_type;
       }
     },
+    appendGeneratedQuestions: (
+      state,
+      action: PayloadAction<Array<{
+        question_text: string;
+        question_type: "multiple_choice" | "fill_blank";
+        options?: string[];
+        correct_answer: string;
+      }>>
+    ) => {
+      const startOrder = state.questions.length + 1;
+      const newOnes: QuestionForm[] = action.payload.map((q, i) => ({
+        test_id: "",
+        question_label: `${startOrder + i}-savol`,
+        question_text: q.question_text,
+        question_type: q.question_type,
+        question_order: startOrder + i,
+        points: 1,
+        is_required: true,
+        options: q.options,
+        correct_answer: q.correct_answer,
+      }));
+      state.questions = [...state.questions, ...newOnes];
+    },
     setQuestionsCount: (state, action: PayloadAction<number>) => {
       const count = action.payload;
       const currentCount = state.questions.length;

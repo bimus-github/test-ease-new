@@ -8,4 +8,13 @@ export enum SertificateType {
   PHYSICS = "physics",
   HISTORY = "history",
   GEOGRAPHY = "geography",
+  // Milliy sertifikat — Til (B2/C1)
+  MS_ENGLISH_B2 = "ms_english_b2",
+  MS_ENGLISH_C1 = "ms_english_c1",
+  MS_RUSSIAN_B2 = "ms_russian_b2",
+  MS_RUSSIAN_C1 = "ms_russian_c1",
+  MS_GERMAN_B2 = "ms_german_b2",
+  MS_GERMAN_C1 = "ms_german_c1",
+  MS_UZBEK_B2 = "ms_uzbek_b2",
+  MS_UZBEK_C1 = "ms_uzbek_c1",
 }

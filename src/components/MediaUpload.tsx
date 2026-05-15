@@ -14,9 +14,10 @@ interface MediaUploadProps {
   url?: string;
   type?: MediaType;
   onChange: (url: string | undefined, type: MediaType | undefined) => void;
+  accept?: "all" | "image" | "audio";
 }
 
-export function MediaUpload({ teacherId, url, type, onChange }: MediaUploadProps) {
+export function MediaUpload({ teacherId, url, type, onChange, accept = "all" }: MediaUploadProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -65,22 +66,26 @@ export function MediaUpload({ teacherId, url, type, onChange }: MediaUploadProps
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => imageInputRef.current?.click()}
-            disabled={uploading}
-            className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            🖼 Rasm qo'shish
-          </button>
-          <button
-            type="button"
-            onClick={() => audioInputRef.current?.click()}
-            disabled={uploading}
-            className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          >
-            🎵 Audio qo'shish
-          </button>
+          {(accept === "all" || accept === "image") && (
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              🖼 Rasm qo'shish
+            </button>
+          )}
+          {(accept === "all" || accept === "audio") && (
+            <button
+              type="button"
+              onClick={() => audioInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              🎵 Audio qo'shish
+            </button>
+          )}
           {uploading && (
             <span className="text-xs text-neutral-500">Yuklanmoqda...</span>
           )}

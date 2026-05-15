@@ -2,11 +2,13 @@
 
 import { ToggleMathInput } from "@/components/math-live";
 import { MediaUpload } from "@/components/MediaUpload";
+import { AIGenerateModal } from "@/components/AIGenerateModal";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { testFromActions } from "@/store/slices/forms/test";
 import { SATSection, ScoringType } from "@/types/test";
 import { MediaType } from "@/types/question";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { saveToBankAction } from "@/app/[telegram_id]/teacher/question-bank/actions";
 
 interface Props {
   onSubmit: () => void;
@@ -15,6 +17,29 @@ interface Props {
 export function QuestionsForm({ onSubmit }: Props) {
   const { questions, test } = useAppSelector((state) => state.test);
   const dispatch = useAppDispatch();
+  const [savedToBank, setSavedToBank] = useState<Record<string, boolean>>({});
+  const [aiOpen, setAiOpen] = useState(false);
+
+  const handleSaveToBank = async (label: string) => {
+    const q = questions.find((x) => x.question_label === label);
+    if (!q || !test?.teacher_id) return;
+    const result = await saveToBankAction({
+      teacher_id: test.teacher_id,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      options: q.options,
+      correct_answer: q.correct_answer,
+      correct_options: q.correct_options,
+      is_multiple_answers: q.is_multiple_answers,
+      points: q.points,
+      media_url: q.media_url,
+      media_type: q.media_type,
+      tags: [],
+    });
+    if (result) {
+      setSavedToBank((prev) => ({ ...prev, [label]: true }));
+    }
+  };
 
   const unansweredQuestions = useMemo(() => questions.filter(q => !q.correct_answer && !q.correct_options?.length),[questions])
   const isSimpleScoring = test?.scoring_type === ScoringType.SIMPLE_SCORING;
@@ -90,7 +115,24 @@ export function QuestionsForm({ onSubmit }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-3xl p-4 sm:p-6">
-      <h2 className="mb-4 text-lg font-semibold">Savollar</h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Savollar</h2>
+        <button
+          type="button"
+          onClick={() => setAiOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300"
+        >
+          🤖 AI bilan generatsiya
+        </button>
+      </div>
+
+      <AIGenerateModal
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onAccept={(generated) => {
+          dispatch(testFromActions.appendGeneratedQuestions(generated));
+        }}
+      />
       
       {isSimpleScoring && (
         <div className="mb-4 grid gap-2">
@@ -193,6 +235,19 @@ export function QuestionsForm({ onSubmit }: Props) {
               type={q.media_type}
               onChange={(url, type) => setQuestionMedia(q.question_label, url, type)}
             />
+
+            {(q.correct_answer || q.correct_options?.length) && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => handleSaveToBank(q.question_label)}
+                  disabled={savedToBank[q.question_label]}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                >
+                  {savedToBank[q.question_label] ? "✅ Bankka saqlandi" : "📚 Bankka saqlash"}
+                </button>
+              </div>
+            )}
 
             {q.question_type === "multiple_choice" && (
               <div className="mt-3 flex flex-wrap gap-2">

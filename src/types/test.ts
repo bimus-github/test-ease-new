@@ -41,7 +41,7 @@ export interface Test {
   uz_dtm_section?: UZDTMSection;
   isRaschCalculated?: boolean;
   rasch_calculated_at?: string;
-
+  shared_audio_url?: string;
 }
 
 export interface TestWithQuestions extends Test {

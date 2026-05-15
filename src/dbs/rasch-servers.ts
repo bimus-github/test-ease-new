@@ -40,12 +40,14 @@ export async function calculateRaschForTest(testId: string): Promise<{
       throw new Error("Insufficient data for Rasch calculation");
     }
 
-    const isSubmissionValid = (s: FullSubmission) => {
-      return (
-        s.row_score !== undefined && s.row_score !== null && s.row_score !== 0
-      );
-    };
-    // Compute Rasch
+    const totalQuestions = test.questions.length;
+    const isPerfect = (s: FullSubmission) =>
+      s.row_score !== undefined && s.row_score !== null && s.row_score === totalQuestions;
+    const isZero = (s: FullSubmission) =>
+      s.row_score === undefined || s.row_score === null || s.row_score === 0;
+    const isSubmissionValid = (s: FullSubmission) => !isZero(s) && !isPerfect(s);
+
+    // Compute Rasch only on non-extreme submissions (JML diverges at extremes)
     const validSubmissions = submissions.filter(isSubmissionValid);
     const { questionDifficulties, scoredSubmissions } = calculateRasch(
       validSubmissions,
@@ -53,7 +55,6 @@ export async function calculateRaschForTest(testId: string): Promise<{
       { maxIter: 200, tol: 1e-4 }
     );
 
-    // Create a map of submission ID to scored submission for quick lookup
     const scoredSubmissionsMap = new Map(
       scoredSubmissions.map((s) => [s.id, s])
     );
@@ -65,16 +66,27 @@ export async function calculateRaschForTest(testId: string): Promise<{
       })
     );
 
+    // Floor/ceiling abilities for extreme cases on the same logit scale as fitted thetas
+    const FLOOR_ABILITY = -5;
+    const CEILING_ABILITY = 5;
+
     const submissionUpdates = submissions.map((s) => {
-      const scoredSubmission = scoredSubmissionsMap.get(s.id);
+      const scored = scoredSubmissionsMap.get(s.id);
+      if (scored) {
+        return {
+          submission_id: s.id,
+          rasch_score: Number(scored.rasch_score.toFixed(2)),
+          rasch_ability: Number(scored.rasch_ability.toFixed(4)),
+        };
+      }
+
+      // Extreme case (all wrong or all correct): assign floor/ceiling
+      const ability = isPerfect(s) ? CEILING_ABILITY : FLOOR_ABILITY;
+      const tScore = isPerfect(s) ? 80 : 20;
       return {
         submission_id: s.id,
-        rasch_score: scoredSubmission?.rasch_score != null 
-          ? Number(scoredSubmission.rasch_score.toFixed(2)) 
-          : 0,
-        rasch_ability: scoredSubmission?.rasch_ability != null
-          ? Number(scoredSubmission.rasch_ability.toFixed(4))
-          : 0,
+        rasch_score: tScore,
+        rasch_ability: ability,
       };
     });
 

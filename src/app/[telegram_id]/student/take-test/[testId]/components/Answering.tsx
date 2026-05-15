@@ -13,12 +13,14 @@ export function Answering({
   scoringType,
   startDate,
   endDate,
+  sharedAudioUrl,
   onPreview,
 }: {
   questions: Question[];
   scoringType: ScoringType;
   startDate?: string;
   endDate?: string;
+  sharedAudioUrl?: string;
   onPreview: () => void;
 }) {
   const dispatch = useAppDispatch();
@@ -49,6 +51,15 @@ export function Answering({
           )}
         </div>
       </div>
+
+      {sharedAudioUrl && (
+        <div className="sticky top-0 z-10 -mx-4 border-y border-emerald-200 bg-emerald-50/90 px-4 py-3 backdrop-blur dark:border-emerald-800 dark:bg-emerald-950/80 sm:-mx-6 sm:px-6">
+          <div className="mb-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+            🎧 Test audiosi (barcha savollar uchun)
+          </div>
+          <QuestionMedia url={sharedAudioUrl} type="audio" />
+        </div>
+      )}
 
       <div className="grid gap-3">
         <h3 className="text-base font-medium">Savollar</h3>

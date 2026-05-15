@@ -24,6 +24,18 @@ const raschKeyboardItems = [
   },
 ];
 
+// Milliy sertifikat — Til testlari (B2/C1)
+const milliySertifikatKeyboardItems = [
+  { text: "🇬🇧 Ingliz tili B2", type: SertificateType.MS_ENGLISH_B2 },
+  { text: "🇬🇧 Ingliz tili C1", type: SertificateType.MS_ENGLISH_C1 },
+  { text: "🇷🇺 Rus tili B2", type: SertificateType.MS_RUSSIAN_B2 },
+  { text: "🇷🇺 Rus tili C1", type: SertificateType.MS_RUSSIAN_C1 },
+  { text: "🇩🇪 Nemis tili B2", type: SertificateType.MS_GERMAN_B2 },
+  { text: "🇩🇪 Nemis tili C1", type: SertificateType.MS_GERMAN_C1 },
+  { text: "🇺🇿 O'zbek tili B2", type: SertificateType.MS_UZBEK_B2 },
+  { text: "🇺🇿 O'zbek tili C1", type: SertificateType.MS_UZBEK_C1 },
+];
+
 // SAT scoring items
 const satKeyboardItems = [
   { text: "Matematika", section: SATSection.MATH },
@@ -43,6 +55,7 @@ export const CALLBACK_PREFIXES = {
   CREATE_TEST_RASCH: "create_test_rasch:",
   CREATE_TEST_SAT: "create_test_sat:",
   CREATE_TEST_UZ_DTM: "create_test_uz_dtm:",
+  CREATE_TEST_MILLIY: "create_test_milliy:",
   CONFIRM_BROADCAST: "confirm_broadcast:",
   CANCEL_BROADCAST: "cancel_broadcast",
 } as const;
@@ -58,6 +71,12 @@ export async function showCreateTestMenu(chatId: number | string) {
           {
             text: "📘 Sertifikat UZ",
             callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}rasch`,
+          },
+        ],
+        [
+          {
+            text: "🌐 Milliy sertifikat (B2/C1)",
+            callback_data: `${CALLBACK_PREFIXES.CREATE_TEST_SCORING}milliy`,
           },
         ],
         [
@@ -120,6 +139,37 @@ export async function showRaschTestMenu(chatId: number | string) {
   } catch (error) {
     sendProductionErrors(error, `showRaschTestMenu - chatId: ${chatId}`);
     console.error("Error showing RASCH test menu:", error);
+  }
+}
+
+/**
+ * Show Milliy Sertifikat menu (B2/C1 language tests)
+ */
+export async function showMilliySertifikatMenu(chatId: number | string) {
+  try {
+    const keyboard = {
+      inline_keyboard: milliySertifikatKeyboardItems.map((item) => [
+        {
+          text: item.text,
+          web_app: {
+            url: CREATE_TEST_ROUTE({
+              telegramId: chatId,
+              sertificateType: item.type,
+              scoringType: ScoringType.RASCH_SCORING,
+            }),
+          },
+        },
+      ]),
+    };
+
+    return sendTelegramMessage(
+      chatId,
+      `🌐 Milliy sertifikat\n\nQaysi til va daraja bo'yicha test yaratmoqchisiz?\n\n💡 Listening qismi uchun "Asosiy ma'lumotlar" bo'limida umumiy audio yuklash mumkin.`,
+      { parse_mode: "Markdown", reply_markup: keyboard }
+    );
+  } catch (error) {
+    sendProductionErrors(error, `showMilliySertifikatMenu - chatId: ${chatId}`);
+    console.error("Error showing Milliy Sertifikat menu:", error);
   }
 }
 
@@ -235,6 +285,8 @@ export async function handleCreateTestCallback(
       
       if (scoringType === "rasch") {
         await showRaschTestMenu(chatId);
+      } else if (scoringType === "milliy") {
+        await showMilliySertifikatMenu(chatId);
       } else if (scoringType === "sat") {
         await showSATTestMenu(chatId);
       } else if (scoringType === "uz_dtm") {

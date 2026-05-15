@@ -65,6 +65,9 @@ export const VIEW_TEST_ROUTE = ({
 export const MY_TESTS_ROUTE = (telegramId: number | string) =>
   `${base}/${telegramId.toString()}/teacher/tests`;
 
+export const QUESTION_BANK_ROUTE = (telegramId: number | string) =>
+  `${base}/${telegramId.toString()}/teacher/question-bank`;
+
 
 export const TEST_ATTEMPTS_ROUTE = ({ testId, telegramId }: { testId: string, telegramId: number | string }) => `${base}/${telegramId.toString()}/teacher/tests/${testId}/attempts`;
 

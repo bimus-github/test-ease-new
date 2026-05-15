@@ -1,6 +1,6 @@
 import { Question } from "@/types/question";
 import { FullSubmission } from "@/types/submission";
-import { checkAnswer } from "./helpers";
+import { checkAnswer, gradeFromT as sharedGradeFromT } from "./helpers";
 
 // types.ts
 export interface ScoredSubmission extends FullSubmission {
@@ -137,16 +137,7 @@ export const fitRaschJML = (
 
 // scoring.ts
 export const tScoreFromZ = (z: number): number => 50 + 10 * z;
-
-export const gradeFromT = (t: number): string => {
-  if (t >= 70) return "A+";
-  if (t >= 65) return "A";
-  if (t >= 60) return "B+";
-  if (t >= 55) return "B";
-  if (t >= 50) return "C+";
-  if (t >= 45) return "C";
-  return "C dan quyi";
-};
+export const gradeFromT = sharedGradeFromT;
 
 // main.ts
 export const calculateRasch = (
