@@ -99,10 +99,31 @@ src/
 - [React Query Documentation](https://tanstack.com/query/latest)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
-/// FOR PRODUCTION
-curl -X POST "https://api.telegram.org/bot8399156152:AAEZCvknDgJ8RLH6LQXTTlOL0Nw75efj6dQ/setWebhook" \
- -d "url=https://test-ease-new.vercel.app/api/telegram/webhook"
+## Webhook setup
 
-/// FOR LOCAL
-curl -X POST "https://api.telegram.org/bot8399156152:AAEZCvknDgJ8RLH6LQXTTlOL0Nw75efj6dQ/setWebhook" \
- -d "url=https://velvet-rockered-unradically.ngrok-free.dev/api/telegram/webhook"
+Eng oson yo'l — yordamchi skript:
+
+```bash
+# Production URL ga
+node scripts/setup-webhook.mjs
+
+# Yoki custom URL (ngrok, vercel preview)
+node scripts/setup-webhook.mjs https://abc.ngrok-free.dev
+```
+
+Skript `.env.local` dan `TELEGRAM_BOT_TOKEN` va `TELEGRAM_WEBHOOK_SECRET` ni o'qiydi.
+Secret ixtiyoriy — agar `your_webhook_secret_for_security` placeholder yoki bo'sh bo'lsa,
+secret'siz ro'yxatdan o'tkaziladi va webhook handler ham tekshirishni o'tkazib yuboradi.
+
+Qo'l bilan curl bilan ham mumkin:
+
+```bash
+# Secret'siz (oddiy)
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -d "url=https://test-ease-new.vercel.app/api/telegram/webhook"
+
+# Yoki secret bilan (ishlab chiqarish uchun tavsiya)
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -d "url=https://test-ease-new.vercel.app/api/telegram/webhook" \
+  -d "secret_token=<real_secret_8_belgidan_uzun>"
+```

@@ -12,9 +12,15 @@ import { handleBroadcastConfirmation } from "@/telegram/handlers/group/broadcast
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify Telegram webhook secret header
+    // Optional webhook secret verification.
+    // Skipped if TELEGRAM_WEBHOOK_SECRET is not set or still has the placeholder value.
+    // To enable: set a real value in env AND re-register webhook with the same secret_token.
     const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
-    if (expectedSecret && expectedSecret !== "your_webhook_secret_for_security") {
+    const secretIsConfigured =
+      !!expectedSecret &&
+      expectedSecret.length >= 8 &&
+      expectedSecret !== "your_webhook_secret_for_security";
+    if (secretIsConfigured) {
       const providedSecret = request.headers.get("x-telegram-bot-api-secret-token");
       if (providedSecret !== expectedSecret) {
         console.warn("❌ Webhook secret mismatch — rejecting request");
