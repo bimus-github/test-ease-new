@@ -4,6 +4,7 @@ import { Timing } from "./submitted/Timing";
 import { Meta } from "./submitted/Meta";
 import { ScoreSummary } from "./submitted/ScoreSummary";
 import { Analysis } from "./submitted/Analysis";
+import { Leaderboard } from "@/components/Leaderboard";
 import { useAppSelector } from "@/store/hooks";
 import { useGetFullSubmission } from "../hooks";
 
@@ -32,6 +33,12 @@ export function Submitted() {
       />
       <Meta user={submissionQuery.data.user} test={submissionQuery.data.test} />
       <ScoreSummary fullSubmission={submissionQuery.data} />
+      {submissionQuery.data.test.is_public && (
+        <Leaderboard
+          testId={submissionQuery.data.test.id}
+          currentSubmissionId={submissionQuery.data.id}
+        />
+      )}
       <Analysis fullSubmission={submissionQuery.data} />
     </section>
   );

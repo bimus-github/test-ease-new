@@ -9,10 +9,37 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
-  const { sessionId, questionId, correct } = await req.json();
+interface AnswerPayload {
+  sessionId: string;
+  questionId: string;
+  answer?: string;
+  answerOptions?: string[];
+}
 
-  // Load session
+function checkCorrect(
+  question: {
+    question_type: string;
+    correct_answer?: string | null;
+    correct_options?: string[] | null;
+    is_multiple_answers?: boolean | null;
+  },
+  given: { answer?: string; answerOptions?: string[] }
+): boolean {
+  if (question.question_type === "multiple_choice" && question.is_multiple_answers) {
+    const correct = (question.correct_options || []).slice().sort();
+    const got = (given.answerOptions || []).slice().sort();
+    if (correct.length !== got.length) return false;
+    return correct.every((c, i) => c === got[i]);
+  }
+  // Single-answer MC or fill_blank
+  if (!question.correct_answer || !given.answer) return false;
+  return question.correct_answer.trim().toLowerCase() === given.answer.trim().toLowerCase();
+}
+
+export async function POST(req: Request) {
+  const { sessionId, questionId, answer, answerOptions } =
+    (await req.json()) as AnswerPayload;
+
   const { data: session, error } = await supabaseAdmin
     .from("cat_sessions")
     .select("*")
@@ -23,25 +50,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Session yakunlangan" }, { status: 400 });
   }
 
-  // Load that question's beta
   const { data: q } = await supabaseAdmin
     .from("questions")
-    .select("rasch_difficulty")
+    .select(
+      "id, rasch_difficulty, question_type, correct_answer, correct_options, is_multiple_answers"
+    )
     .eq("id", questionId)
     .single();
-  if (!q?.rasch_difficulty && q?.rasch_difficulty !== 0) {
+  if (!q) return NextResponse.json({ error: "Savol topilmadi" }, { status: 404 });
+  if (q.rasch_difficulty == null) {
     return NextResponse.json({ error: "Savol kalibrlanmagan" }, { status: 400 });
   }
 
-  // Update responses + theta
+  const isCorrect = checkCorrect(q, { answer, answerOptions });
+
   const responses: Array<{ beta: number; correct: 0 | 1 }> = [
     ...(session.responses as Array<{ beta: number; correct: 0 | 1 }>),
-    { beta: q.rasch_difficulty, correct: correct ? 1 : 0 },
+    { beta: q.rasch_difficulty, correct: isCorrect ? 1 : 0 },
   ];
   const administered = new Set([...(session.administered_items as string[]), questionId]);
   const { theta, se } = updateTheta(responses);
 
-  // Load pool again to choose next
   const { data: pool } = await supabaseAdmin
     .from("questions")
     .select("id, rasch_difficulty, question_text, question_type, options")
@@ -68,7 +97,15 @@ export async function POST(req: Request) {
       })
       .eq("id", sessionId);
 
-    return NextResponse.json({ done: true, theta, se });
+    const tScore = Math.max(0, Math.min(100, 50 + 10 * theta));
+    return NextResponse.json({
+      done: true,
+      correct: isCorrect,
+      theta,
+      se,
+      tScore,
+      administered: administered.size,
+    });
   }
 
   const next = selectNextItem(calibratedPool, administered, theta);
@@ -88,5 +125,12 @@ export async function POST(req: Request) {
     .eq("id", sessionId);
 
   const fullQuestion = (pool || []).find((p) => p.id === next.id);
-  return NextResponse.json({ done: false, theta, se, question: fullQuestion });
+  return NextResponse.json({
+    done: false,
+    correct: isCorrect,
+    theta,
+    se,
+    administered: administered.size,
+    question: fullQuestion,
+  });
 }

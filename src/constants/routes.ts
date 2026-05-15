@@ -83,3 +83,9 @@ export const MY_RESULTS_ROUTE = (telegramId: number | string) =>
   `${base}/${telegramId.toString()}/student/my-results`;
 export const TAKE_TEST_ROUTE = (testId: string, telegramId: number | string) =>
   `${base}/${telegramId.toString()}/student/take-test/${testId}`;
+
+export const CAT_ROUTE = (telegramId: number | string) =>
+  `${base}/${telegramId.toString()}/student/cat`;
+
+export const PUBLIC_TESTS_ROUTE = (telegramId: number | string) =>
+  `${base}/${telegramId.toString()}/student/public-tests`;

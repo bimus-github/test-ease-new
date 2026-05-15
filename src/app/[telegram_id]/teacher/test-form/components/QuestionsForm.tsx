@@ -3,6 +3,7 @@
 import { ToggleMathInput } from "@/components/math-live";
 import { MediaUpload } from "@/components/MediaUpload";
 import { AIGenerateModal } from "@/components/AIGenerateModal";
+import { BankImportModal } from "@/components/BankImportModal";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { testFromActions } from "@/store/slices/forms/test";
 import { SATSection, ScoringType } from "@/types/test";
@@ -19,6 +20,7 @@ export function QuestionsForm({ onSubmit }: Props) {
   const dispatch = useAppDispatch();
   const [savedToBank, setSavedToBank] = useState<Record<string, boolean>>({});
   const [aiOpen, setAiOpen] = useState(false);
+  const [bankOpen, setBankOpen] = useState(false);
 
   const handleSaveToBank = async (label: string) => {
     const q = questions.find((x) => x.question_label === label);
@@ -117,13 +119,22 @@ export function QuestionsForm({ onSubmit }: Props) {
     <div className="mx-auto w-full max-w-3xl p-4 sm:p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Savollar</h2>
-        <button
-          type="button"
-          onClick={() => setAiOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300"
-        >
-          🤖 AI bilan generatsiya
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setBankOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+          >
+            📚 Bankdan import
+          </button>
+          <button
+            type="button"
+            onClick={() => setAiOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300"
+          >
+            🤖 AI bilan generatsiya
+          </button>
+        </div>
       </div>
 
       <AIGenerateModal
@@ -131,6 +142,15 @@ export function QuestionsForm({ onSubmit }: Props) {
         onClose={() => setAiOpen(false)}
         onAccept={(generated) => {
           dispatch(testFromActions.appendGeneratedQuestions(generated));
+        }}
+      />
+
+      <BankImportModal
+        teacherId={test?.teacher_id || ""}
+        open={bankOpen}
+        onClose={() => setBankOpen(false)}
+        onImport={(imported) => {
+          dispatch(testFromActions.appendBankQuestions(imported));
         }}
       />
       

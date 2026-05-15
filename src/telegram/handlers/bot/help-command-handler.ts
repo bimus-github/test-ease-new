@@ -23,6 +23,9 @@ export async function handleHelpCommand(chatId: number) {
         `• \`/help\` - Yordam xabari\n` +
         `• \`/create_test\` - Test yaratish\n` +
         `• \`/my_tests\` - Testlarimni ko‘rish\n` +
+        `• \`/my_bank\` - Savol bankim 📚\n` +
+        `• \`/cat\` - Adaptive test 🧠\n` +
+        `• \`/public_tests\` - Public testlar 🌍\n` +
         `• \`/my_results\` - Natijalarni ko'rish` +
         `\n\n*Yordam kerakmi?* O‘qituvchingiz bilan bog‘laning! 👨‍🏫`,
       { parse_mode: "Markdown" }

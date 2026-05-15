@@ -149,6 +149,32 @@ export function BasicInfoForm({ onSubmit, testId }: Props) {
         />
       </div>
 
+      <div className="grid gap-2 rounded-lg border border-violet-200 bg-violet-50/50 p-3 dark:border-violet-800 dark:bg-violet-950/20">
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={!!test?.is_public}
+            onChange={(e) =>
+              dispatch(
+                testFromActions.setTest({
+                  ...test,
+                  is_public: e.target.checked,
+                })
+              )
+            }
+            className="mt-0.5 h-4 w-4 cursor-pointer accent-violet-600"
+          />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-violet-900 dark:text-violet-200">
+              🌍 Public test qilish
+            </div>
+            <div className="mt-0.5 text-xs text-violet-700 dark:text-violet-300">
+              Bu testni har bir o'quvchi katalogdan topib topshirishi mumkin. Leaderboard'da top 10 ko'rinadi.
+            </div>
+          </div>
+        </label>
+      </div>
+
       <div className="grid gap-2">
         <label className="text-sm font-medium">
           Umumiy audio <span className="text-neutral-500">(ixtiyoriy — IELTS Listening uchun)</span>

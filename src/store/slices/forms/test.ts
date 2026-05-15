@@ -134,6 +134,19 @@ export const testSlice = createSlice({
       }));
       state.questions = [...state.questions, ...newOnes];
     },
+    appendBankQuestions: (
+      state,
+      action: PayloadAction<QuestionForm[]>
+    ) => {
+      const startOrder = state.questions.length + 1;
+      const newOnes: QuestionForm[] = action.payload.map((q, i) => ({
+        ...q,
+        test_id: "",
+        question_label: `${startOrder + i}-savol`,
+        question_order: startOrder + i,
+      }));
+      state.questions = [...state.questions, ...newOnes];
+    },
     setQuestionsCount: (state, action: PayloadAction<number>) => {
       const count = action.payload;
       const currentCount = state.questions.length;

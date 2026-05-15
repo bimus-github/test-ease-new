@@ -42,6 +42,7 @@ export interface Test {
   isRaschCalculated?: boolean;
   rasch_calculated_at?: string;
   shared_audio_url?: string;
+  is_public?: boolean;
 }
 
 export interface TestWithQuestions extends Test {
