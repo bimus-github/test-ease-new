@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { Test } from "@/types/test";
-import { EDIT_TEST_ROUTE, TAKE_TEST_ROUTE, TEST_ATTEMPTS_ROUTE } from "@/constants/routes";
+import { EDIT_TEST_ROUTE, MY_TESTS_ROUTE, TAKE_TEST_ROUTE, TEST_ATTEMPTS_ROUTE } from "@/constants/routes";
 import { formatLocalDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { testTypeText } from "@/lib/helpers";
 import { ShareTestModal } from "@/components/ShareTestModal";
+import { deleteTestAction } from "../../actions";
 
 export function InfoCard({
   test,
@@ -19,11 +22,28 @@ export function InfoCard({
   testId: string;
 }) {
 
+  const router = useRouter();
   const [shareOpen, setShareOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+
   const onCopy = async (value: string) => {
     await navigator.clipboard.writeText(value);
     toast.success("Kod nusxalandi");
   };
+
+  const deleteMut = useMutation({
+    mutationFn: () => deleteTestAction(testId),
+    onSuccess: (ok) => {
+      if (ok) {
+        toast.success("Test o'chirildi");
+        router.push(MY_TESTS_ROUTE(telegramId));
+      } else {
+        toast.error("O'chirishda xato");
+      }
+    },
+    onError: () => toast.error("O'chirishda xato"),
+  });
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const shareUrl = `${origin}${TAKE_TEST_ROUTE(testId, telegramId)}`;
@@ -103,7 +123,58 @@ export function InfoCard({
           >
             🔗 Ulashish
           </button>
+          <button
+            onClick={() => {
+              setConfirmText("");
+              setDeleteOpen(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 active:scale-[0.99] dark:border-red-800 dark:bg-neutral-900 dark:text-red-400 dark:hover:bg-red-950/20"
+          >
+            🗑 O'chirish
+          </button>
         </div>
+
+        {deleteOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-900">
+              <h3 className="mb-2 text-lg font-semibold text-red-700 dark:text-red-400">
+                ⚠️ Testni o'chirishni tasdiqlaysizmi?
+              </h3>
+              <p className="mb-4 text-sm text-neutral-700 dark:text-neutral-300">
+                Bu harakat <b>qaytarib bo'lmaydi</b>. Test bilan birga{" "}
+                <b>barcha savollar va o'quvchilar topshirgan natijalar</b> ham o'chiriladi.
+              </p>
+              <p className="mb-2 text-xs text-neutral-600 dark:text-neutral-400">
+                Tasdiqlash uchun test sarlavhasini ko'chiring: <b>{test.title}</b>
+              </p>
+              <input
+                type="text"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder="Test sarlavhasini kiriting"
+                className="mb-4 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-red-500 dark:border-neutral-700 dark:bg-neutral-900"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={deleteMut.isPending}
+                  onClick={() => setDeleteOpen(false)}
+                  className="flex-1 rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="button"
+                  disabled={confirmText !== test.title || deleteMut.isPending}
+                  onClick={() => deleteMut.mutate()}
+                  className="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {deleteMut.isPending ? "O'chirilmoqda..." : "O'chirish"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

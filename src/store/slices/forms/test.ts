@@ -111,6 +111,77 @@ export const testSlice = createSlice({
         currentQuestion.media_type = action.payload.media_type;
       }
     },
+    setQuestionText: (
+      state,
+      action: PayloadAction<{ question_label: string; text: string }>
+    ) => {
+      const q = state.questions.find((x) => x.question_label === action.payload.question_label);
+      if (q) q.question_text = action.payload.text;
+    },
+    setOptionText: (
+      state,
+      action: PayloadAction<{ question_label: string; index: number; text: string }>
+    ) => {
+      const q = state.questions.find((x) => x.question_label === action.payload.question_label);
+      if (!q || !q.options) return;
+      const oldText = q.options[action.payload.index];
+      q.options[action.payload.index] = action.payload.text;
+      // Update correct_answer if it pointed to the old text
+      if (q.correct_answer === oldText) {
+        q.correct_answer = action.payload.text;
+      }
+      // Update correct_options if it contained the old text
+      if (q.correct_options?.includes(oldText)) {
+        q.correct_options = q.correct_options.map((o) =>
+          o === oldText ? action.payload.text : o
+        );
+      }
+    },
+    addOption: (state, action: PayloadAction<{ question_label: string }>) => {
+      const q = state.questions.find((x) => x.question_label === action.payload.question_label);
+      if (!q) return;
+      const current = q.options || [];
+      const nextLetter = String.fromCharCode(65 + current.length);
+      q.options = [...current, nextLetter];
+    },
+    removeOption: (
+      state,
+      action: PayloadAction<{ question_label: string; index: number }>
+    ) => {
+      const q = state.questions.find((x) => x.question_label === action.payload.question_label);
+      if (!q || !q.options) return;
+      const removed = q.options[action.payload.index];
+      q.options = q.options.filter((_, i) => i !== action.payload.index);
+      if (q.correct_answer === removed) q.correct_answer = undefined;
+      if (q.correct_options) {
+        q.correct_options = q.correct_options.filter((o) => o !== removed);
+      }
+    },
+    addQuestion: (state) => {
+      const order = state.questions.length + 1;
+      state.questions.push({
+        test_id: "",
+        question_label: `${order}-savol`,
+        question_text: "",
+        question_type: "multiple_choice",
+        question_order: order,
+        points: 1,
+        is_required: true,
+        options: ["A", "B", "C", "D"],
+        correct_answer: "",
+      });
+    },
+    removeQuestion: (state, action: PayloadAction<{ question_label: string }>) => {
+      state.questions = state.questions.filter(
+        (q) => q.question_label !== action.payload.question_label
+      );
+      // Re-number remaining
+      state.questions = state.questions.map((q, i) => ({
+        ...q,
+        question_label: `${i + 1}-savol`,
+        question_order: i + 1,
+      }));
+    },
     appendGeneratedQuestions: (
       state,
       action: PayloadAction<Array<{
@@ -158,7 +229,7 @@ export const testSlice = createSlice({
           newQuestions.push({
             test_id: "",
             question_label: `${i}-savol`,
-            question_text: "Savol matnini o'qituvchidan olishingiz mumkin.",
+            question_text: "",
             question_type: "multiple_choice",
             question_order: i,
             points: 1,

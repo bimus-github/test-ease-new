@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { getVerifiedTelegramId } from "@/lib/telegram-verify";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,11 @@ const MAX_AUDIO = 25 * 1024 * 1024;
 export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File | null;
-  const teacherId = String(form.get("teacher_id") || "anon");
+  const initData = String(form.get("init_data") || req.headers.get("x-init-data") || "");
+
+  // Prefer verified Telegram ID; fall back to FormData value (transitional — to be removed)
+  const verifiedId = getVerifiedTelegramId(initData);
+  const teacherId = verifiedId || String(form.get("teacher_id") || "anon");
   const type = String(form.get("type") || "");
 
   if (!file) return NextResponse.json({ error: "Fayl yo'q" }, { status: 400 });

@@ -51,20 +51,57 @@ export async function sendBroadcastToAllUsers(
       return { success: 0, failed: 0, total: 0 };
     }
 
-    await Promise.all(data.map(async (user) => {
+    stats.total = data.length;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    // Sequential send with delay to respect Telegram rate limit (~30 msg/sec to different users).
+    // Promise.all bilan blast etish 429 (Too Many Requests) ga olib keladi.
+    for (const user of data) {
       try {
         await sendTelegramMessage(user.telegram_id, message, {
           parse_mode: options?.parseMode || "Markdown",
         });
         stats.success++;
-        stats.sent++;
       } catch (error) {
         stats.failed++;
-        stats.sent++;
       }
-    }));  
+      stats.sent++;
 
-    return stats; 
+      // Progress callback every 50 messages
+      if (options?.onProgress && stats.sent % 50 === 0) {
+        try {
+          await options.onProgress({
+            sent: stats.sent,
+            total: stats.total,
+            success: stats.success,
+            failed: stats.failed,
+          });
+        } catch {
+          // ignore callback errors
+        }
+      }
+
+      // Delay between sends (skip after last)
+      if (stats.sent < stats.total) {
+        await sleep(delayMs);
+      }
+    }
+
+    // Final progress
+    if (options?.onProgress) {
+      try {
+        await options.onProgress({
+          sent: stats.sent,
+          total: stats.total,
+          success: stats.success,
+          failed: stats.failed,
+        });
+      } catch {
+        // ignore
+      }
+    }
+
+    return stats;
   } catch (error) {
     sendProductionErrors(error, `sendBroadcastToAllUsers - message: ${message}`);
     return { success: 0, failed: 0, total: 0 };

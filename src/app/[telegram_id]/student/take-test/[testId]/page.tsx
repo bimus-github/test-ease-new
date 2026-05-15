@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { takeActions } from "@/store/slices/take";
+import { takeActions, type TakeStep } from "@/store/slices/take";
 import { useCheckSubmission, useGetTest, useStartSubmission, useSubmitSubmission } from "./hooks";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import { ConfirmStart } from "./components/ConfirmStart";
 import { Answering } from "./components/Answering";
 import { Preview } from "./components/Preview";
 import { Submitted } from "./components/Submitted";
+import { saveTakeState, loadTakeState, clearTakeState } from "@/lib/take-storage";
 
 export default function Page() {
   const { testId, telegram_id } = useParams<{ testId: string, telegram_id: string }>();
@@ -42,6 +43,47 @@ export default function Page() {
       });
     }
   }, [testId, telegram_id]);
+
+  // Restore draft answers from localStorage on first load
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    if (!testId || !telegram_id) return;
+    const draft = loadTakeState(testId, telegram_id);
+    if (!draft) return;
+    restoredRef.current = true;
+    if (draft.answers?.length) {
+      dispatch(takeActions.setAnswers(draft.answers));
+    }
+    if (draft.submissionId) {
+      dispatch(
+        takeActions.setMeta({
+          submissionId: draft.submissionId,
+          testId,
+          telegramId: telegram_id,
+          startedAt: draft.startedAt,
+        })
+      );
+    }
+    if (draft.step && draft.step !== "submit") {
+      dispatch(takeActions.setStep(draft.step as TakeStep));
+    }
+  }, [testId, telegram_id, dispatch]);
+
+  // Persist draft on every answer/step change (don't persist after submit)
+  useEffect(() => {
+    if (!testId || !telegram_id) return;
+    if (step === "submit") {
+      clearTakeState(testId, telegram_id);
+      return;
+    }
+    saveTakeState(testId, telegram_id, {
+      answers,
+      step,
+      submissionId,
+      startedAt,
+    });
+  }, [testId, telegram_id, answers, step, submissionId, startedAt]);
 
   if (!testId) return null;
 

@@ -14,7 +14,7 @@ export const generateMilliySertifikatTilQuestions = (): QuestionForm[] => {
     questions.push({
       test_id: "",
       question_label: `${i}-savol`,
-      question_text: "Savol matnini o'qituvchidan olishingiz mumkin.",
+      question_text: "",
       question_type: isFillBlank ? "fill_blank" : "multiple_choice",
       question_order: i,
       points: 1,

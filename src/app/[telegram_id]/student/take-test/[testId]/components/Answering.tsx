@@ -4,9 +4,12 @@ import type { Question } from "@/types/question";
 import { ScoringType } from "@/types/test";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { takeActions } from "@/store/slices/take";
+import { useMemo } from "react";
 import { ToggleMathInput } from "@/components/math-live";
 import { QuestionMedia } from "@/components/QuestionMedia";
+import { TestTimer } from "@/components/TestTimer";
 import { formatLocalDate } from "@/lib/utils";
+import { shuffleWithSeed } from "@/lib/shuffle";
 
 export function Answering({
   questions,
@@ -25,8 +28,20 @@ export function Answering({
 }) {
   const dispatch = useAppDispatch();
   const answers = useAppSelector((s) => s.take.answers);
+  const submissionId = useAppSelector((s) => s.take.submissionId);
 
-  const unansweredLabels = questions
+  // Shuffle questions and options per-submission (deterministic — same seed → same order on reload)
+  const shuffledQuestions = useMemo(() => {
+    if (!submissionId) return questions;
+    return shuffleWithSeed(questions, `q-${submissionId}`);
+  }, [questions, submissionId]);
+
+  const getShuffledOptions = (q: Question): string[] => {
+    if (!submissionId || !q.options) return q.options || [];
+    return shuffleWithSeed(q.options, `o-${submissionId}-${q.id}`);
+  };
+
+  const unansweredLabels = shuffledQuestions
     .filter((q) => {
       const a = answers.find((x) => x.question_id === q.id);
       if (!a) return true;
@@ -39,6 +54,8 @@ export function Answering({
 
   return (
     <section className="grid gap-4">
+      <TestTimer startedAt={startDate} endDate={endDate} />
+
       <div className="rounded-lg border border-neutral-200 bg-neutral-50/50 p-3 text-xs dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-medium text-neutral-700 dark:text-neutral-300">
@@ -64,7 +81,7 @@ export function Answering({
       <div className="grid gap-3">
         <h3 className="text-base font-medium">Savollar</h3>
         <div className="grid grid-cols-1 gap-3">
-          {questions.map((q) => (
+          {shuffledQuestions.map((q) => (
             <div
               key={q.id}
               className="group rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
@@ -108,7 +125,7 @@ export function Answering({
               {q.question_type === "multiple_choice" &&
                 !q.is_multiple_answers && (
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {(q.options || []).map((opt) => {
+                    {getShuffledOptions(q).map((opt) => {
                       const isSelected = answers.find(
                         (x) => x.question_id === q.id && x.answer === opt
                       );
@@ -147,7 +164,7 @@ export function Answering({
               {q.question_type === "multiple_choice" &&
                 q.is_multiple_answers && (
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {(q.options || []).map((opt) => {
+                    {getShuffledOptions(q).map((opt) => {
                       const isSelected = answers.find(
                         (x) =>
                           x.question_id === q.id &&

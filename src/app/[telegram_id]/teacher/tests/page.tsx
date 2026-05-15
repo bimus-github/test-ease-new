@@ -40,25 +40,23 @@ function Tests() {
         return (
           <main className="mx-auto w-full max-w-5xl p-4 sm:p-6">
             <Header isFetching={isFetching} onRefetch={() => refetch()} />
-            <div className="mt-4 flex flex-col items-center justify-center rounded-md border border-neutral-200 p-8 text-center text-sm text-neutral-600 dark:border-neutral-800">
-              <div className="mb-2 rounded-full border border-dashed border-neutral-300 p-3 text-neutral-400 dark:border-neutral-700">
-                <svg
-                  className="h-6 w-6"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  aria-hidden="true"
-                >
-                  <path d="M3 7h18M3 12h18M3 17h18" />
-                </svg>
+            <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 p-10 text-center dark:border-neutral-700">
+              <div className="mb-3 text-5xl">📝</div>
+              <p className="text-base font-semibold text-neutral-800 dark:text-neutral-200">
+                Hali testlar yo'q
+              </p>
+              <p className="mt-1 max-w-sm text-sm text-neutral-500">
+                Birinchi testingizni Telegram bot orqali yarating.
+                Bot'da <code className="rounded bg-neutral-100 px-1 dark:bg-neutral-800">/create_test</code> yuboring.
+              </p>
+              <div className="mt-4 grid w-full max-w-md gap-2 text-left text-xs text-neutral-600 dark:text-neutral-400">
+                <div className="rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
+                  💡 <b>Maslahat:</b> AI bilan savol generatsiya qilib, tez test yaratishingiz mumkin.
+                </div>
+                <div className="rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
+                  📚 Yoki savol bankingizdan tayyor savollarni import qiling.
+                </div>
               </div>
-              <p className="text-neutral-700 dark:text-neutral-300">
-                Hozircha testlar yo‘q
-              </p>
-              <p className="mt-1 max-w-sm text-xs text-neutral-500">
-                Yangi test yarating yoki mavjud testlaringizni yangilang.
-              </p>
             </div>
           </main>
         );

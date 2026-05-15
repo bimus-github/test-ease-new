@@ -1,5 +1,5 @@
 "use server";
-import { getTestsByTeacher, getTestWithQuestions } from "@/dbs/test-servers";
+import { deleteTest, getTestsByTeacher, getTestWithQuestions } from "@/dbs/test-servers";
 import { getFullSubmission } from "@/dbs/submission-servers";
 import { FullSubmission } from "@/types/submission";
 
@@ -18,4 +18,8 @@ export async function getFullSubmissionAction(submissionId: string): Promise<{ o
     const submission = await getFullSubmission(submissionId);
     if (!submission) return { ok: false, error: "Submission not found" };
     return { ok: true, submission };
+}
+
+export async function deleteTestAction(testId: string): Promise<boolean> {
+    return deleteTest(testId);
 }

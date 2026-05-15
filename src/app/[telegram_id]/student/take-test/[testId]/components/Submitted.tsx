@@ -7,10 +7,12 @@ import { Analysis } from "./submitted/Analysis";
 import { Leaderboard } from "@/components/Leaderboard";
 import { useAppSelector } from "@/store/hooks";
 import { useGetFullSubmission } from "../hooks";
+import { useTelegramWebApp } from "@/hooks/useTelegramWebApp";
 
 export function Submitted() {
   const submissionId = useAppSelector((s) => s.take.submissionId ?? "");
   const submissionQuery = useGetFullSubmission(submissionId);
+  const webApp = useTelegramWebApp();
 
   if (!submissionQuery.data)
     return (
@@ -40,6 +42,16 @@ export function Submitted() {
         />
       )}
       <Analysis fullSubmission={submissionQuery.data} />
+
+      {webApp && (
+        <button
+          type="button"
+          onClick={() => webApp.close()}
+          className="rounded-md bg-neutral-900 px-4 py-3 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+        >
+          ✓ Yopish
+        </button>
+      )}
     </section>
   );
 }

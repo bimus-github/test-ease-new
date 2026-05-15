@@ -12,6 +12,16 @@ import { handleBroadcastConfirmation } from "@/telegram/handlers/group/broadcast
  */
 export async function POST(request: NextRequest) {
   try {
+    // Verify Telegram webhook secret header
+    const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (expectedSecret && expectedSecret !== "your_webhook_secret_for_security") {
+      const providedSecret = request.headers.get("x-telegram-bot-api-secret-token");
+      if (providedSecret !== expectedSecret) {
+        console.warn("❌ Webhook secret mismatch — rejecting request");
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
     // Get the raw body
     const body = await request.text();
 

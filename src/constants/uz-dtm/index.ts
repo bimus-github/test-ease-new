@@ -21,7 +21,7 @@ export const generateOneDotOneQuestions = () => {
         questions.push({
             test_id: "",
             question_label: `${i}-savol`,
-            question_text: "Savol matnini o'qituvchidan olishingiz mumkin.",
+            question_text: "",
             question_type: "multiple_choice",
             question_order: i,
             points: 1.1,
@@ -40,7 +40,7 @@ export const generateTwoDotOneQuestions = () => {
         questions.push({
             test_id: "",
             question_label: `${60 + i}-savol`,
-            question_text: "Savol matnini o'qituvchidan olishingiz mumkin.",
+            question_text: "",
             question_type: "multiple_choice",
             question_order: i,
             points: 2.1,
@@ -59,7 +59,7 @@ export const generateThreeDotOneQuestions = () => {
         questions.push({
             test_id: "",
             question_label: `${30 + i}-savol`,
-            question_text: "Savol matnini o'qituvchidan olishingiz mumkin.",
+            question_text: "",
             question_type: "multiple_choice",
             question_order: i,
             points: 3.1,

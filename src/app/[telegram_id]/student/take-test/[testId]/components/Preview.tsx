@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Question } from "@/types/question";
 import { ScoringType } from "@/types/test";
 import { useAppSelector } from "@/store/hooks";
@@ -20,6 +20,7 @@ export function Preview({
   onSubmit: () => Promise<void>;
 }) {
   const answers = useAppSelector((s) => s.take.answers);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const stats = useMemo(() => {
     const mcCount = questions.filter(
@@ -128,12 +129,53 @@ export function Preview({
         <button
           type="button"
           disabled={isSubmitting}
-          onClick={onSubmit}
+          onClick={() => setShowConfirm(true)}
           className="inline-flex flex-1 items-center justify-center rounded-md bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
         >
           {isSubmitting ? "Yuborilmoqda…" : "Yuborish"}
         </button>
       </div>
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-900">
+            <h3 className="mb-2 text-lg font-semibold">Yuborishni tasdiqlaysizmi?</h3>
+            <p className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">
+              Yuborganingizdan keyin javoblarni o'zgartirib bo'lmaydi.
+              <br />
+              <span className="mt-2 inline-block text-xs">
+                Javob berilgan: <b>{stats.answered}/{questions.length}</b>
+                {stats.answered < questions.length && (
+                  <span className="ml-2 text-amber-600 dark:text-amber-400">
+                    ⚠️ {questions.length - stats.answered} ta savol javobsiz
+                  </span>
+                )}
+              </span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              >
+                Bekor qilish
+              </button>
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={async () => {
+                  await onSubmit();
+                  setShowConfirm(false);
+                }}
+                className="flex-1 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+              >
+                {isSubmitting ? "Yuborilmoqda…" : "Ha, yuborish"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

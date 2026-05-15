@@ -36,8 +36,10 @@ export const useLoadTest = () => {
             sat_section: data.sat_section,
             sertificate_type: data.sertificate_type,
             uz_dtm_section: data.uz_dtm_section,
+            is_public: data.is_public,
+            shared_audio_url: data.shared_audio_url,
           };
-    
+
           // Map Questions to QuestionForm (exclude id, created_at, updated_at, test_id)
           const questionsForm: UpdateQuestionForm[] = data.questions.map(
             (q) =>
@@ -55,7 +57,9 @@ export const useLoadTest = () => {
                 correct_answer: q.correct_answer,
                 correct_options: q.correct_options,
                 rasch_difficulty: q.rasch_difficulty,
-                sat_score: q.sat_score
+                sat_score: q.sat_score,
+                media_url: q.media_url,
+                media_type: q.media_type,
               } as UpdateQuestionForm)
           );
     

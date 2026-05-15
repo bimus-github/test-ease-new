@@ -17,9 +17,13 @@ export async function handleTestCode(
     const test = await getTestByCode(testCode);
 
     if (!test) {
+      const looksValid = /^[A-Z0-9]{4,10}$/i.test(testCode);
+      const hint = looksValid
+        ? `Bunday kod tizimda yo'q. Iltimos:\n• Kod harflarini diqqat bilan tekshiring (kichik/katta harf)\n• O'qituvchingiz bilan qayta tasdiqlang\n• Yoki /public_tests orqali ochiq testlardan tanlang`
+        : `Bu test kodiga o'xshamaydi. Test kodi odatda 4-10 ta harf/raqamdan iborat bo'ladi (masalan: \`ABC123\`).\n\nAgar oddiy xabar yozmoqchi bo'lsangiz, /help orqali yordam ko'ring.`;
       await sendTelegramMessage(
         chatId,
-        `❌ Test kodi \`${testCode}\` topilmadi.\n\nKodini tekshirib qayta yuboring yoki o‘qituvchingiz bilan bog‘laning.`,
+        `❌ Test kodi \`${testCode}\` topilmadi.\n\n${hint}`,
         { parse_mode: "Markdown" }
       );
       return;
@@ -55,7 +59,8 @@ export async function handleTestCode(
     if (test.status !== "active") {
       await sendTelegramMessage(
         chatId,
-        `⏸️ Bu test hozir faol emas.\n\n📝 ${test.title}`
+        `⏸️ Bu test hozir faol emas.\n\n📝 *${test.title}*\n\nO'qituvchingiz testni vaqtinchalik to'xtatib qo'ygan. Iltimos, keyinroq qayta urinib ko'ring yoki o'qituvchingiz bilan bog'laning.`,
+        { parse_mode: "Markdown" }
       );
       return;
     }
@@ -63,9 +68,8 @@ export async function handleTestCode(
     if (isPast(test.end_date)) {
       await sendTelegramMessage(
         chatId,
-        `⏰ Bu testning muddati tugagan.\n\n📝 ${
-          test.title
-        }\nTugash vaqti: ${formatUzbekistanDate(test.end_date)}`
+        `⏰ *Bu testning muddati tugagan*\n\n📝 ${test.title}\n📅 Tugash vaqti: ${formatUzbekistanDate(test.end_date)}\n\nAfsuski, endi bu testni topshirib bo'lmaydi.\n\n💡 Boshqa testlarni /public_tests dan topishingiz mumkin.`,
+        { parse_mode: "Markdown" }
       );
       return;
     }
