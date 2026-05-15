@@ -37,7 +37,8 @@ export function AIGenerateModal({ open, onClose, onAccept }: Props) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Xato");
+        const detail = data.details ? `\n\nTafsilot: ${typeof data.details === "string" ? data.details.slice(0, 300) : JSON.stringify(data.details).slice(0, 300)}` : "";
+        setError((data.error || "Xato") + detail);
         return;
       }
       setPreview(data.questions);
@@ -124,7 +125,7 @@ export function AIGenerateModal({ open, onClose, onAccept }: Props) {
               </div>
             </div>
 
-            {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400">{error}</div>}
+            {error && <div className="rounded-md bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/30 dark:text-red-400 whitespace-pre-wrap break-words">{error}</div>}
 
             <button
               type="button"

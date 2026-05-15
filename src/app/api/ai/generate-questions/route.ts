@@ -137,30 +137,51 @@ export async function POST(req: Request) {
     );
   }
 
-  // gemini-2.0-flash — eng so'nggi bepul model, o'zbek tilini gemini-1.5'dan yaxshiroq tushunadi
-  const model = "gemini-2.0-flash";
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: buildPrompt(body) }] }],
-        generationConfig: {
-          temperature: 0.8,
-          topP: 0.95,
-          maxOutputTokens: 8192,
-          responseMimeType: "application/json",
-        },
-      }),
-    }
-  );
+  // Primary: gemini-2.5-flash (eng yaxshi sifat).
+  // Agar quota tugasa, lite versiyaga fallback qilamiz.
+  const modelChain = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"];
+  const promptText = buildPrompt(body);
 
-  if (!response.ok) {
-    const text = await response.text();
+  let response: Response | null = null;
+  let lastErrorText = "";
+  for (const model of modelChain) {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            temperature: 0.8,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json",
+          },
+        }),
+      }
+    );
+    if (r.ok) {
+      response = r;
+      break;
+    }
+    lastErrorText = await r.text();
+    // Faqat 429 (quota) bo'lsa keyingisiga o'tamiz, boshqa xatoda to'xtatamiz
+    if (r.status !== 429) {
+      return NextResponse.json(
+        { error: "AI xizmati xatosi", details: lastErrorText },
+        { status: r.status }
+      );
+    }
+  }
+
+  if (!response) {
     return NextResponse.json(
-      { error: "AI xizmati xatosi", details: text },
-      { status: response.status }
+      {
+        error: "Barcha AI modellarda kvota tugagan. Bir daqiqa kuting va qayta urinib ko'ring.",
+        details: lastErrorText,
+      },
+      { status: 429 }
     );
   }
 
