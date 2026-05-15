@@ -1,4 +1,4 @@
-import { QuestionForm } from "@/types/question";
+import { MediaType, QuestionForm } from "@/types/question";
 import { ScoringType, TestForm, TestStatus } from "@/types/test";
 import { SertificateType } from "@/types/sertificate";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -93,6 +93,22 @@ export const testSlice = createSlice({
       );
       if (currentQuestion) {
         currentQuestion.points = action.payload.points;
+      }
+    },
+    setQuestionMedia: (
+      state,
+      action: PayloadAction<{
+        question_label: string;
+        media_url: string | undefined;
+        media_type: MediaType | undefined;
+      }>
+    ) => {
+      const currentQuestion = state.questions.find(
+        (q) => q.question_label === action.payload.question_label
+      );
+      if (currentQuestion) {
+        currentQuestion.media_url = action.payload.media_url;
+        currentQuestion.media_type = action.payload.media_type;
       }
     },
     setQuestionsCount: (state, action: PayloadAction<number>) => {

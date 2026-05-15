@@ -5,6 +5,7 @@ import { ScoringType } from "@/types/test";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { takeActions } from "@/store/slices/take";
 import { ToggleMathInput } from "@/components/math-live";
+import { QuestionMedia } from "@/components/QuestionMedia";
 import { formatLocalDate } from "@/lib/utils";
 
 export function Answering({
@@ -72,6 +73,8 @@ export function Answering({
                   </span>
                 </div>
               </div>
+
+              <QuestionMedia url={q.media_url} type={q.media_type} />
 
               {q.question_type === "fill_blank" && (
                 <ToggleMathInput

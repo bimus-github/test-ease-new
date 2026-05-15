@@ -1,9 +1,11 @@
 "use client";
 
 import { ToggleMathInput } from "@/components/math-live";
+import { MediaUpload } from "@/components/MediaUpload";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { testFromActions } from "@/store/slices/forms/test";
 import { SATSection, ScoringType } from "@/types/test";
+import { MediaType } from "@/types/question";
 import { useMemo } from "react";
 
 interface Props {
@@ -58,6 +60,20 @@ export function QuestionsForm({ onSubmit }: Props) {
       testFromActions.setQuestionPoints({
         question_label: label,
         points: points || 1,
+      })
+    );
+  };
+
+  const setQuestionMedia = (
+    label: string,
+    media_url: string | undefined,
+    media_type: MediaType | undefined
+  ) => {
+    dispatch(
+      testFromActions.setQuestionMedia({
+        question_label: label,
+        media_url,
+        media_type,
       })
     );
   };
@@ -170,6 +186,13 @@ export function QuestionsForm({ onSubmit }: Props) {
             <div className="text-sm text-neutral-700 dark:text-neutral-300">
               {q.question_text}
             </div>
+
+            <MediaUpload
+              teacherId={test?.teacher_id || "anon"}
+              url={q.media_url}
+              type={q.media_type}
+              onChange={(url, type) => setQuestionMedia(q.question_label, url, type)}
+            />
 
             {q.question_type === "multiple_choice" && (
               <div className="mt-3 flex flex-wrap gap-2">

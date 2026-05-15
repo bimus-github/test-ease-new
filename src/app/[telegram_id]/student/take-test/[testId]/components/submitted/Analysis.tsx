@@ -1,6 +1,7 @@
 "use client";
 
 import { LatexRenderer } from "@/components/math-live/LatexRenderer";
+import { QuestionMedia } from "@/components/QuestionMedia";
 import {
   calculateRowScore,
   checkAnswer,
@@ -73,6 +74,7 @@ export function Analysis({
                   </span>
                 )}
               </div>
+              <QuestionMedia url={q.media_url} type={q.media_type} />
               {q.question_type === "fill_blank" ? (
                 <div className="text-neutral-700 dark:text-neutral-300">
                Sizning javobingiz: <LatexRenderer

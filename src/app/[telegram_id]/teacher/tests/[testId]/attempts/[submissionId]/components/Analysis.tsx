@@ -1,6 +1,7 @@
 "use client";
 
 import { LatexRenderer } from "@/components/math-live/LatexRenderer";
+import { QuestionMedia } from "@/components/QuestionMedia";
 import { checkAnswer, correctAnswerText, calculateRowScore } from "@/lib/helpers";
 import type { FullSubmission } from "@/types/submission";
 import { isPast } from "@/lib/utils";
@@ -78,6 +79,8 @@ export function Analysis({ fullSubmission }: AnalysisProps) {
                   </span>
                 )}
               </div>
+
+              <QuestionMedia url={q.media_url} type={q.media_type} />
 
               <div className="grid gap-2.5 rounded-md bg-white/60 p-2.5 dark:bg-neutral-800/60">
                 <div>

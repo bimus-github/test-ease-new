@@ -1,3 +1,5 @@
+export type MediaType = "image" | "audio";
+
 export interface Question {
   id: string;
   test_id: string; // Test's id
@@ -15,6 +17,8 @@ export interface Question {
   updated_at: string; // Updated at date
   rasch_difficulty?: number;
   sat_score?: number;
+  media_url?: string;
+  media_type?: MediaType;
 }
 
 export interface QuestionForm
