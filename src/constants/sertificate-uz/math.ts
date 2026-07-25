@@ -38,7 +38,7 @@ export const generateMathSertificateUzQuestions = () => {
       questions.push({
         test_id: "",
         question_label: `${i}-savol`,
-        question_text: "",
+        question_text: "Savol matnini o'qituvchingizdan olin!",
         question_type: "multiple_choice",
         question_order: i,
         points: 1,
@@ -53,7 +53,7 @@ export const generateMathSertificateUzQuestions = () => {
       questions.push({
         test_id: "",
         question_label: `${i}-savol`,
-        question_text: "",
+        question_text: "Savol matnini o'qituvchingizdan olin!",
         question_type: "multiple_choice",
         question_order: i,
         points: 1,
@@ -68,7 +68,7 @@ export const generateMathSertificateUzQuestions = () => {
     questions.push({
       test_id: "",
       question_label: `${question_labels[idx]}-savol`,
-      question_text: "",
+      question_text: "Savol matnini o'qituvchingizdan olin!",
       question_type: "fill_blank",
       question_order: i,
       points: 1,
