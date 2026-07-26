@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import type { Test } from "@/types/test";
-import { EDIT_TEST_ROUTE, MY_TESTS_ROUTE, TAKE_TEST_ROUTE, TEST_ATTEMPTS_ROUTE } from "@/constants/routes";
+import { BOT_TEST_START_LINK, EDIT_TEST_ROUTE, MY_TESTS_ROUTE, TEST_ATTEMPTS_ROUTE } from "@/constants/routes";
 import { formatLocalDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { testTypeText } from "@/lib/helpers";
@@ -45,8 +45,9 @@ export function InfoCard({
     onError: () => toast.error("O'chirishda xato"),
   });
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const shareUrl = `${origin}${TAKE_TEST_ROUTE(testId, telegramId)}`;
+  // O'quvchi linkni bosganda bot ochilib, uning haqiqiy telegram_id si bilan
+  // testni boshlaydi. Shu sabab to'g'ridan-to'g'ri web link emas, bot deep-link.
+  const shareUrl = BOT_TEST_START_LINK(test.code);
 
   return (
     <section className="mb-6 grid gap-3 rounded-md border border-neutral-200 p-4 shadow-sm dark:border-neutral-800">
