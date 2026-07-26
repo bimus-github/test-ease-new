@@ -9,7 +9,7 @@ export const generateMathSATQuestions = () => {
     questions.push({
       test_id: "",
       question_label: `${i}-savol`,
-      question_text: "",
+      question_text: "Savol matnini o'qituvchingizdan olin!",
       question_type: "multiple_choice",
       question_order: i,
       points: 1,

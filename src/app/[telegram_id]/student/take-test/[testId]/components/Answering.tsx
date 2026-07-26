@@ -30,14 +30,21 @@ export function Answering({
   const answers = useAppSelector((s) => s.take.answers);
   const submissionId = useAppSelector((s) => s.take.submissionId);
 
+  // Milliy sertifikat, UZ-DTM va SAT testlarida savollar tartibi bo'limlarga bog'liq —
+  // shuning uchun bu turlarda savollar o'rni aralashtirilmaydi.
+  const keepQuestionOrder =
+    scoringType === ScoringType.RASCH_SCORING ||
+    scoringType === ScoringType.UZ_DTM ||
+    scoringType === ScoringType.SAT_SCORING;
+
   // Shuffle questions and options per-submission (deterministic — same seed → same order on reload)
   const shuffledQuestions = useMemo(() => {
-    if (!submissionId) return questions;
+    if (!submissionId || keepQuestionOrder) return questions;
     return shuffleWithSeed(questions, `q-${submissionId}`);
-  }, [questions, submissionId]);
+  }, [questions, submissionId, keepQuestionOrder]);
 
   const getShuffledOptions = (q: Question): string[] => {
-    if (!submissionId || !q.options) return q.options || [];
+    if (!submissionId || keepQuestionOrder || !q.options) return q.options || [];
     return shuffleWithSeed(q.options, `o-${submissionId}-${q.id}`);
   };
 
