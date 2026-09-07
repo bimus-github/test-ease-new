@@ -1,9 +1,18 @@
-import { Question } from "@/types/question";
-import { FullSubmission } from "@/types/submission";
+import { Question, ScoringQuestion } from "@/types/question";
+import { SubmissionAnswers } from "@/types/submission";
 import { checkAnswer, gradeFromT as sharedGradeFromT } from "./helpers";
 
 // types.ts
-export interface ScoredSubmission extends FullSubmission {
+
+/**
+ * Rasch hisoblash uchun yetarli bo'lgan minimal kirish shakli.
+ * `FullSubmission` talab qilinmaydi — aks holda minglab urinishni hisoblash
+ * uchun har bir qatorda testning barcha savollarini yuklashga to'g'ri kelardi.
+ */
+export type RaschInput = SubmissionAnswers;
+
+export interface ScoredSubmission {
+  id: string;
   rasch_ability: number;
   rasch_z_score: number;
   rasch_score: number;
@@ -141,8 +150,8 @@ export const gradeFromT = sharedGradeFromT;
 
 // main.ts
 export const calculateRasch = (
-  submissions: FullSubmission[],
-  questions: Question[],
+  submissions: RaschInput[],
+  questions: (Question | ScoringQuestion)[],
   params: RaschParams = {}
 ): {
   questionDifficulties: Map<string, number>;
@@ -165,15 +174,20 @@ export const calculateRasch = (
   const questionIds = questions.map(q => q.id);
   const questionMap = new Map(questions.map(q => [q.id, q]));
 
-  const responseMatrix = submissions.map(submission =>
-    questionIds.map(qid => {
-      const answer = submission.answers.find(a => a.question_id === qid);
+  const responseMatrix = submissions.map(submission => {
+    // Javoblarni Map'ga yig'amiz: `find` bilan bu O(urinish x savol x javob) edi.
+    const answerMap = new Map(
+      (submission.answers || []).map(a => [a.question_id, a])
+    );
+
+    return questionIds.map(qid => {
+      const answer = answerMap.get(qid);
       if (!answer?.answer && !answer?.answer_options?.length) return null;
-      
+
       const question = questionMap.get(qid);
       return question && checkAnswer(answer, question) ? 1 : 0;
-    })
-  );
+    });
+  });
 
   // Fit Rasch model
   const { item_beta, person_theta } = fitRaschJML(responseMatrix, params);
@@ -195,7 +209,7 @@ export const calculateRasch = (
     gradeDistribution[grade] = (gradeDistribution[grade] || 0) + 1;
 
     return {
-      ...submission,
+      id: submission.id,
       rasch_ability: person_theta[i],
       rasch_z_score: zScore,
       rasch_score: tScore,

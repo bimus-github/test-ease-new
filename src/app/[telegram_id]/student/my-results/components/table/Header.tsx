@@ -1,10 +1,10 @@
 "use client";
 
 import { ScoringType } from "@/types/test";
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 
 interface HeaderProps {
-  submissions: FullSubmission[];
+  submissions: SubmissionListItem[];
 }
 
 export function Header({ submissions }: HeaderProps) {

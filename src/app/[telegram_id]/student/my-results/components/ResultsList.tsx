@@ -1,12 +1,12 @@
 "use client";
 
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { ResultsTable } from "./table/ResultsTable";
 import { MobileCard } from "./MobileCard";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
 
 interface ResultsListProps {
-  submissions: FullSubmission[];
+  submissions: SubmissionListItem[];
   telegramId: string;
 }
 

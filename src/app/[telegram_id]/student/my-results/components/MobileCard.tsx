@@ -1,13 +1,13 @@
 "use client";
 
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { ScoringType } from "@/types/test";
-import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
+import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { formatLocalDate, isPast } from "@/lib/utils";
 import { ScoringBadge } from "./ScoringBadge";
 
 interface MobileCardProps {
-  submission: FullSubmission;
+  submission: SubmissionListItem;
   index: number;
   renderResultLink: (submissionId: string) => string;
 }
@@ -27,9 +27,10 @@ export function MobileCard({
   const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
 
   const t = submission.rasch_score;
-  const satScore = isSatTest ? calculateSatScore(submission) : null;
-  const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
-  const simplePoints = isSimpleTest ? calculatePoints(submission) : null;
+  // Ballar serverda hisoblangan — mijozga savollar yuborilmaydi.
+  const satScore = isSatTest ? submission.sat_score : null;
+  const uzDtmPoints = isUzDtmTest ? submission.points : null;
+  const simplePoints = isSimpleTest ? submission.points : null;
 
   // Check if test has ended
   const testHasEnded = isPast(test.end_date);
@@ -90,7 +91,7 @@ export function MobileCard({
             </div>
             <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
               {testHasEnded && submission.row_score != null
-                ? `${submission.row_score}/${submission.questions.length}`
+                ? `${submission.row_score}/${submission.total_questions}`
                 : ""}
             </div>
           </div>
@@ -138,8 +139,8 @@ export function MobileCard({
                 Foizi
               </div>
               <div className="text-lg font-bold text-green-700 dark:text-green-300">
-                {testHasEnded && submission.questions.length > 0 && submission.row_score != null
-                  ? `${Math.round((submission.row_score / submission.questions.length) * 100)}%`
+                {testHasEnded && submission.total_questions > 0 && submission.row_score != null
+                  ? `${Math.round((submission.row_score / submission.total_questions) * 100)}%`
                   : ""}
               </div>
             </div>

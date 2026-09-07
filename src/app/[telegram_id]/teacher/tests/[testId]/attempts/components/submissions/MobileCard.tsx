@@ -1,10 +1,10 @@
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { Test, ScoringType } from "@/types/test";
 import Link from "next/link";
-import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
+import { gradeFromT, percentageFromT } from "@/lib/helpers";
 
 interface MobileCardProps {
-  submission: FullSubmission;
+  submission: SubmissionListItem;
   index: number;
   test: Test;
   renderResultLink: (submissionId: string) => string;
@@ -21,9 +21,10 @@ function MobileCard(props: MobileCardProps) {
   const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
   
   const t = submission.rasch_score;
-  const satScore = isSatTest ? calculateSatScore(submission) : null;
-  const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
-  const simplePoints = isSimpleTest ? calculatePoints(submission) : null;
+  // Ballar serverda hisoblangan — mijozda savollar mavjud emas.
+  const satScore = isSatTest ? submission.sat_score : null;
+  const uzDtmPoints = isUzDtmTest ? submission.points : null;
+  const simplePoints = isSimpleTest ? submission.points : null;
 
   return (
     <div className="group rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">

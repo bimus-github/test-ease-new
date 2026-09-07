@@ -1,11 +1,11 @@
 "use client";
 
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { Header } from "./Header";
 import { Row } from "./Row";
 
 interface ResultsTableProps {
-  submissions: FullSubmission[];
+  submissions: SubmissionListItem[];
   renderResultLink: (submissionId: string) => string;
 }
 

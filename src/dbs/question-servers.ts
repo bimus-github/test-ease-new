@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabase";
-import { Question, QuestionForm } from "@/types/question";
+import {
+  Question,
+  QuestionForm,
+  ScoringQuestion,
+  SCORING_QUESTION_COLUMNS,
+} from "@/types/question";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 
 /**
@@ -171,5 +176,60 @@ export async function reorderQuestions(
     sendProductionErrors(error, "updateQuestionOrder");
     console.error("Database error updating question order:", error);
     return false;
+  }
+}
+
+/**
+ * Bir yoki bir nechta test uchun faqat baholashga kerak bo'lgan savol maydonlarini oladi.
+ *
+ * Savol matni, variantlari va media URL'lari tortilmaydi — 1000+ urinishli
+ * testlarni serverda baholashda bu bir necha o'n MB'ni tejaydi.
+ *
+ * @param testIds - Test UUID'lari
+ * @returns test_id -> ScoringQuestion[] ko'rinishidagi Map
+ */
+export async function getScoringQuestionsByTests(
+  testIds: string[]
+): Promise<Map<string, ScoringQuestion[]>> {
+  const grouped = new Map<string, ScoringQuestion[]>();
+
+  const uniqueIds = Array.from(new Set(testIds.filter(Boolean)));
+  if (uniqueIds.length === 0) return grouped;
+
+  try {
+    // PostgREST bir so'rovda 1000 qator qaytaradi — savollarni sahifalab olamiz.
+    const pageSize = 1000;
+    let from = 0;
+
+    for (;;) {
+      const { data, error } = await supabase
+        .from("questions")
+        .select(SCORING_QUESTION_COLUMNS)
+        .in("test_id", uniqueIds)
+        .order("id", { ascending: true })
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        sendProductionErrors(error, "getScoringQuestionsByTests");
+        console.error("Error fetching scoring questions:", error);
+        return grouped;
+      }
+
+      const rows = (data || []) as unknown as ScoringQuestion[];
+      for (const row of rows) {
+        const list = grouped.get(row.test_id);
+        if (list) list.push(row);
+        else grouped.set(row.test_id, [row]);
+      }
+
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    }
+
+    return grouped;
+  } catch (error) {
+    sendProductionErrors(error, "getScoringQuestionsByTests");
+    console.error("Database error:", error);
+    return grouped;
   }
 }

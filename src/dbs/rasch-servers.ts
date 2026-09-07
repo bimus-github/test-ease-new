@@ -1,10 +1,12 @@
 "use server";
 import { supabase } from "@/lib/supabase";
-import { getTestWithQuestions } from "@/dbs/test-servers";
-import { getFullSubmissions } from "@/dbs/submission-servers";
-import type { FullSubmission } from "@/types/submission";
+import { getTestById } from "@/dbs/test-servers";
+import { getScoringQuestionsByTests } from "@/dbs/question-servers";
+import { getSubmissionAnswersByTest } from "@/dbs/submission-servers";
+import type { SubmissionAnswers } from "@/types/submission";
+import { ScoringType } from "@/types/test";
 import { calculateRasch } from "@/lib/rasch";
-import { sendRaschResultsNotification } from "@/telegram/notifications/sendRaschResultsNotification";
+import { scoreAnswers } from "@/lib/helpers";
 import { sendProductionErrors } from "@/telegram/notifications/sendProductionErrors";
 import { isPast } from "@/lib/utils";
 
@@ -12,63 +14,97 @@ function logDbError(context: string, error: unknown) {
   console.error(`[RASCH] ${context}:`, error);
 }
 
-export async function calculateRaschForTest(testId: string): Promise<{
-  updatedQuestions: number;
-  updatedSubmissions: number;
-}> {
-  let updatedQuestions = 0;
-  let updatedSubmissions = 0;
+/** Ekstremal (hammasi noto'g'ri / hammasi to'g'ri) natijalar uchun chegara qiymatlar */
+const FLOOR_ABILITY = -5;
+const CEILING_ABILITY = 5;
+const FLOOR_T_SCORE = 20;
+const CEILING_T_SCORE = 80;
 
+export type RaschCalculationResult =
+  | {
+      ok: true;
+      updatedQuestions: number;
+      updatedSubmissions: number;
+      /** JML'dan chetlashtirilgan ekstremal natijalar soni */
+      extremeSubmissions: number;
+    }
+  | { ok: false; error: string };
+
+/**
+ * Test uchun Rasch modelini hisoblaydi va natijalarni bazaga yozadi.
+ *
+ * Xatolar YUTILMAYDI — chaqiruvchi `ok: false` va sababni oladi, shunda
+ * o'qituvchiga "hisoblandi" deb yolg'on ko'rsatilmaydi.
+ *
+ * @param testId - Test UUID
+ */
+export async function calculateRaschForTest(
+  testId: string
+): Promise<RaschCalculationResult> {
   try {
-    // Load test with questions
-    const test = await getTestWithQuestions(testId);
+    const test = await getTestById(testId);
     if (!test) {
-      sendProductionErrors("Test not found", `calculateRaschForTest - testId: ${testId}`);
-      throw new Error("Test not found");
+      return { ok: false, error: "Test topilmadi." };
     }
 
-    // Ensure test ended
+    if (test.scoring_type !== ScoringType.RASCH_SCORING) {
+      return { ok: false, error: "Bu test Rasch baholash turida emas." };
+    }
+
     if (!isPast(test.end_date)) {
-      sendProductionErrors("Test has not ended yet", `calculateRaschForTest - testId: ${testId}`);
-      throw new Error("Test has not ended yet");
+      return { ok: false, error: "Rasch hisoblash uchun test yakunlanishi kerak." };
     }
 
-    // Load full submissions
-    const submissions: FullSubmission[] = await getFullSubmissions(testId);
-    if (!submissions.length || !test.questions?.length) {
-      sendProductionErrors("Insufficient data for Rasch calculation", `calculateRaschForTest - testId: ${testId}`);
-      throw new Error("Insufficient data for Rasch calculation");
+    // Savollardan faqat baholashga keraklisi olinadi (matn/media tortilmaydi).
+    const questionsByTest = await getScoringQuestionsByTests([testId]);
+    const questions = questionsByTest.get(testId) || [];
+    if (questions.length === 0) {
+      return { ok: false, error: "Testda savollar topilmadi." };
     }
 
-    const totalQuestions = test.questions.length;
-    const isPerfect = (s: FullSubmission) =>
-      s.row_score !== undefined && s.row_score !== null && s.row_score === totalQuestions;
-    const isZero = (s: FullSubmission) =>
-      s.row_score === undefined || s.row_score === null || s.row_score === 0;
-    const isSubmissionValid = (s: FullSubmission) => !isZero(s) && !isPerfect(s);
+    // Urinishlardan faqat id va javoblar olinadi.
+    const submissions = await getSubmissionAnswersByTest(testId);
+    if (submissions.length === 0) {
+      return { ok: false, error: "Bu testda topshirilgan urinishlar yo'q." };
+    }
 
-    // Compute Rasch only on non-extreme submissions (JML diverges at extremes)
-    const validSubmissions = submissions.filter(isSubmissionValid);
+    const totalQuestions = questions.length;
+
+    // Har bir urinishning xom balini bir marta hisoblab olamiz.
+    const rowScores = new Map<string, number>(
+      submissions.map((s) => [s.id, scoreAnswers(s.answers, questions).rowScore])
+    );
+
+    const isPerfect = (s: SubmissionAnswers) =>
+      rowScores.get(s.id) === totalQuestions;
+    const isZero = (s: SubmissionAnswers) => (rowScores.get(s.id) ?? 0) === 0;
+
+    // JML ekstremal natijalarda uzoqlashadi — ularni modelga kiritmaymiz.
+    const validSubmissions = submissions.filter((s) => !isZero(s) && !isPerfect(s));
+    const extremeSubmissions = submissions.length - validSubmissions.length;
+
+    if (validSubmissions.length === 0) {
+      return {
+        ok: false,
+        error:
+          "Rasch hisoblash uchun ma'lumot yetarli emas: barcha natijalar ekstremal (0 yoki maksimal ball).",
+      };
+    }
+
     const { questionDifficulties, scoredSubmissions } = calculateRasch(
       validSubmissions,
-      test.questions,
+      questions,
       { maxIter: 200, tol: 1e-4 }
     );
 
-    const scoredSubmissionsMap = new Map(
-      scoredSubmissions.map((s) => [s.id, s])
-    );
+    const scoredSubmissionsMap = new Map(scoredSubmissions.map((s) => [s.id, s]));
 
     const questionUpdates = Array.from(questionDifficulties.entries()).map(
       ([id, difficulty]) => ({
         question_id: id,
-        difficulty: difficulty,
+        difficulty,
       })
     );
-
-    // Floor/ceiling abilities for extreme cases on the same logit scale as fitted thetas
-    const FLOOR_ABILITY = -5;
-    const CEILING_ABILITY = 5;
 
     const submissionUpdates = submissions.map((s) => {
       const scored = scoredSubmissionsMap.get(s.id);
@@ -80,13 +116,12 @@ export async function calculateRaschForTest(testId: string): Promise<{
         };
       }
 
-      // Extreme case (all wrong or all correct): assign floor/ceiling
-      const ability = isPerfect(s) ? CEILING_ABILITY : FLOOR_ABILITY;
-      const tScore = isPerfect(s) ? 80 : 20;
+      // Ekstremal holat: chegara qiymat beriladi.
+      const perfect = isPerfect(s);
       return {
         submission_id: s.id,
-        rasch_score: tScore,
-        rasch_ability: ability,
+        rasch_score: perfect ? CEILING_T_SCORE : FLOOR_T_SCORE,
+        rasch_ability: perfect ? CEILING_ABILITY : FLOOR_ABILITY,
       };
     });
 
@@ -97,14 +132,21 @@ export async function calculateRaschForTest(testId: string): Promise<{
     });
 
     if (error) {
-      sendProductionErrors(error, `calculateRaschForTest - bulk_update_rasch_results, testId: ${testId}`);
+      sendProductionErrors(
+        error,
+        `calculateRaschForTest - bulk_update_rasch_results, testId: ${testId}`
+      );
       logDbError("bulk_update_rasch_results", error);
-    } else if (data && data.length > 0) {
-      updatedQuestions = data[0].updated_questions || 0;
-      updatedSubmissions = data[0].updated_submissions || 0;
+      return {
+        ok: false,
+        error: "Natijalarni saqlashda xatolik yuz berdi (bulk_update_rasch_results).",
+      };
     }
 
-    // Mark test as calculated
+    const updatedQuestions = data?.[0]?.updated_questions ?? 0;
+    const updatedSubmissions = data?.[0]?.updated_submissions ?? 0;
+
+    // Testni "hisoblangan" deb belgilaymiz — bu bayroq natijalarni ko'rsatishni ochadi.
     const { error: testErr } = await supabase
       .from("tests")
       .update({
@@ -112,15 +154,32 @@ export async function calculateRaschForTest(testId: string): Promise<{
         rasch_calculated_at: new Date().toISOString(),
       })
       .eq("id", testId);
+
     if (testErr) {
-      sendProductionErrors(testErr, `calculateRaschForTest - update test flags, testId: ${testId}`);
+      sendProductionErrors(
+        testErr,
+        `calculateRaschForTest - update test flags, testId: ${testId}`
+      );
       logDbError("update test flags", testErr);
+      return {
+        ok: false,
+        error:
+          "Ballar hisoblandi, lekin testni 'hisoblangan' deb belgilashda xatolik yuz berdi.",
+      };
     }
 
-    return { updatedQuestions, updatedSubmissions };
+    return {
+      ok: true,
+      updatedQuestions,
+      updatedSubmissions,
+      extremeSubmissions,
+    };
   } catch (err) {
     sendProductionErrors(err, `calculateRaschForTest - testId: ${testId}`);
     logDbError("calculateRaschForTest", err);
-    return { updatedQuestions, updatedSubmissions };
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Rasch hisoblashda kutilmagan xatolik.",
+    };
   }
 }

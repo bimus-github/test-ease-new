@@ -1,11 +1,11 @@
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { Test, ScoringType } from "@/types/test";
 import Link from "next/link";
-import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
+import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { formatLocalDate } from "@/lib/utils";
 
 interface RowProps {
-  submission: FullSubmission;
+  submission: SubmissionListItem;
   index: number;
   test: Test;
   renderResultLink: (submissionId: string) => string;
@@ -22,9 +22,10 @@ function Row(props: RowProps) {
   const isSimpleTest = test.scoring_type === ScoringType.SIMPLE_SCORING;
   
   const t = submission.rasch_score;
-  const satScore = isSatTest ? calculateSatScore(submission) : null;
-  const uzDtmPoints = isUzDtmTest ? calculatePoints(submission) : null;
-  const simplePoints = isSimpleTest ? calculatePoints(submission) : null;
+  // Ballar serverda hisoblangan — mijozda savollar mavjud emas.
+  const satScore = isSatTest ? submission.sat_score : null;
+  const uzDtmPoints = isUzDtmTest ? submission.points : null;
+  const simplePoints = isSimpleTest ? submission.points : null;
 
   return (
     <tr

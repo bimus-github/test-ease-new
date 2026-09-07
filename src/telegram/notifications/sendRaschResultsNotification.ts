@@ -2,12 +2,12 @@
 import { sendTelegramMessage } from "../bot";
 import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { sendProductionErrors } from "./sendProductionErrors";
 import { formatUzbekistanDate } from "@/lib/utils";
 
 export async function sendRaschResultsNotification(
-  submission: FullSubmission
+  submission: SubmissionListItem
 ): Promise<void> {
   try {
     const { user, test, rasch_score, rasch_ability, id, row_score } =
@@ -34,8 +34,8 @@ export async function sendRaschResultsNotification(
       testInfo += `⏰ *Tugash vaqti:* ${formatUzbekistanDate(test.end_date)}\n`;
     }
 
-    if (submission.questions?.length) {
-      testInfo += `📊 *Savollar soni:* ${submission.questions.length}\n`;
+    if (submission.total_questions) {
+      testInfo += `📊 *Savollar soni:* ${submission.total_questions}\n`;
     }
 
     const text =
@@ -43,7 +43,7 @@ export async function sendRaschResultsNotification(
       `${testInfo}\n` +
       `━━━━━━━━━━━━━━━━━━━━\n\n` +
       `*Sizning natijalaringiz:*\n\n` +
-      `📊 *To'g'ri javoblar:* ${row_score}\n` +
+      `📊 *To'g'ri javoblar:* ${row_score}/${submission.total_questions}\n` +
       `📊 *Rasch T-bahosi:* ${rasch_score.toFixed(2)}\n` +
       `⭐ *Bahosi:* ${grade}\n` +
       `📈 *Foizi:* ${percentage}\n` +

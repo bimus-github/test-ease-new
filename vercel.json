@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/broadcast",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/rasch",
+      "schedule": "* * * * *"
     }
   ]
 }

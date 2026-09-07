@@ -1,52 +1,82 @@
 "use server";
 
-import { getFullSubmissions } from "@/dbs/submission-servers";
+import {
+  getSubmissionListByTest,
+  getFullSubmission,
+  countSubmittedByTest,
+} from "@/dbs/submission-servers";
 import { calculateRaschForTest } from "@/dbs/rasch-servers";
 import { getTestWithQuestions } from "@/dbs/test-servers";
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { ScoringType } from "@/types/test";
 import { sendTelegramDocument, sendTelegramMessage } from "@/telegram/bot";
 import { generateExcelContent } from "./components/submissions/utils/generateExcelContent";
 import { generateIndividualExcel } from "./components/submissions/utils/generateIndividualExcel";
-import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
-import { formatLocalDate } from "@/lib/utils";
+import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { TEST_RESULT_ROUTE } from "@/constants/routes";
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-export async function getFullSubmissionsAction(params: {
+/**
+ * Bitta chaqiruvda nechta o'quvchiga natija yuboriladi.
+ *
+ * Telegram sekundiga ~30 xabar qabul qiladi va Vercel funksiyasi 60 soniyada
+ * uziladi. Shu sababli yuborish bo'laklarga bo'linadi — mijoz `offset` bilan
+ * navbatdagi bo'lakni so'rab, jarayonni oxirigacha olib boradi.
+ */
+const SEND_CHUNK_SIZE = 40;
+
+export async function getSubmissionsListAction(params: {
   testId: string;
 }): Promise<
-  { ok: true; submissions: FullSubmission[] } | { ok: false; error: string }
+  { ok: true; submissions: SubmissionListItem[] } | { ok: false; error: string }
 > {
   const { testId } = params || ({} as any);
   if (!isNonEmptyString(testId)) {
     return { ok: false, error: "testId is required" };
   }
   try {
-    const submissions = await getFullSubmissions(testId);
+    const submissions = await getSubmissionListByTest(testId);
     return { ok: true, submissions };
   } catch (err) {
-    console.error("getFullSubmissionsAction error", err);
-    return { ok: false, error: "Server error while fetching submissions" };
+    console.error("getSubmissionsListAction error", err);
+    return { ok: false, error: "Urinishlarni yuklashda xatolik yuz berdi" };
   }
 }
 
-// Placeholder: wire to server-side Rasch calculation later
+/**
+ * Rasch hisoblashni ishga tushiradi.
+ * Xatolik bo'lsa sababi qaytariladi — avval u yutilar va UI muvaffaqiyat
+ * ko'rsatar, natijalar esa hech qachon paydo bo'lmasdi.
+ */
 export async function calculateRaschAction(params: {
   testId: string;
-}): Promise<{ ok: true } | { ok: false; error: string }> {
+}): Promise<
+  | { ok: true; updatedQuestions: number; updatedSubmissions: number }
+  | { ok: false; error: string }
+> {
   const { testId } = params || ({} as any);
   if (!isNonEmptyString(testId))
     return { ok: false, error: "testId is required" };
+
   try {
-    await calculateRaschForTest(testId);
-    return { ok: true };
+    const result = await calculateRaschForTest(testId);
+    if (!result.ok) return result;
+
+    return {
+      ok: true,
+      updatedQuestions: result.updatedQuestions,
+      updatedSubmissions: result.updatedSubmissions,
+    };
   } catch (err) {
     console.error("calculateRaschAction error", err);
-    return { ok: false, error: "Server error while calculating Rasch" };
+    return {
+      ok: false,
+      error:
+        err instanceof Error ? err.message : "Rasch hisoblashda xatolik yuz berdi",
+    };
   }
 }
 
@@ -61,23 +91,21 @@ export async function sendExcelViaTelegramAction(params: {
     return { ok: false, error: "telegramId is required" };
 
   try {
-    const submissions = await getFullSubmissions(testId);
-    if (!submissions || submissions.length === 0) {
-      return { ok: false, error: "No submissions found" };
+    const submissions = await getSubmissionListByTest(testId);
+    if (submissions.length === 0) {
+      return { ok: false, error: "Urinishlar topilmadi" };
     }
 
     const test = await getTestWithQuestions(testId);
     if (!test) {
-      return { ok: false, error: "Test not found" };
+      return { ok: false, error: "Test topilmadi" };
     }
 
     const testTitle = test.title || "Test";
 
-    // Generate Excel buffer using the new function
     const buffer = await generateExcelContent(submissions, test);
     const filename = `${testTitle.replace(/[^a-z0-9]/gi, "_")}_urinishlar.xlsx`;
 
-    // Send via Telegram
     await sendTelegramDocument(
       telegramId,
       buffer,
@@ -90,28 +118,53 @@ export async function sendExcelViaTelegramAction(params: {
     console.error("sendExcelViaTelegramAction error", err);
     return {
       ok: false,
-      error: "Server error while sending Excel file via Telegram",
+      error: "Excel faylni Telegram orqali yuborishda xatolik yuz berdi",
     };
   }
 }
 
+/**
+ * Natijalarni o'quvchilarga BO'LAKLAB yuboradi.
+ *
+ * `offset` — nechanchi urinishdan boshlash. Javobdagi `nextOffset` `null`
+ * bo'lsa, yuborish tugagan. Mijoz shu qiymat bilan qayta chaqiradi.
+ */
 export async function sendResultsToUsersAction(params: {
   testId: string;
-}): Promise<{ ok: true; sent: number; failed: number } | { ok: false; error: string }> {
-  const { testId } = params || ({} as any);
+  offset?: number;
+}): Promise<
+  | {
+      ok: true;
+      sent: number;
+      failed: number;
+      processed: number;
+      total: number;
+      nextOffset: number | null;
+    }
+  | { ok: false; error: string }
+> {
+  const { testId, offset = 0 } = params || ({} as any);
   if (!isNonEmptyString(testId)) {
     return { ok: false, error: "testId is required" };
   }
 
   try {
-    const submissions = await getFullSubmissions(testId);
-    if (!submissions || submissions.length === 0) {
-      return { ok: false, error: "No submissions found" };
+    const total = await countSubmittedByTest(testId);
+    if (total === 0) {
+      return { ok: false, error: "Urinishlar topilmadi" };
     }
+
+    const start = Math.max(0, Math.floor(offset));
+
+    // Butun ro'yxat emas, faqat shu bo'lak yuklanadi.
+    const chunk = await getSubmissionListByTest(testId, {
+      offset: start,
+      limit: SEND_CHUNK_SIZE,
+    });
 
     const test = await getTestWithQuestions(testId);
     if (!test) {
-      return { ok: false, error: "Test not found" };
+      return { ok: false, error: "Test topilmadi" };
     }
 
     const isRaschTest = test.scoring_type === ScoringType.RASCH_SCORING;
@@ -124,26 +177,31 @@ export async function sendResultsToUsersAction(params: {
     let sent = 0;
     let failed = 0;
 
-    // Process each submission
-    for (const submission of submissions) {
+    for (const submission of chunk) {
       try {
-        const userTelegramId = submission.user.telegram_id;
+        const userTelegramId = submission.user?.telegram_id;
         if (!userTelegramId) {
           failed++;
           continue;
         }
 
-        // Generate individual Excel file
-        const buffer = await generateIndividualExcel(submission, test);
+        // Individual Excel savollar matnini talab qiladi — u faqat shu
+        // o'quvchi uchun, bittalab yuklanadi.
+        const fullSubmission = await getFullSubmission(submission.id);
+        if (!fullSubmission) {
+          failed++;
+          continue;
+        }
+
+        const buffer = await generateIndividualExcel(fullSubmission, test);
         const testTitle = test.title || "Test";
         const filename = `${testTitle.replace(/[^a-z0-9]/gi, "_")}_natijam.xlsx`;
 
-        // Build summary message
         let summaryText = `📊 *Sizning natijalaringiz*\n\n`;
         summaryText += `📝 *Test:* ${test.title}\n`;
         summaryText += `🔑 *Test kodi:* \`${test.code}\`\n\n`;
         summaryText += `*Natijalar:*\n`;
-        summaryText += `📊 To'g'ri javoblar: ${submission.row_score ?? 0}/${submission.questions?.length || 0}\n`;
+        summaryText += `📊 To'g'ri javoblar: ${submission.row_score}/${submission.total_questions}\n`;
 
         if (showRasch && submission.rasch_score != null) {
           const t = submission.rasch_score;
@@ -153,24 +211,21 @@ export async function sendResultsToUsersAction(params: {
         }
 
         if (isSatTest) {
-          const satScore = calculateSatScore(submission);
-          summaryText += `📊 SAT bali: ${satScore ?? "—"}\n`;
+          summaryText += `📊 SAT bali: ${submission.sat_score}\n`;
         }
 
         if (isUzDtmTest) {
-          const uzDtmPoints = calculatePoints(submission);
-          summaryText += `📊 UZ DTM bali: ${uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—"}\n`;
+          summaryText += `📊 UZ DTM bali: ${submission.points.toFixed(1)}\n`;
         }
 
         if (isSimpleTest) {
-          const simplePoints = calculatePoints(submission);
-          const maxPoints = submission.questions?.reduce((sum, q) => sum + (q.points || 0), 0) || 0;
-          summaryText += `📊 Ballar: ${simplePoints != null ? `${simplePoints.toFixed(1)} / ${maxPoints.toFixed(1)}` : "—"}\n`;
+          summaryText += `📊 Ballar: ${submission.points.toFixed(
+            1
+          )} / ${submission.max_points.toFixed(1)}\n`;
         }
 
         summaryText += `\n📎 Batafsil ma'lumot Excel faylida.`;
 
-        // Build keyboard for detailed view
         const keyboard = {
           inline_keyboard: [
             [
@@ -184,7 +239,6 @@ export async function sendResultsToUsersAction(params: {
           ],
         };
 
-        // Send Excel file with caption and button
         await sendTelegramDocument(
           userTelegramId,
           buffer,
@@ -192,59 +246,97 @@ export async function sendResultsToUsersAction(params: {
           summaryText
         );
 
-        // Send follow-up message with button (Telegram doesn't support buttons in document captions)
-        await sendTelegramMessage(userTelegramId, "Natijalaringizni batafsil ko'rish uchun quyidagi tugmani bosing:", {
-          parse_mode: "Markdown",
-          reply_markup: keyboard,
-        });
+        // Telegram hujjat izohida tugmani qo'llab-quvvatlamaydi — alohida xabar.
+        await sendTelegramMessage(
+          userTelegramId,
+          "Natijalaringizni batafsil ko'rish uchun quyidagi tugmani bosing:",
+          {
+            parse_mode: "Markdown",
+            reply_markup: keyboard,
+          }
+        );
 
         sent++;
       } catch (error) {
         console.error(
-          `Error sending results to user ${submission.user.telegram_id}:`,
+          `Error sending results to user ${submission.user?.telegram_id}:`,
           error
         );
         failed++;
-        // Continue with next user instead of failing entire operation
+        // Bitta o'quvchi xatosi butun jarayonni to'xtatmasin.
       }
     }
 
-    return { ok: true, sent, failed };
+    const nextOffset =
+      chunk.length > 0 && start + chunk.length < total
+        ? start + chunk.length
+        : null;
+
+    return {
+      ok: true,
+      sent,
+      failed,
+      processed: chunk.length,
+      total,
+      nextOffset,
+    };
   } catch (err) {
     console.error("sendResultsToUsersAction error", err);
     return {
       ok: false,
-      error: "Server error while sending results to users",
+      error: "Natijalarni yuborishda xatolik yuz berdi",
     };
   }
 }
 
-export async function sendingMessageToUsersAction(params:{ids:string[], message:string}): Promise<{ ok: true; sent: number; failed: number } | { ok: false; error: string; sent: number; failed: number }> {
-  const { ids, message } = params || ({} as any);
+export async function sendingMessageToUsersAction(params: {
+  ids: string[];
+  message: string;
+  offset?: number;
+}): Promise<
+  | {
+      ok: true;
+      sent: number;
+      failed: number;
+      processed: number;
+      total: number;
+      nextOffset: number | null;
+    }
+  | { ok: false; error: string }
+> {
+  const { ids, message, offset = 0 } = params || ({} as any);
+
+  if (!ids || ids.length === 0) {
+    return { ok: false, error: "Talabalar ro'yxati bo'sh" };
+  }
+  if (!isNonEmptyString(message)) {
+    return { ok: false, error: "Xabar matni kiritilmagan" };
+  }
+
+  const start = Math.max(0, Math.floor(offset));
+  const chunk = ids.slice(start, start + SEND_CHUNK_SIZE);
+
   let sent = 0;
   let failed = 0;
-  
-  if (!ids || ids.length === 0) {
-    return { ok: false, error: "ids is required", sent: 0, failed: 0 };
-  }
-  if (!isNonEmptyString(message)) { 
-    return { ok: false, error: "message is required", sent: 0, failed: 0 };
-  }
-  try {
-    for (const id of ids) {
-      try {
-        await sendTelegramMessage(id, message, {
-          parse_mode: "Markdown", // Optional: add if you want Markdown support
-        });
-        sent++;
-      } catch (err) {
-        console.error("sendingMessageToUsersAction error", err); // Fixed typo
-        failed++;
-      }
+
+  for (const id of chunk) {
+    try {
+      await sendTelegramMessage(id, message, { parse_mode: "Markdown" });
+      sent++;
+    } catch (err) {
+      console.error("sendingMessageToUsersAction error", err);
+      failed++;
     }
-    return { ok: true, sent, failed };
-  } catch (err) {
-    console.error("sendingMessageToUsersAction error", err); // Fixed typo
-    return { ok: false, error: "Server error while sending message to users", sent, failed };
   }
+
+  const nextOffset = start + chunk.length < ids.length ? start + chunk.length : null;
+
+  return {
+    ok: true,
+    sent,
+    failed,
+    processed: chunk.length,
+    total: ids.length,
+    nextOffset,
+  };
 }

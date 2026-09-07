@@ -109,9 +109,15 @@ export interface TelegramInlineKeyboardButton {
   url?: string;
   login_url?: TelegramLoginUrl;
   callback_data?: string;
+  /** Telegram Mini App'ni ochadigan tugma — loyihada natijalar shu orqali ochiladi */
+  web_app?: TelegramWebAppInfo;
   switch_inline_query?: string;
   switch_inline_query_current_chat?: string;
   pay?: boolean;
+}
+
+export interface TelegramWebAppInfo {
+  url: string;
 }
 
 export interface TelegramLoginUrl {

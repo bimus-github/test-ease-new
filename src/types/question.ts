@@ -26,3 +26,22 @@ export interface QuestionForm
 
 export interface UpdateQuestionForm
   extends Omit<QuestionForm, "created_at" | "updated_at"> {}
+
+/**
+ * Baholash uchun yetarli bo'lgan minimal savol shakli.
+ * Savol matni/medias'iz — ro'yxat va Rasch hisoblashda faqat shu maydonlar kerak,
+ * shuning uchun katta testlarda payload keskin kichrayadi.
+ */
+export type ScoringQuestion = Pick<
+  Question,
+  | "id"
+  | "test_id"
+  | "points"
+  | "sat_score"
+  | "correct_answer"
+  | "correct_options"
+  | "is_multiple_answers"
+>;
+
+export const SCORING_QUESTION_COLUMNS =
+  "id, test_id, points, sat_score, correct_answer, correct_options, is_multiple_answers";

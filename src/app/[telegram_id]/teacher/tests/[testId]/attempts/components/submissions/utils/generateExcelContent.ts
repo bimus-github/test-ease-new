@@ -1,11 +1,11 @@
-import type { FullSubmission } from "@/types/submission";
+import type { SubmissionListItem } from "@/types/submission";
 import { Test, ScoringType } from "@/types/test";
-import { gradeFromT, percentageFromT, calculateSatScore, calculatePoints } from "@/lib/helpers";
+import { gradeFromT, percentageFromT } from "@/lib/helpers";
 import { formatLocalDate } from "@/lib/utils";
 import ExcelJS from "exceljs";
 
 export async function generateExcelContent(
-  submissions: FullSubmission[],
+  submissions: SubmissionListItem[],
   test: Test
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
@@ -76,18 +76,15 @@ export async function generateExcelContent(
     }
 
     if (isSatTest) {
-      const satScore = calculateSatScore(submission);
-      row.push(satScore ?? "—");
+      row.push(submission.sat_score);
     }
 
     if (isUzDtmTest) {
-      const uzDtmPoints = calculatePoints(submission);
-      row.push(uzDtmPoints != null ? uzDtmPoints.toFixed(1) : "—");
+      row.push(submission.points.toFixed(1));
     }
 
     if (isSimpleTest) {
-      const simplePoints = calculatePoints(submission);
-      row.push(simplePoints != null ? simplePoints.toFixed(1) : "—");
+      row.push(submission.points.toFixed(1));
     }
 
     worksheet.addRow(row);

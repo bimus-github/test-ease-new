@@ -1,15 +1,15 @@
 "use server";
 import { sendTelegramMessage } from "@/telegram/bot";
 import { MY_RESULTS_ROUTE } from "@/constants/routes";
-import { getFullSubmissionsByUserId } from "@/dbs/submission-servers";
-import { FullSubmission } from "@/types/submission";
+import { getSubmissionListByUser } from "@/dbs/submission-servers";
+import { SubmissionListItem } from "@/types/submission";
 import { gradeFromT, percentageFromT, testTypeText } from "@/lib/helpers";
 import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 import { formatUzbekistanDate } from "@/lib/utils";
 
 export async function handleMyResultsCommand(chatId: number, userId: number) {
   try {
-    const submissions = await getFullSubmissionsByUserId(userId.toString());
+    const submissions = await getSubmissionListByUser(userId.toString());
 
     if (!submissions || submissions.length === 0) {
       await sendTelegramMessage(
@@ -23,7 +23,7 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
 
     submissions
       .slice(0, 3)
-      .forEach((submission: FullSubmission, index: number) => {
+      .forEach((submission: SubmissionListItem, index: number) => {
         const No = index + 1;
         const testTitle = submission.test.title;
         const testCode = submission.test.code;
@@ -34,7 +34,7 @@ export async function handleMyResultsCommand(chatId: number, userId: number) {
         const submittedAt = submission.submitted_at
           ? formatUzbekistanDate(submission.submitted_at)
           : "—";
-        const questionCount = submission.answers.length;
+        const questionCount = submission.total_questions;
         const rowScore = submission.row_score;
         const raschScore = submission.rasch_score ?? "—";
         const raschAbility = submission.rasch_ability ?? "—";

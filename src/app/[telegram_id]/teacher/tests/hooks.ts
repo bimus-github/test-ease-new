@@ -4,8 +4,8 @@ import { getFullSubmissionAction, getTestsByTeacherAction, getTestWithQuestionsA
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { TEACHER_FULL_SUBMISSION_KEY, TEACHER_FULL_SUBMISSIONS_KEY, TEACHER_TEST_WITH_QUESTIONS_KEY, TEACHER_TESTS_KEY } from "@/constants/react-query-keys";
-import { getFullSubmissionsAction } from "./[testId]/attempts/actions";
-import { FullSubmission } from "@/types/submission";
+import { getSubmissionsListAction } from "./[testId]/attempts/actions";
+import { FullSubmission, SubmissionListItem } from "@/types/submission";
 
 
 export const useTestsOfTeacher = () => {
@@ -41,20 +41,24 @@ export const useTestWithQuestions = () => {
 
 
 /**
- * Get all submissions for a test
- * @param testId - the id of the test
- * @returns FullSubmission[] | null
- * 
+ * Test bo'yicha urinishlar ro'yxati (yengil yozuvlar).
+ *
+ * Savollar qatorlar bilan birga kelmaydi — barcha ballar serverda hisoblanadi,
+ * shu sababli 1000+ urinishli testda ham javob bir necha MB'dan oshmaydi.
+ *
+ * Xatolik yuz bersa bo'sh massiv EMAS, xato tashlanadi — sahifa
+ * "Xatolik yuz berdi" holatini ko'rsatishi uchun.
+ *
  * note: this hook is used in the .../[testId]/attempts/page.tsx
  */
-export const useFullSubmissions = () => {
+export const useSubmissionsList = () => {
     const { testId } = useParams<{ testId: string }>();
-    return useQuery<FullSubmission[]>({
+    return useQuery<SubmissionListItem[]>({
         queryKey: TEACHER_FULL_SUBMISSIONS_KEY(testId),
         queryFn: async () => {
-            const res = await getFullSubmissionsAction({ testId });
-            if (res.ok) return res.submissions;
-            return [];
+            const res = await getSubmissionsListAction({ testId });
+            if (!res.ok) throw new Error(res.error);
+            return res.submissions;
         },
         enabled: Boolean(testId),
     });

@@ -40,3 +40,39 @@ export interface SubmissionStats {
   new_submissions_week: number; // Total number of new submissions in the last 7 days
   avg_submissions_since_start: number; // Average number of submissions per day since the user started using the bot
 }
+
+/**
+ * Ro'yxat (jadval/karta) uchun yengil submission yozuvi.
+ *
+ * `FullSubmission` har bir qatorda testning barcha savollarini olib yuradi —
+ * 1000 ta urinishli testda bu o'nlab MB payload demak va server action
+ * javob chegarasidan oshib ketadi. Bu yerda barcha hosilaviy ballar
+ * serverda bir marta hisoblanadi va mijozga faqat sonlar yuboriladi.
+ */
+export interface SubmissionListItem {
+  id: string;
+  started_at: string;
+  submitted_at?: string;
+  rasch_score?: number;
+  rasch_ability?: number;
+  created_at: string;
+  updated_at: string;
+  user: TGUser;
+  test: Test;
+  /** To'g'ri javoblar soni */
+  row_score: number;
+  /** UZ DTM / oddiy baholash bali */
+  points: number;
+  /** SAT bali (faqat SAT testlarida ma'noli) */
+  sat_score: number;
+  /** Testdagi savollar soni (foiz hisoblash uchun) */
+  total_questions: number;
+  /** Simple scoring uchun maksimal ball */
+  max_points: number;
+}
+
+/** Rasch hisoblash uchun kerak bo'lgan minimal submission shakli */
+export interface SubmissionAnswers {
+  id: string;
+  answers: Answer[];
+}

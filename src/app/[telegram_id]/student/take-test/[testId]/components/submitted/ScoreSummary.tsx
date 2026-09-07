@@ -43,7 +43,6 @@ export function ScoreSummary({
     ? questions.reduce((sum, q) => sum + (q.points || 0), 0)
     : 0;
 
-  console.log(satScore)
   return (
     <section className="grid gap-4 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-100">

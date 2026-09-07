@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
-import { FullSubmission } from "@/types/submission";
+import { SubmissionListItem } from "@/types/submission";
 import { Test } from "@/types/test";
 import Row from "./table/Row";
 import Header from "./table/Header";
@@ -14,9 +14,49 @@ import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 
 interface SubmissionsProps {
-  submissions: FullSubmission[];
+  submissions: SubmissionListItem[];
   renderResultLink: (submissionId: string) => string;
   test: Test;
+}
+
+/** Bo'laklab yuborish natijasi */
+type ChunkResult =
+  | {
+      ok: true;
+      sent: number;
+      failed: number;
+      processed: number;
+      total: number;
+      nextOffset: number | null;
+    }
+  | { ok: false; error: string };
+
+/**
+ * Bo'laklab bajariladigan yuborishni oxirigacha olib boradi.
+ *
+ * Telegram'ga 1000 ta xabarni bitta so'rovda yuborib bo'lmaydi — funksiya
+ * 60 soniyada uziladi. Shu sababli mijoz `offset` bilan ketma-ket chaqiradi
+ * va har bo'lakdan keyin jarayonni ko'rsatadi.
+ */
+async function runChunked(
+  step: (offset: number) => Promise<ChunkResult>,
+  onProgress: (done: number, total: number) => void
+): Promise<{ ok: true; sent: number; failed: number } | { ok: false; error: string }> {
+  let offset = 0;
+  let sent = 0;
+  let failed = 0;
+
+  for (;;) {
+    const res = await step(offset);
+    if (!res.ok) return res;
+
+    sent += res.sent;
+    failed += res.failed;
+    onProgress(Math.min(offset + res.processed, res.total), res.total);
+
+    if (res.nextOffset === null) return { ok: true, sent, failed };
+    offset = res.nextOffset;
+  }
 }
 
 export const Submissions = (props: SubmissionsProps) => {
@@ -36,13 +76,27 @@ export const Submissions = (props: SubmissionsProps) => {
     mutationFn: () => sendExcelViaTelegramAction({ testId, telegramId: telegram_id }),
   });
 
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(
+    null
+  );
+
   const sendingResultsToUsersMutate = useMutation({
-    mutationFn: () => sendResultsToUsersAction({ testId }),
+    mutationFn: () =>
+      runChunked(
+        (offset) => sendResultsToUsersAction({ testId, offset }),
+        (done, total) => setProgress({ done, total })
+      ),
+    onSettled: () => setProgress(null),
   });
 
   const sendingMessageToUsersMutate = useMutation({
     mutationFn: (message: string) =>
-      sendingMessageToUsersAction({ ids: uniqueTelegramIds, message }),
+      runChunked(
+        (offset) =>
+          sendingMessageToUsersAction({ ids: uniqueTelegramIds, message, offset }),
+        (done, total) => setProgress({ done, total })
+      ),
+    onSettled: () => setProgress(null),
   });
 
   const handleExportToExcel = async () => {
@@ -157,7 +211,9 @@ export const Submissions = (props: SubmissionsProps) => {
             {sendingResultsToUsersMutate.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Yuborilmoqda...
+                {progress
+                  ? `Yuborilmoqda… ${progress.done}/${progress.total}`
+                  : "Yuborilmoqda..."}
               </>
             ) : (
               <>
