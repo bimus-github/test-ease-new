@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 import { selectNextItem, DEFAULT_CAT_CONFIG } from "@/lib/cat";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   // Build pool from calibrated questions on this subject
-  const { data: pool, error: poolErr } = await supabaseAdmin
+  const { data: pool, error: poolErr } = await supabase
     .from("questions")
     .select("id, rasch_difficulty, question_text, question_type, options")
     .not("rasch_difficulty", "is", null)
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   if (!firstItem) return NextResponse.json({ error: "Savol tanlab bo'lmadi" }, { status: 500 });
 
   // Save session
-  const { data: session, error: sessErr } = await supabaseAdmin
+  const { data: session, error: sessErr } = await supabase
     .from("cat_sessions")
     .insert({
       student_id: studentId,

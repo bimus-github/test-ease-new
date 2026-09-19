@@ -87,7 +87,7 @@ export const TAKE_TEST_ROUTE = (testId: string, telegramId: number | string) =>
 // Telegram bot deep-link — opens the bot and auto-sends `/start <testCode>`.
 // Ulashish uchun to'g'ridan-to'g'ri web link o'rniga ishlatiladi, chunki faqat
 // bot o'quvchining haqiqiy telegram_id sini biladi.
-export const TG_BOT_NAME = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
+export const TG_BOT_NAME = process.env.NEXT_PUBLIC_TG_BOT_NAME || "TestEaseUzBot";
 export const BOT_TEST_START_LINK = (testCode: string) =>
   `https://t.me/${TG_BOT_NAME}?start=${encodeURIComponent(testCode)}`;
 

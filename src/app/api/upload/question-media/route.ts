@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 import { getVerifiedTelegramId } from "@/lib/telegram-verify";
 
 export const dynamic = "force-dynamic";
@@ -53,13 +53,13 @@ export async function POST(req: Request) {
   const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
   const path = `${teacherId}/${type}/${crypto.randomUUID()}.${ext}`;
 
-  const { error } = await supabaseAdmin.storage
+  const { error } = await supabase.storage
     .from(BUCKET)
     .upload(path, file, { cacheControl: "3600", upsert: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const { data } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path);
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return NextResponse.json({ url: data.publicUrl });
 }
 
@@ -72,6 +72,6 @@ export async function DELETE(req: Request) {
   const idx = url.indexOf(marker);
   if (idx === -1) return NextResponse.json({ ok: true });
   const path = url.slice(idx + marker.length);
-  await supabaseAdmin.storage.from(BUCKET).remove([path]);
+  await supabase.storage.from(BUCKET).remove([path]);
   return NextResponse.json({ ok: true });
 }

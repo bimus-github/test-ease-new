@@ -7,7 +7,7 @@ import { handleGetSubmissionStatsCommand } from "@/telegram/handlers/group/get-s
 import { handleSendMessageCommand } from "@/telegram/handlers/group/send-message-handler";
 import { handleSendMessagePreviewCommand } from "@/telegram/handlers/group/send-message-preview-handler";
 
-const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
+const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "TestEaseUzBot";
 
 /**
  * Handle bot commands

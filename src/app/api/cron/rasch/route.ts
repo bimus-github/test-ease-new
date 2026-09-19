@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 import { calculateRaschForTest } from "@/dbs/rasch-servers";
 import { getSubmissionListByIds } from "@/dbs/submission-servers";
 import { sendRaschResultsNotification } from "@/telegram/notifications/sendRaschResultsNotification";
@@ -58,7 +58,7 @@ async function calculatePendingTests() {
 
   // `select("*")`: `rasch_failed_at` hali qo'shilmagan bo'lsa ham so'rov
   // yiqilmasin — ustun shunchaki obyektda bo'lmaydi.
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("tests")
     .select("*")
     .eq("scoring_type", ScoringType.RASCH_SCORING)
@@ -93,7 +93,7 @@ async function calculatePendingTests() {
 
       // Belgilab qo'yamiz: aks holda hisoblab bo'lmaydigan test har daqiqada
       // qayta urinilib, xato xabarlari bilan to'ldirib yuborardi.
-      const { error: markErr } = await supabaseAdmin
+      const { error: markErr } = await supabase
         .from("tests")
         .update({ rasch_failed_at: new Date().toISOString() })
         .eq("id", test.id);
@@ -157,7 +157,7 @@ async function notifyPending() {
     Date.now() - NOTIFY_WINDOW_DAYS * 24 * 60 * 60 * 1000
   ).toISOString();
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("submissions")
     .select("id, tests!inner(isRaschCalculated, rasch_calculated_at, scoring_type)")
     .is("notified_at", null)
@@ -194,7 +194,7 @@ async function notifyPending() {
 
   // Yuborilgani ham, yuborilmagani ham belgilanadi — aks holda nosoz
   // chat ID'lar navbatni abadiy band qilib turadi.
-  const { error: markErr } = await supabaseAdmin
+  const { error: markErr } = await supabase
     .from("submissions")
     .update({ notified_at: new Date().toISOString() })
     .in("id", ids);
