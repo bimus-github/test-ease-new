@@ -1,7 +1,7 @@
 import { sendTelegramMessage } from "@/telegram/bot";
 import { sendProductionErrors } from "../../notifications/sendProductionErrors";
 
-const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
+const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "TestEaseUzBot";
 
 /**
  * Handle /start command

@@ -11,7 +11,7 @@ import { handleTestCode } from "@/telegram/handlers/bot/test-code-handler";
 import { isTestCode } from "@/lib/helpers";
 import { sendTelegramMessage } from "@/telegram/bot";
 
-const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "test_ease_uz_bot";
+const tgBotName = process.env.NEXT_PUBLIC_TG_BOT_NAME || "TestEaseUzBot";
 
 /**
  * Handle bot commands
