@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 import {
   selectNextItem,
   updateTheta,
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   const { sessionId, questionId, answer, answerOptions } =
     (await req.json()) as AnswerPayload;
 
-  const { data: session, error } = await supabaseAdmin
+  const { data: session, error } = await supabase
     .from("cat_sessions")
     .select("*")
     .eq("id", sessionId)
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Session yakunlangan" }, { status: 400 });
   }
 
-  const { data: q } = await supabaseAdmin
+  const { data: q } = await supabase
     .from("questions")
     .select(
       "id, rasch_difficulty, question_type, correct_answer, correct_options, is_multiple_answers"
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
   const administered = new Set([...(session.administered_items as string[]), questionId]);
   const { theta, se } = updateTheta(responses);
 
-  const { data: pool } = await supabaseAdmin
+  const { data: pool } = await supabase
     .from("questions")
     .select("id, rasch_difficulty, question_text, question_type, options")
     .not("rasch_difficulty", "is", null)
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
   const stop = shouldStop(administered.size, calibratedPool.length, se, config);
 
   if (stop) {
-    await supabaseAdmin
+    await supabase
       .from("cat_sessions")
       .update({
         theta,
@@ -113,7 +113,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Keyingi savol topilmadi" }, { status: 500 });
   }
 
-  await supabaseAdmin
+  await supabase
     .from("cat_sessions")
     .update({
       theta,

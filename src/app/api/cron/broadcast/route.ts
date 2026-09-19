@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 import { getAllUsers } from "@/dbs/bot-servers";
 import { sendTelegramMessage } from "@/telegram/bot";
 
@@ -71,7 +71,7 @@ async function sendOnce(chatId: number | string, text: string) {
 }
 
 async function processOne() {
-  const { data: job, error: pickErr } = await supabaseAdmin
+  const { data: job, error: pickErr } = await supabase
     .from("broadcast_jobs")
     .select("id, message, status, total_users, last_page, sent, failed, blocked")
     .in("status", ["pending", "running"])
@@ -82,7 +82,7 @@ async function processOne() {
   if (pickErr) throw pickErr;
   if (!job) return { idle: true as const };
 
-  await supabaseAdmin
+  await supabase
     .from("broadcast_jobs")
     .update({ status: "running", updated_at: new Date().toISOString() })
     .eq("id", job.id);
@@ -91,7 +91,7 @@ async function processOne() {
 
   if (users.length === 0) {
     const now = new Date().toISOString();
-    await supabaseAdmin
+    await supabase
       .from("broadcast_jobs")
       .update({ status: "completed", completed_at: now, updated_at: now })
       .eq("id", job.id);
@@ -112,7 +112,7 @@ async function processOne() {
   const done = users.length < BATCH_SIZE;
   const now = new Date().toISOString();
 
-  await supabaseAdmin
+  await supabase
     .from("broadcast_jobs")
     .update({
       sent: job.sent + sent,

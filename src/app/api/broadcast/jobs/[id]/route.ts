@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("broadcast_jobs")
     .select(
       "id, status, total_users, last_page, sent, failed, blocked, error, created_at, completed_at"

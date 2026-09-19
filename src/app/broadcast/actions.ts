@@ -27,7 +27,7 @@
  * ============================================================================
  */
 
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 
 export type CreateBroadcastJobResult =
   | { ok: true; jobId: string }
@@ -45,11 +45,11 @@ export async function createBroadcastJob(
   }
 
   // Best-effort total for progress UI — nullable if the count fails.
-  const { count } = await supabaseAdmin
+  const { count } = await supabase
     .from("bot_users")
     .select("*", { count: "exact", head: true });
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("broadcast_jobs")
     .insert({
       message,
