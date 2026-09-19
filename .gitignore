@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# broadcast progress (local only)
+scripts/.migration-broadcast-progress.json
