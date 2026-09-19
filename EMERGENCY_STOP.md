@@ -3,9 +3,14 @@
 ## Quick Ways to Stop the Bot in Production
 
 ### 1. Delete Webhook (Fastest - Stops receiving updates)
+> ⚠️ Never paste a real bot token into this file or any other tracked file.
+> Read it from the environment — a token committed to the repo is a token
+> that will be scraped and abused.
+
 ```bash
-# Using curl
-curl -X POST "https://api.telegram.org/bot8399156152:AAEZCvknDgJ8RLH6LQXTTlOL0Nw75efj6dQ/deleteWebhook"
+# Using curl (token comes from the environment, never hardcoded)
+source .env.local
+curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"
 
 # Or create a quick script
 node -e "
